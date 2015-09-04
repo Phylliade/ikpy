@@ -84,6 +84,7 @@ def plot_robot(robot_parameters, nodes_angles, ax):
 
 
 if (__name__ == "__main__"):
+    # Paramètres du robot
     robot_parameters = [(0, 0, 4), (0, 0, 3), (0, np.pi / 2, 1)]
     nodes_angles = [0, np.pi / 4, np.pi / 2]
 

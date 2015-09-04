@@ -10,6 +10,7 @@ def get_squared_distance_to_target(robot_parameters, nodes_angles, target):
 
     # Extrêmité du robot
     end_point = plot3D.get_nodes(robot_parameters, nodes_angles)[0][n]
+
     return sum([(end_point_i - target_i) ** 2 for (end_point_i, target_i) in zip(end_point, target)])
 
 
@@ -17,8 +18,6 @@ def inverse_kinematic(robot_parameters, nodes_angles, target):
     """Calcule les angles pour atteindre la target"""
     res = scipy.optimize.minimize(lambda x: get_squared_distance_to_target(robot_parameters, x, target), starting_nodes_angles, method='BFGS')
     return(res.x)
-
-# Optimisation
 
 
 if (__name__ == "__main__"):
