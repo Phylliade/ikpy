@@ -1,5 +1,4 @@
 # coding: utf8
-import plot3D
 import scipy.optimize
 import numpy as np
 import matplotlib.pyplot
@@ -18,10 +17,10 @@ def get_squared_distance_to_target(robot_parameters, nodes_angles, target):
     return sum([(end_point_i - target_i) ** 2 for (end_point_i, target_i) in zip(end_point, target)])
 
 
-def inverse_kinematic(robot_parameters, nodes_angles, target):
+def inverse_kinematic(robot_parameters, nodes_angles, target, bounds=None):
     """Calcule les angles pour atteindre la target"""
-    # Utilisation d'une BFGS
-    res = scipy.optimize.minimize(lambda x: get_squared_distance_to_target(robot_parameters, x, target), nodes_angles, method='BFGS')
+    # Utilisation d'une optimisation L-BFGS-B
+    res = scipy.optimize.minimize(lambda x: get_squared_distance_to_target(robot_parameters, x, target), nodes_angles, method='L-BFGS-B', bounds=bounds)
     return(res.x)
 
 

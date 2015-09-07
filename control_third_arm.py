@@ -33,18 +33,19 @@ def init_third_arm(third_arm):
     return third_arm
 
 if __name__ == "__main__":
-    real = True
+    real = False
     simulate = True
 
     # Paramètres du bras
     third_arm_parameters = test_sets.third_arm_parameters
     third_arm_starting_angles = test_sets.third_arm_default_angles
+    third_arm_bounds = test_sets.third_arm_bounds
 
     # Cible
     target = [0.2, 0.2, 0.2]
 
     # Calcul de la position
-    angles = inverse_kinematic.inverse_kinematic(third_arm_parameters, third_arm_starting_angles, target)
+    angles = inverse_kinematic.inverse_kinematic(third_arm_parameters, third_arm_starting_angles, target, bounds=third_arm_bounds)
 
     print(angles * 180 / np.pi)
 
