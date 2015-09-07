@@ -30,7 +30,7 @@ def get_nodes(robot_parameters, nodes_angles):
     """Renvoie la liste des position des noeuds du robot, à partir de ses paramètres, et de la liste des angles
     La liste a len(robot_parameters) + 1 éléments et commence par (0,0,0)"""
     full_list = [
-        (x, y, z, t) for ((x, y, z), t) in zip(np.asarray(robot_parameters), np.asarray(nodes_angles))
+        (x, y, z, t) for ((x, y, z), t) in zip(robot_parameters, nodes_angles)
     ]
 
     #  Initialisations
@@ -46,9 +46,8 @@ def get_nodes(robot_parameters, nodes_angles):
     rotation_axes = []
 
     # Calcul des positions de chaque noeud
-    for index, (phi, theta, r, psi) in enumerate(full_list):
+    for index, (phi, theta, translation_vector, psi) in enumerate(full_list):
         pos_index = index + 1
-        current_arm_length = r
         origin = pos_list[pos_index - 1]
 
         # Calcul de la nouvelle matrice de rotation
@@ -56,7 +55,7 @@ def get_nodes(robot_parameters, nodes_angles):
         # print(index, frame_matrix)
 
         # Calcul de la position du noeud actuel
-        pos_relat = np.array([1, 0, 0]) * current_arm_length
+        pos_relat = np.array(translation_vector)
         pos_list.append(np.dot(frame_matrix, pos_relat) + origin)
 
         # Calcul des coordonnées de l'axe de rotation
@@ -85,7 +84,7 @@ def plot_robot(robot_parameters, nodes_angles, ax):
 
 if (__name__ == "__main__"):
     # Paramètres du robot
-    robot_parameters = [(0, 0, 4), (0, 0, 3), (0, np.pi / 2, 1)]
+    robot_parameters = [(0, 0, [0, 0, 4]), (0, 0, [3, 0, 0]), (0, np.pi / 2, [1, 0, 0])]
     nodes_angles = [0, np.pi / 4, np.pi / 2]
 
     fig = matplotlib.pyplot.figure()

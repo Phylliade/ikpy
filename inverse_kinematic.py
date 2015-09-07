@@ -16,6 +16,7 @@ def get_squared_distance_to_target(robot_parameters, nodes_angles, target):
 
 def inverse_kinematic(robot_parameters, nodes_angles, target):
     """Calcule les angles pour atteindre la target"""
+    # Utilisation d'une BFGS
     res = scipy.optimize.minimize(lambda x: get_squared_distance_to_target(robot_parameters, x, target), starting_nodes_angles, method='BFGS')
     return(res.x)
 
