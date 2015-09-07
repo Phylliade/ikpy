@@ -1,7 +1,11 @@
+# coding: utf8
 import plot3D
 import scipy.optimize
 import numpy as np
 import matplotlib.pyplot
+import plot_utils
+import forward_kinematics
+import test_sets
 
 
 def get_squared_distance_to_target(robot_parameters, nodes_angles, target):
@@ -9,7 +13,7 @@ def get_squared_distance_to_target(robot_parameters, nodes_angles, target):
     n = len(robot_parameters)
 
     # Extrêmité du robot
-    end_point = plot3D.get_nodes(robot_parameters, nodes_angles)[0][n]
+    end_point = forward_kinematics.get_nodes(robot_parameters, nodes_angles)[0][n]
 
     return sum([(end_point_i - target_i) ** 2 for (end_point_i, target_i) in zip(end_point, target)])
 
@@ -17,14 +21,17 @@ def get_squared_distance_to_target(robot_parameters, nodes_angles, target):
 def inverse_kinematic(robot_parameters, nodes_angles, target):
     """Calcule les angles pour atteindre la target"""
     # Utilisation d'une BFGS
-    res = scipy.optimize.minimize(lambda x: get_squared_distance_to_target(robot_parameters, x, target), starting_nodes_angles, method='BFGS')
+    res = scipy.optimize.minimize(lambda x: get_squared_distance_to_target(robot_parameters, x, target), nodes_angles, method='BFGS')
     return(res.x)
 
 
+def plot_target(target, ax):
+    pass
+
 if (__name__ == "__main__"):
     # Définition des paramètres
-    robot_parameters = [(0, 0, 4), (0, np.pi / 2, 3), (0, np.pi / 2, 1)]
-    starting_nodes_angles = [0, 0, np.pi / 2]
+    robot_parameters = test_sets.classical_arm_parameters
+    starting_nodes_angles = test_sets.classical_arm_default_angles
     target = [3, 1.7, 3]
 
     # Calcul de la réponse
@@ -33,7 +40,8 @@ if (__name__ == "__main__"):
     # Affichage du résultat
     fig = matplotlib.pyplot.figure()
     ax = fig.add_subplot(111, projection='3d')
-    plot3D.plot_robot(robot_parameters, angles, ax)
-    ax.scatter(target[0], target[1], target[2], c="red")
+
+    plot_utils.plot_robot(robot_parameters, angles, ax)
+    plot_utils.plot_target(target, ax)
     print(get_squared_distance_to_target(robot_parameters, angles, target))
     matplotlib.pyplot.show()
