@@ -1,15 +1,44 @@
+# coding: utf8
 import matplotlib.pyplot
 import forward_kinematics
+import inverse_kinematic
+import numpy as np
+import matplotlib.animation
+
+
+
+
+def plot_basis(robot_parameters, ax):
+    # Calcul de la taille du bras tendu
+    translations_vectors = [x[2] for x in robot_parameters]
+    joints_lengths = [np.sqrt(sum([x**2 for x in vector])) for vector in translations_vectors]
+    arm_length = sum(joints_lengths)
+
+    ax.set_xlim3d([-1.0, 1.0])
+    ax.set_xlabel('X')
+
+    ax.set_ylim3d([-1.0, 1.0])
+    ax.set_ylabel('Y')
+
+    ax.set_zlim3d([-1.0, 1.0])
+    ax.set_zlabel('Z')
+
+    # Plot du repère
+    # Sa taille est relative à la taille du bras
+    ax.plot([0, arm_length * 1.5], [0, 0], [0, 0])
+    ax.plot([0, 0], [0, arm_length * 1.5], [0, 0])
+    ax.plot([0, 0], [0, 0], [0, arm_length * 1.5])
 
 
 def plot_robot(robot_parameters, nodes_angles, ax):
     """Dessine le robot"""
 
-    matplotlib.pyplot.axis('equal')
     (points, axes) = forward_kinematics.get_nodes(robot_parameters, nodes_angles)
     # print(points)
 
-    ax.plot([-1, 0], [0, 0], [0, 0])
+    plot_basis(robot_parameters, ax)
+
+
     # Plot des axes entre les noeuds
     ax.plot([x[0] for x in points], [x[1]
             for x in points], [x[2] for x in points])
@@ -26,3 +55,28 @@ def plot_robot(robot_parameters, nodes_angles, ax):
 def plot_target(target, ax):
     """Ajoute la target au plot"""
     ax.scatter(target[0], target[1], target[2], c="red", s=80)
+
+
+def update_line(num, robot_parameters, nodes_angles_list, line):
+    (points, axes) = forward_kinematics.get_nodes(robot_parameters, nodes_angles_list[num])
+    line.set_data([x[0] for x in points], [x[1] for x in points])
+    line.set_3d_properties([x[2] for x in points])
+    return line
+
+
+def animate_IK(robot_parameters, starting_nodes_angles, targets, figure, bounds=None):
+    ax = figure.add_subplot(111, projection='3d')
+    ax.set_xlim3d([-1.0, 1.0])
+    ax.set_xlabel('X')
+
+    ax.set_ylim3d([-1.0, 1.0])
+    ax.set_ylabel('Y')
+
+    ax.set_zlim3d([-1.0, 1.0])
+    ax.set_zlabel('Z')
+    line = ax.plot([0, 0], [0, 0], [0, 0])[0]
+    # spoints = [ax.plot([target[0]], [target[1]], [target[2]]) for target in targets]
+    plot_basis(robot_parameters, ax)
+
+    IK_angles = inverse_kinematic.inverse_kinematic_trajectory(robot_parameters, starting_nodes_angles, targets, bounds)
+    animation = matplotlib.animation.FuncAnimation(figure, update_line, len(IK_angles), fargs=(robot_parameters, IK_angles, line), interval=50)

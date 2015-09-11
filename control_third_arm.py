@@ -1,5 +1,5 @@
 # coding: utf8
-from poppy.creatures import PoppyRightArm
+# from poppy.creatures import PoppyRightArm
 import plot_utils
 import inverse_kinematic
 import numpy as np
@@ -34,7 +34,8 @@ def init_third_arm(third_arm):
 
 if __name__ == "__main__":
     real = False
-    simulate = True
+    simulate = False
+    animate = True
 
     # Paramètres du bras
     third_arm_parameters = test_sets.third_arm_parameters
@@ -42,7 +43,8 @@ if __name__ == "__main__":
     third_arm_bounds = test_sets.third_arm_bounds
 
     # Cible
-    target = [0.2, 0.2, 0.2]
+    target = [0.2, 0.2, -0.2]
+    # target = [1, 0, 0]
 
     # Calcul de la position
     angles = inverse_kinematic.inverse_kinematic(third_arm_parameters, third_arm_starting_angles, target, bounds=third_arm_bounds)
@@ -55,7 +57,6 @@ if __name__ == "__main__":
         ax = fig.add_subplot(111, projection='3d')
         plot_utils.plot_robot(third_arm_parameters, angles, ax)
         ax.scatter(target[0], target[1], target[2], c="red", s=80)
-        matplotlib.pyplot.show()
 
     if (real):
         third_arm = PoppyRightArm()
@@ -75,3 +76,12 @@ if __name__ == "__main__":
                 joint.goal_position = angles[index] / np.pi * 180
 
         third_arm.r_m5.goal_position = 0
+
+    if (animate):
+        x = np.arange(0, np.pi / 2, np.pi / 50)
+        y = np.sin(x) * 0.3
+        z = np.cos(x)**2 * 0.3
+        targets = zip(z, y, z)
+        fig = matplotlib.pyplot.figure()
+        plot_utils.animate_IK(third_arm_parameters, third_arm_starting_angles, targets, fig, third_arm_bounds)
+        matplotlib.pyplot.show()

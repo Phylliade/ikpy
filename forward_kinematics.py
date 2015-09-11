@@ -4,7 +4,6 @@ import numpy as np
 import plot_utils
 import test_sets
 from mpl_toolkits.mplot3d import Axes3D
-from mpl_toolkits.mplot3d import proj3d
 
 
 def Rx_matrix(theta):
@@ -62,8 +61,10 @@ def get_nodes(robot_parameters, nodes_angles):
         pos_relat = np.array(translation_vector)
         pos_list.append(np.dot(frame_matrix, pos_relat) + origin)
 
+        arm_length = np.sqrt(sum([x**2 for x in translation_vector]))
+
         # Calcul des coordonnées de l'axe de rotation
-        rotation_axe = np.dot(frame_matrix, np.array([0, 0, 1]) * 0.01)
+        rotation_axe = np.dot(frame_matrix, np.array([0, 0, 1]) * arm_length)
         rotation_axes.append(rotation_axe)
 
     return pos_list, rotation_axes
