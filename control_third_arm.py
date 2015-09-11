@@ -2,11 +2,12 @@
 # from poppy.creatures import PoppyRightArm
 import plot_utils
 import inverse_kinematic
+import forward_kinematics
 import numpy as np
 import matplotlib.pyplot
 import test_sets
 from mpl_toolkits.mplot3d import Axes3D
-
+import matplotlib.animation
 
 def init_third_arm(third_arm):
     """Initialise le bras"""
@@ -78,10 +79,19 @@ if __name__ == "__main__":
         third_arm.r_m5.goal_position = 0
 
     if (animate):
-        x = np.arange(0, np.pi / 2, np.pi / 50)
-        y = np.sin(x) * 0.3
-        z = np.cos(x)**2 * 0.3
-        targets = zip(z, y, z)
+        # Définition de la trajectoire
+        arm_length = forward_kinematics.get_robot_length(third_arm_parameters)
+        t = np.arange(0, np.pi / 2, np.pi / 50)
+        x = np.sin(t**2) * arm_length / 3
+        y = np.sin(t) * arm_length / 3
+        z = -np.sinh(t) * arm_length / 3
+
         fig = matplotlib.pyplot.figure()
-        plot_utils.animate_IK(third_arm_parameters, third_arm_starting_angles, targets, fig, third_arm_bounds)
+
+        # Génération de l'animation
+        animation = plot_utils.animate_IK(third_arm_parameters, third_arm_starting_angles, x, y, z, fig, third_arm_bounds)
+
+        # Sauvegarde de l'animation
+        animation.save('output/test.mp4', writer=plot_utils.animation_writer)
+
         matplotlib.pyplot.show()

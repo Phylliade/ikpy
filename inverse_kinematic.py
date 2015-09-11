@@ -25,14 +25,14 @@ def inverse_kinematic(robot_parameters, starting_nodes_angles, target, bounds=No
     return(res.x)
 
 
-def inverse_kinematic_trajectory(robot_parameters, starting_nodes_angles, targets, bounds=None):
+def inverse_kinematic_trajectory(robot_parameters, starting_nodes_angles, targets_x, targets_y, targets_z, bounds=None):
+    """Renvoie la liste des angles pour suivre la trajectoire (liste "targets") donnée en argument"""
     IK_angles = []
     nodes_angles = starting_nodes_angles
-    for target in targets:
+    for target in zip(targets_x, targets_y, targets_z):
         IK_angles.append(inverse_kinematic(robot_parameters, nodes_angles, target, bounds))
         nodes_angles = IK_angles[-1]
     return IK_angles
-
 
 
 if (__name__ == "__main__"):

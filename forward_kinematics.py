@@ -6,6 +6,13 @@ import test_sets
 from mpl_toolkits.mplot3d import Axes3D
 
 
+def get_robot_length(robot_parameters):
+    """Calcul la longueur du robot (tendu)"""
+    translations_vectors = [x[2] for x in robot_parameters]
+    joints_lengths = [np.sqrt(sum([x**2 for x in vector])) for vector in translations_vectors]
+    return sum(joints_lengths)
+
+
 def Rx_matrix(theta):
     """Matrice de rotation autour de l'axe X"""
     return np.array([
