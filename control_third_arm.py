@@ -9,6 +9,7 @@ import test_sets
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.animation
 
+
 def init_third_arm(third_arm):
     """Initialise le bras"""
 
@@ -35,7 +36,7 @@ def init_third_arm(third_arm):
 
 if __name__ == "__main__":
     real = False
-    simulate = False
+    simulate = True
     animate = True
 
     # Paramètres du bras
@@ -85,6 +86,10 @@ if __name__ == "__main__":
         x = np.sin(t**2) * arm_length / 3
         y = np.sin(t) * arm_length / 3
         z = -np.sinh(t) * arm_length / 3
+
+        x2 = np.sqrt(x)
+        y2 = y**2
+        z2 = z
 
         fig = matplotlib.pyplot.figure()
 

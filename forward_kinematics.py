@@ -6,6 +6,15 @@ import test_sets
 from mpl_toolkits.mplot3d import Axes3D
 
 
+def euler_from_unit_vector(x, y, z):
+    if x != 0:
+        theta = np.arctan(y / x)
+    else:
+        theta = np.pi / 2
+    phi = np.arccos(z)
+    return(theta, np.pi / 2 - theta, phi)
+
+
 def get_robot_length(robot_parameters):
     """Calcul la longueur du robot (tendu)"""
     translations_vectors = [x[2] for x in robot_parameters]
@@ -36,6 +45,11 @@ def rotation_matrix(phi, theta, psi):
     return np.dot(Rz_matrix(phi), np.dot(Rx_matrix(theta), Rz_matrix(psi)))
 
 
+def FK_jacobian(robot_parameters, nodes_angles):
+    """Retourne le jacobien de la FK"""
+    pass
+
+
 def get_nodes(robot_parameters, nodes_angles):
     """Renvoie la liste des position des noeuds du robot, à partir de ses paramètres, et de la liste des angles
     La liste a len(robot_parameters) + 1 éléments et commence par (0,0,0)"""
@@ -48,7 +62,7 @@ def get_nodes(robot_parameters, nodes_angles):
     pos_list = []
     pos = np.array([0, 0, 0])
     pos_list.append(pos)
-    # Matrice de rotation
+    # Initiailisation de la matrice de changement de base
     frame_matrix = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
     # Liste des axes de rotation de chaque noeud
@@ -57,6 +71,7 @@ def get_nodes(robot_parameters, nodes_angles):
 
     # Calcul des positions de chaque noeud
     for index, (phi, theta, translation_vector, psi) in enumerate(full_list):
+
         pos_index = index + 1
         origin = pos_list[pos_index - 1]
 
@@ -81,8 +96,10 @@ if (__name__ == "__main__"):
     # Paramètres du robot
     robot_parameters = test_sets.classical_arm_parameters
     nodes_angles = test_sets.classical_arm_default_angles
-
+    x = 5
     fig = matplotlib.pyplot.figure()
     ax = fig.add_subplot(111, projection='3d')
     plot_utils.plot_robot(robot_parameters, nodes_angles, ax)
     matplotlib.pyplot.show()
+    for i in range(1, 100):
+        print("test")
