@@ -1,0 +1,136 @@
+{
+  "controllers": {
+    "upper_body_controller": {
+      "sync_read": false,
+      "attached_motors": [
+        "r_arm"
+      ],
+      "port": "auto"
+    },
+    "my_dxl_controller": {
+      "sync_read": true,
+	  "protocol":2,
+      "attached_motors": [
+        "r_gripper"
+      ],
+      "port": "auto"
+    }
+  },
+  "motorgroups": {
+    "r_arm": [
+      "r_shoulder_y",
+      "r_shoulder_x",
+      "r_arm_z",
+      "r_elbow_y"
+    ],
+    "r_gripper": [
+      "r_m1",
+      "r_m2",
+	  "r_m3",
+	  "r_m4",
+      "r_m5"
+    ]	
+	
+  },
+  "motors": {
+    "r_arm_z": {
+      "offset": 0.0,
+      "type": "MX-28",
+      "id": 53,
+      "angle_limit": [
+        -90,
+        90
+      ],
+	  "broken": false,
+      "orientation": "direct"
+    },
+    "r_shoulder_x": {
+      "offset": 90.0,
+      "type": "MX-28",
+      "id": 52,
+      "angle_limit": [
+        -110,
+        105
+      ],
+	  "broken": false,
+      "orientation": "indirect"
+    },
+    "r_shoulder_y": {
+      "offset": 90,
+      "type": "MX-28",
+      "id": 51,
+      "angle_limit": [
+        -155,
+        120
+      ],
+	  "broken": false,
+      "orientation": "indirect"
+    },
+    "r_elbow_y": {
+      "offset": 0.0,
+      "type": "MX-28",
+      "id": 54,
+      "angle_limit": [
+        7,
+        147
+      ],
+	  "broken": false,
+      "orientation": "indirect"
+    },
+    "r_m1": {
+      "offset": 41.0,
+      "type": "XL-320",
+      "id": 3,
+      "angle_limit": [
+        -90.0,
+        90.0
+      ],
+	  "broken": false,
+      "orientation": "direct"
+    },
+    "r_m2": {
+      "offset": 5.13,
+      "type": "XL-320",
+      "id": 5,
+      "angle_limit": [
+        -90.0,
+        90.0
+      ],
+	  "broken": false,
+      "orientation": "direct"
+    },
+    "r_m3": {
+      "offset": -50.0,
+      "type": "XL-320",
+      "id": 2,
+      "angle_limit": [
+        -135.0,
+        40.0
+      ],
+	  "broken": false,
+      "orientation": "direct"
+    },	
+    "r_m4": {
+      "offset": 0.0,
+      "type": "XL-320",
+      "id": 7,
+      "angle_limit": [
+        -90.0,
+        90.0
+      ],
+	  "broken": false,
+      "orientation": "direct"
+    },
+    "r_m5": {
+      "offset": 0.0,
+      "type": "XL-320",
+      "id": 17,
+      "angle_limit": [
+        -90.0,
+        90.0
+      ],
+	  "broken": false,
+      "orientation": "direct"
+    }	
+  }
+}

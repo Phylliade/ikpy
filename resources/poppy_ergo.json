@@ -1,0 +1,86 @@
+{
+  "controllers": {
+    "my_dxl_controller": {
+      "sync_read": false,
+      "attached_motors": [
+        "base",
+        "tip"
+      ],
+      "port": "auto"
+    }
+  },
+  "motorgroups": {
+    "base": [
+      "m1",
+      "m2",
+      "m3"
+    ],
+    "tip": [
+      "m4",
+      "m5",
+      "m6"
+    ]
+  },
+  "motors": {
+    "m1": {
+      "offset": 0.0,
+      "type": "MX-28",
+      "id": 11,
+      "angle_limit": [
+        -90.0,
+        90.0
+      ],
+      "orientation": "direct"
+    },
+    "m2": {
+      "offset": 0.0,
+      "type": "MX-28",
+      "id": 12,
+      "angle_limit": [
+        -90.0,
+        90.0
+      ],
+      "orientation": "indirect"
+    },
+    "m3": {
+      "offset": 0.0,
+      "type": "MX-28",
+      "id": 13,
+      "angle_limit": [
+        -90.0,
+        90.0
+      ],
+      "orientation": "indirect"
+    },
+    "m4": {
+      "offset": 0.0,
+      "type": "MX-28",
+      "id": 14,
+      "angle_limit": [
+        -90.0,
+        90.0
+      ],
+      "orientation": "direct"
+    },
+    "m5": {
+      "offset": 0.0,
+      "type": "MX-28",
+      "id": 15,
+      "angle_limit": [
+        -90.0,
+        90.0
+      ],
+      "orientation": "indirect"
+    },
+    "m6": {
+      "offset": 0.0,
+      "type": "MX-28",
+      "id": 16,
+      "angle_limit": [
+        -90.0,
+        90.0
+      ],
+      "orientation": "indirect"
+    }
+  }
+}
