@@ -1,7 +1,7 @@
 # coding: utf8
 import matplotlib.pyplot
-import forward_kinematics
-import inverse_kinematic
+from . import forward_kinematics
+from . import inverse_kinematic
 import matplotlib.animation
 
 

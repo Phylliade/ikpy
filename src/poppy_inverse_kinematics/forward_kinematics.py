@@ -1,10 +1,5 @@
 # coding: utf8
-import matplotlib.pyplot
 import numpy as np
-import plot_utils
-import test_sets
-from mpl_toolkits.mplot3d import Axes3D
-
 
 def euler_from_unit_vector(x, y, z):
     if x != 0:
@@ -90,16 +85,3 @@ def get_nodes(robot_parameters, nodes_angles):
         rotation_axes.append(rotation_axe)
 
     return pos_list, rotation_axes
-
-
-if (__name__ == "__main__"):
-    # Paramètres du robot
-    robot_parameters = test_sets.classical_arm_parameters
-    nodes_angles = test_sets.classical_arm_default_angles
-    x = 5
-    fig = matplotlib.pyplot.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    plot_utils.plot_robot(robot_parameters, nodes_angles, ax)
-    matplotlib.pyplot.show()
-    for i in range(1, 100):
-        print("test")
