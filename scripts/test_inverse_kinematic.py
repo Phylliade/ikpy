@@ -3,6 +3,7 @@ from poppy_inverse_kinematics import inverse_kinematic as ik
 from poppy_inverse_kinematics import test_sets
 from poppy_inverse_kinematics import plot_utils
 import matplotlib.pyplot
+from mpl_toolkits.mplot3d import Axes3D
 
 
 if (__name__ == "__main__"):
@@ -20,5 +21,5 @@ if (__name__ == "__main__"):
 
     plot_utils.plot_robot(robot_parameters, angles, ax)
     plot_utils.plot_target(target, ax)
-    print(get_squared_distance_to_target(robot_parameters, angles, target))
+    print(ik.get_squared_distance_to_target(robot_parameters, angles, target))
     matplotlib.pyplot.show()
