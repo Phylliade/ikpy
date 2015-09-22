@@ -1,8 +1,0 @@
-# TODO #
-
-* Gérer la vitesse des bras (goto_position, paramètre duration)
-
-* Calculer en dur arm_length. Cela permettrait d'optimiser au lieu de refaire à chaque fois le calcul
-=> Par exemple le rajouter en plus de robot_parameters dans test_sets.py et le calculer seulement à l'import de celui-ci.
-
-* Créer une classe robot qui permette d'avoir des prototypes de fonctions plus légers
