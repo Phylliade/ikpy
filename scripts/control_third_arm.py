@@ -1,11 +1,11 @@
 # coding: utf8
 # from poppy.creatures import PoppyRightArm
-import plot_utils
-import inverse_kinematic
-import forward_kinematics
+from poppy_inverse_kinematics import plot_utils
+from poppy_inverse_kinematics import inverse_kinematic as ik
+from poppy_inverse_kinematics import forward_kinematics as fk
+from poppy_inverse_kinematics import test_sets
 import numpy as np
 import matplotlib.pyplot
-import test_sets
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.animation
 
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     # target = [1, 0, 0]
 
     # Calcul de la position
-    angles = inverse_kinematic.inverse_kinematic(third_arm_parameters, third_arm_starting_angles, target, bounds=third_arm_bounds)
+    angles = ik.inverse_kinematic(third_arm_parameters, third_arm_starting_angles, target, bounds=third_arm_bounds)
 
     print(angles * 180 / np.pi)
 
@@ -81,7 +81,7 @@ if __name__ == "__main__":
 
     if (animate):
         # Définition de la trajectoire
-        arm_length = forward_kinematics.get_robot_length(third_arm_parameters)
+        arm_length = fk.get_robot_length(third_arm_parameters)
         t = np.arange(0, np.pi / 2, np.pi / 50)
         x = np.sin(t**2) * arm_length / 3
         y = np.sin(t) * arm_length / 3

@@ -1,4 +1,4 @@
-import forward_kinematics
+from . import forward_kinematics
 
 
 def robot_from_urdf_parameters(urdf_params):
