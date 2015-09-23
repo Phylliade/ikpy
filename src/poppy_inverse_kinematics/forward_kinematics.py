@@ -11,7 +11,7 @@ def euler_from_unit_vector(x, y, z):
     return(theta, np.pi / 2 - theta, phi)
 
 
-def euler_from_vURDF_parameters(vector_parameters):
+def euler_from_URDF_parameters(vector_parameters):
     return [(euler_from_unit_vector(x), y) for (x, y) in vector_parameters]
 
 
