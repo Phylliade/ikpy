@@ -1,6 +1,7 @@
 # coding: utf8
 import numpy as np
 
+
 def euler_from_unit_vector(x, y, z):
     if x != 0:
         theta = np.arctan(y / x)
@@ -8,6 +9,10 @@ def euler_from_unit_vector(x, y, z):
         theta = np.pi / 2
     phi = np.arccos(z)
     return(theta, np.pi / 2 - theta, phi)
+
+
+def euler_from_vURDF_parameters(vector_parameters):
+    return [(euler_from_unit_vector(x), y) for (x, y) in vector_parameters]
 
 
 def get_robot_length(robot_parameters):
