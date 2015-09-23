@@ -8,11 +8,15 @@ def euler_from_unit_vector(x, y, z):
     else:
         theta = np.pi / 2
     phi = np.arccos(z)
-    return(theta, np.pi / 2 - theta, phi)
+    return(np.pi / 2 - theta, phi)
 
 
-def euler_from_URDF_parameters(vector_parameters):
-    return [(euler_from_unit_vector(x), y) for (x, y) in vector_parameters]
+def euler_from_URDF_parameters(URDF_parameters):
+    euler_parameters = []
+    for (x, y) in URDF_parameters:
+        euler_angles = euler_from_unit_vector(*x)
+        euler_parameters.append((euler_angles[0], euler_angles[1], y))
+    return euler_parameters
 
 
 def get_robot_length(robot_parameters):
