@@ -3,6 +3,7 @@ import matplotlib.pyplot
 from . import forward_kinematics
 from . import inverse_kinematic
 import matplotlib.animation
+from mpl_toolkits.mplot3d import Axes3D
 
 
 def plot_basis(robot_parameters, ax):
@@ -78,6 +79,14 @@ def animate_IK(robot_parameters, starting_nodes_angles, targets_x, targets_y, ta
     IK_angles = inverse_kinematic.inverse_kinematic_trajectory(robot_parameters, starting_nodes_angles, targets_x, targets_y, targets_z, bounds)
     return matplotlib.animation.FuncAnimation(figure, update_line, len(IK_angles), fargs=(robot_parameters, IK_angles, line), interval=50)
 
+def init_3d_figure():
+    fig = matplotlib.pyplot.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    return ax
+
+def show_figure():
+    matplotlib.pyplot.show()
+    
 # Définition d'un writer pour enregistrer une video depuis l'animation
 Writer = matplotlib.animation.writers['ffmpeg']
 animation_writer = Writer(fps=30, bitrate=3600)
