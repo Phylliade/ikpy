@@ -1,5 +1,6 @@
 import unittest
 from poppy_inverse_kinematics.model import Model
+from poppy_inverse_kinematics.tools import transformations as tr
 import math
 import numpy as np
 
@@ -36,7 +37,7 @@ class TestModel(unittest.TestCase):
         np.testing.assert_almost_equal(X,[-1,-1,0])
 
     def test_ik(self):
-        links = [1,1]
+        links = [1,1,1]
         m = Model(links)
         for i in range(100):
             # create end effector random pose
@@ -66,6 +67,31 @@ class TestModel(unittest.TestCase):
             # m.plot_model(q,X)
             # assert equality between X and X2
             np.testing.assert_almost_equal(X,X2,decimal=3)
+
+    def test_base_transformation(self):
+        links = [1,1,1]
+        # shift the base by a random vector
+        rot = np.eye(3)
+        trans = np.random.uniform(-5,5,3)
+        T = tr.transformation(rot,trans)
+        # create the model
+        m = Model(links,rot,trans)
+        # check the forward kinematic 1
+        Xd = tr.transform_point([2,0,0],T)
+        X = m.forward_kinematic([0,0])
+        np.testing.assert_almost_equal(X,Xd)
+        # check the forward kinematic 2
+        Xd = tr.transform_point([1,-1,0],T)
+        X = m.forward_kinematic([0,-math.pi/2.])
+        np.testing.assert_almost_equal(X,Xd)
+        # check the inverse kinematic
+        X = np.random.uniform(-1,1,2)
+        X = np.append(X,0)
+        WX = tr.transform_point(X,T)
+        q = m.inverse_kinematic(WX)
+        X2 = m.forward_kinematic(q)
+        np.testing.assert_almost_equal(WX,X2,decimal=3)
+
 
 if __name__ == '__main__':
     unittest.main()
