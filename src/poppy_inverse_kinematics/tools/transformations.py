@@ -3,7 +3,7 @@ import math
 import time
 
 from sympy import *
-from sympy.mpmath import *
+from mpmath import *
 from sympy.matrices import Matrix
 
 from collections import namedtuple
@@ -62,7 +62,7 @@ def transform_point(point,transform):
     temp = np.hstack((np.array(point),1))
     t_temp = np.dot(transform,temp)
     Tpoint = np.transpose(t_temp[:-1]).tolist()
-    return Tpoint 
+    return Tpoint
 
 def transform_trajectory(traj, transform):
     t_traj = []

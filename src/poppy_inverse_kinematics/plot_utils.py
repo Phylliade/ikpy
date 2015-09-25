@@ -27,10 +27,10 @@ def plot_basis(robot_parameters, ax):
     ax.plot([0, 0], [0, 0], [0, arm_length * 1.5])
 
 
-def plot_robot(robot_parameters, nodes_angles, ax):
+def plot_robot(robot_parameters, nodes_angles, ax, representation):
     """Dessine le robot"""
 
-    (points, axes) = forward_kinematics.get_nodes(robot_parameters, nodes_angles)
+    (points, axes) = forward_kinematics.get_nodes(robot_parameters, nodes_angles, representation=representation)
     # print(points)
 
     # Plot du repère
@@ -86,7 +86,7 @@ def init_3d_figure():
 
 def show_figure():
     matplotlib.pyplot.show()
-    
+
 # Définition d'un writer pour enregistrer une video depuis l'animation
 Writer = matplotlib.animation.writers['ffmpeg']
 animation_writer = Writer(fps=30, bitrate=3600)

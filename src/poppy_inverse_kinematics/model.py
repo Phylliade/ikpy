@@ -6,31 +6,37 @@ from . import inverse_kinematic as ik
 from . import plot_utils as pl
 from .tools import transformations as tr
 
+
 class Model(object):
-    def __init__(self, links, rot=None, trans=None):
+
+    def __init__(self, links, rot=None, trans=None, representation="euler"):
         self.links = links
         self.nb_joints = len(links)
         # initialize the parameters according to the kinematic library
         self.init_params(links)
         # set the transformations from world to base
-        self.set_base_transformations(rot,trans)
+        self.set_base_transformations(rot, trans)
         # initialize starting configuration
         self.current_joints = np.zeros(len(links))
+        self.representation = representation
         self.current_pose = self.forward_kinematic(self.current_joints)
 
     def set_base_transformations(self, rot=None, trans=None):
         if rot is None:
             rot = np.eye(3)
         if trans is None:
-            trans = [0,0,0]
-        self.world_to_base = tr.transformation(rot,trans)
+            trans = [0, 0, 0]
+        self.world_to_base = tr.transformation(rot, trans)
         self.base_to_world = tr.inverse_transform(self.world_to_base)
 
-    def init_params(self, links):
+    def init_params_2d(self, links):
         vectors = []
         for l in links:
-            vectors.append(([0,0,1],[l,0,0]))
+            vectors.append(([0, 0, 1], [l, 0, 0]))
         self.parameters = fk.euler_from_URDF_parameters(vectors)
+
+    def init_params(self, links):
+        self.parameters = links
 
     def set_max_velocity(self, v):
         self.max_velocity = v
@@ -39,18 +45,18 @@ class Model(object):
         if q is None:
             q = self.current_joints
         # calculate the forward kinematic
-        X = fk.get_nodes(self.parameters,q)
+        X = fk.get_nodes(self.parameters, q, representation=self.representation)
         # return the result in the world frame
-        W_X = tr.transform_point(X[0][-1],self.world_to_base)
+        W_X = tr.transform_point(X[0][-1], self.world_to_base)
         return W_X
 
     def inverse_kinematic(self, W_X, seed=None):
         if seed is None:
             seed = self.current_joints
         # calculate the coordinate of the target in the robot frame
-        X = tr.transform_point(W_X,self.base_to_world)
+        X = tr.transform_point(W_X, self.base_to_world)
         # return the inverse kinematic
-        return ik.inverse_kinematic(self.parameters,seed,X)
+        return ik.inverse_kinematic(self.parameters, seed, X)
 
     def set_current_joints(self, q):
         self.current_joints = q
@@ -59,7 +65,7 @@ class Model(object):
         if q is None:
             q = self.current_joints
         ax = pl.init_3d_figure()
-        pl.plot_robot(self.parameters, q, ax)
-        if not target is None:
+        pl.plot_robot(self.parameters, q, ax, representation=self.representation)
+        if target is not None:
             pl.plot_target(target, ax)
         pl.show_figure()
