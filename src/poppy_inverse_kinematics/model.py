@@ -9,7 +9,7 @@ from .tools import transformations as tr
 
 class Model(object):
 
-    def __init__(self, links, rot=None, trans=None, representation="euler", model_type="custom"):
+    def __init__(self, links, rot=None, trans=None, representation="euler", model_type="custom", pypot_object=None):
         self.links = links
         self.nb_joints = len(links)
         # initialize the parameters according to the kinematic library
@@ -21,6 +21,7 @@ class Model(object):
         self.current_joints = np.zeros(len(links))
         # self.current_joints = [np.pi / 6 for x in range(0, len(links))]
         self.representation = representation
+        self.pypot_object = pypot_object
         self.current_pose = self.forward_kinematic(self.current_joints)
 
     def set_base_transformations(self, rot=None, trans=None):
@@ -61,10 +62,18 @@ class Model(object):
         # calculate the coordinate of the target in the robot frame
         X = tr.transform_point(W_X, self.base_to_world)
         # return the inverse kinematic
-        return ik.inverse_kinematic(self.parameters, seed, X)
+        return ik.inverse_kinematic(self.parameters, seed, X, model_type=self.model_type, representation=self.representation)
 
     def set_current_joints(self, q):
         self.current_joints = q
+
+    def get_current_joints(self, q):
+        pass
+
+    def goto_position(self, target):
+        self.goal_joints = self.inverse_kinematic(target)
+        for i, m in enumerate(self.pypot_object.motors):
+            m.goal_position = self.goal_joints[i] * 180 / (np.pi / 2)
 
     def plot_model(self, q=None, target=None):
         if q is None:
