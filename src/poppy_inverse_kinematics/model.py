@@ -37,6 +37,8 @@ class Model(object):
 
     def init_params(self, links):
         self.parameters = links
+        self.arm_length = self.get_robot_length()
+        print(self.arm_length)
 
     def set_max_velocity(self, v):
         self.max_velocity = v
@@ -45,9 +47,9 @@ class Model(object):
         if q is None:
             q = self.current_joints
         # calculate the forward kinematic
-        X = fk.get_nodes(self.parameters, q, representation=self.representation)
+        X = fk.get_nodes(self.parameters, q, length=self.arm_length, representation=self.representation)
         # return the result in the world frame
-        W_X = tr.transform_point(X[0][-1], self.world_to_base)
+        W_X = tr.transform_point(X["positions"][-1], self.world_to_base)
         return W_X
 
     def inverse_kinematic(self, W_X, seed=None):
@@ -69,3 +71,10 @@ class Model(object):
         if target is not None:
             pl.plot_target(target, ax)
         pl.show_figure()
+
+    def get_robot_length(self):
+        """Calcul la longueur du robot (tendu)"""
+        translations_vectors = [x[0] for x in  self.parameters]
+        joints_lengths = [np.sqrt(sum([x**2 for x in vector]))
+                          for vector in translations_vectors]
+        return sum(joints_lengths)

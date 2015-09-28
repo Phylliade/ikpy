@@ -34,7 +34,7 @@ def get_relative_angles(absolute_vectors):
 
 def get_robot_length(robot_parameters):
     """Calcul la longueur du robot (tendu)"""
-    translations_vectors = [x[1] for x in robot_parameters]
+    translations_vectors = [x[0] for x in robot_parameters]
     joints_lengths = [np.sqrt(sum([x**2 for x in vector]))
                       for vector in translations_vectors]
     return sum(joints_lengths)
@@ -80,7 +80,7 @@ def FK_jacobian(robot_parameters, nodes_angles):
     pass
 
 
-def get_nodes(robot_parameters, nodes_angles, representation="euler"):
+def get_nodes(robot_parameters, nodes_angles, length=1, representation="euler",):
     """Renvoie la liste des position des noeuds du robot, à partir de ses paramètres, et de la liste des angles
     La liste a len(robot_parameters) + 1 éléments et commence par (0,0,0)"""
     full_list = [
@@ -101,28 +101,28 @@ def get_nodes(robot_parameters, nodes_angles, representation="euler"):
     rotation_axes = []
 
     # Calcul des positions de chaque noeud
-    for index, (rot, translation_vector, psi) in enumerate(full_list):
+    for index, (translation_vector, rot, psi) in enumerate(full_list):
 
         pos_index = index + 1
         origin = pos_list[pos_index - 1]
-
-        if representation == "euler":
-            # Calcul de la nouvelle matrice de rotation
-            frame_matrix = np.dot(frame_matrix, rotation_matrix(rot[0], rot[1], psi))
-            # print(index, frame_matrix)
 
         # Calcul de la position du noeud actuel
         pos_relat = np.array(translation_vector)
         print(translation_vector)
         pos_list.append(np.dot(frame_matrix, pos_relat) + origin)
 
-        arm_length = np.sqrt(sum([x**2 for x in translation_vector]))
+        joint_length = np.sqrt(sum([x**2 for x in translation_vector]))
 
         # Calcul des coordonnées de l'axe de rotation
-        rotation_axe = np.dot(frame_matrix, np.array([0, 0, 1]) * arm_length)
+        rotation_axe = np.dot(frame_matrix, np.array([0, 0, 1]) * joint_length / 2)
 
         if representation == "rpy":
             frame_matrix = np.dot(frame_matrix, rpy_matrix(*rot))
         rotation_axes.append(rotation_axe)
 
-    return pos_list, rotation_axes
+        if representation == "euler":
+            # Calcul de la nouvelle matrice de rotation
+            frame_matrix = np.dot(frame_matrix, rotation_matrix(rot[0], rot[1], psi))
+            # print(index, frame_matrix)
+
+    return {"positions": pos_list, "rotation_axes": rotation_axes}

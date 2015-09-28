@@ -30,7 +30,9 @@ def plot_basis(robot_parameters, ax):
 def plot_robot(robot_parameters, nodes_angles, ax, representation):
     """Dessine le robot"""
 
-    (points, axes) = forward_kinematics.get_nodes(robot_parameters, nodes_angles, representation=representation)
+    nodes = forward_kinematics.get_nodes(robot_parameters, nodes_angles, representation=representation)
+    points = nodes["positions"]
+    axes = nodes["rotation_axes"]
     # print(points)
 
     # Plot du repère
@@ -60,7 +62,8 @@ def plot_target_trajectory(targets_x, targets_y, targets_z, ax):
 
 
 def update_line(num, robot_parameters, nodes_angles_list, line):
-    (points, axes) = forward_kinematics.get_nodes(robot_parameters, nodes_angles_list[num])
+    nodes = forward_kinematics.get_nodes(robot_parameters, nodes_angles_list[num])
+    points = nodes["positions"]
     line.set_data([x[0] for x in points], [x[1] for x in points])
     line.set_3d_properties([x[2] for x in points])
 
@@ -79,10 +82,12 @@ def animate_IK(robot_parameters, starting_nodes_angles, targets_x, targets_y, ta
     IK_angles = inverse_kinematic.inverse_kinematic_trajectory(robot_parameters, starting_nodes_angles, targets_x, targets_y, targets_z, bounds)
     return matplotlib.animation.FuncAnimation(figure, update_line, len(IK_angles), fargs=(robot_parameters, IK_angles, line), interval=50)
 
+
 def init_3d_figure():
     fig = matplotlib.pyplot.figure()
     ax = fig.add_subplot(111, projection='3d')
     return ax
+
 
 def show_figure():
     matplotlib.pyplot.show()
