@@ -28,10 +28,10 @@ def plot_basis(robot_parameters, ax, arm_length=None):
     ax.plot([0, 0], [0, 0], [0, arm_length * 1.5])
 
 
-def plot_robot(robot_parameters, nodes_angles, ax, representation):
+def plot_robot(robot_parameters, nodes_angles, ax, representation, model_type):
     """Dessine le robot"""
 
-    nodes = forward_kinematics.get_nodes(robot_parameters, nodes_angles, representation=representation)
+    nodes = forward_kinematics.get_nodes(robot_parameters, nodes_angles, representation=representation, model_type=model_type)
     points = nodes["positions"]
     axes = nodes["rotation_axes"]
     # print(points)

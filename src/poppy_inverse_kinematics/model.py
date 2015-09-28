@@ -19,6 +19,7 @@ class Model(object):
         self.set_base_transformations(rot, trans)
         # initialize starting configuration
         self.current_joints = np.zeros(len(links))
+        # self.current_joints = [np.pi / 6 for x in range(0, len(links))]
         self.representation = representation
         self.current_pose = self.forward_kinematic(self.current_joints)
 
@@ -48,6 +49,7 @@ class Model(object):
         if q is None:
             q = self.current_joints
         # calculate the forward kinematic
+        print(self.model_type)
         X = fk.get_nodes(self.parameters, q, representation=self.representation, model_type=self.model_type)
         # return the result in the world frame
         W_X = tr.transform_point(X["positions"][-1], self.world_to_base)
@@ -68,7 +70,7 @@ class Model(object):
         if q is None:
             q = self.current_joints
         ax = pl.init_3d_figure()
-        pl.plot_robot(self.parameters, q, ax, representation=self.representation)
+        pl.plot_robot(self.parameters, q, ax, representation=self.representation, model_type=self.model_type)
         pl.plot_basis(self.parameters, ax, self.arm_length)
         if target is not None:
             pl.plot_target(target, ax)

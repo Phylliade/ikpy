@@ -71,6 +71,17 @@ def rotation_matrix(phi, theta, psi):
     return np.dot(Rz_matrix(phi), np.dot(Rx_matrix(theta), Rz_matrix(psi)))
 
 
+def axis_rotation_matrix(axis, theta):
+    [x, y, z] = axis
+    c = np.cos(theta)
+    s = np.sin(theta)
+    return np.array([
+        [x**2 + (1 - x**2) * c, x * y * (1 - c) - z * s, x * z * (1 - c) + y * s],
+        [x * y * (1 - c) + z * s, y ** 2 + (1 - y**2) * c, y * z * (1 - c) - x * s],
+        [x * z * (1 - c) - y * s, y * z * (1 - c) + x * s, z**2 + (1 - z**2) * c]
+    ])
+
+
 def rpy_matrix(roll, pitch, yaw):
     return np.dot(Rz_matrix(yaw), np.dot(Ry_matrix(pitch), Rx_matrix(roll)))
 
@@ -93,7 +104,6 @@ def get_nodes(robot_parameters, nodes_angles, representation="euler", model_type
             (trans, orientation, rotation, t) for ((trans, orientation, rotation), t) in zip(robot_parameters, nodes_angles)
         ]
 
-    print(representation)
     #  Initialisations
     # Liste des positions des noeuds
     pos_list = []
@@ -107,6 +117,7 @@ def get_nodes(robot_parameters, nodes_angles, representation="euler", model_type
     rotation_axes = []
 
     # Calcul des positions de chaque noeud
+    print(representation, full_list)
     for index, params in enumerate(full_list):
 
         if model_type == "custom":
@@ -119,23 +130,26 @@ def get_nodes(robot_parameters, nodes_angles, representation="euler", model_type
 
         # Calcul de la position du noeud actuel
         pos_relat = np.array(translation_vector)
-        print(translation_vector)
+        pos_relat = np.dot(axis_rotation_matrix(rot, psi), pos_relat)
         pos_list.append(np.dot(frame_matrix, pos_relat) + origin)
 
         joint_length = np.sqrt(sum([x**2 for x in translation_vector]))
 
         # Calcul des coordonnées de l'axe de rotation
-        if model_type == "custom"
-        relative_rotation_axe = np.array([0, 0, 1])
-        rotation_axe = np.dot(frame_matrix, np.array([0, 0, 1]) * joint_length / 2)
+        if model_type == "custom":
+            relative_rotation_axe = np.array([0, 0, 1])
+            rotation_axe = np.dot(frame_matrix, relative_rotation_axe * joint_length / 2)
+            if representation == "euler":
+                # Calcul de la nouvelle matrice de rotation
+                frame_matrix = np.dot(frame_matrix, rotation_matrix(rot[0], rot[1], psi))
+                # print(index, frame_matrix)
 
-        if representation == "rpy":
-            frame_matrix = np.dot(frame_matrix, rpy_matrix(*rot))
+        elif model_type == "URDF":
+            relative_rotation_axe = np.array(rot)
+            rotation_axe = np.dot(frame_matrix, relative_rotation_axe * joint_length / 2)
+            if representation == "rpy":
+                frame_matrix = np.dot(frame_matrix, rpy_matrix(*orientation))
+
         rotation_axes.append(rotation_axe)
-
-        if representation == "euler":
-            # Calcul de la nouvelle matrice de rotation
-            frame_matrix = np.dot(frame_matrix, rotation_matrix(rot[0], rot[1], psi))
-            # print(index, frame_matrix)
 
     return {"positions": pos_list, "rotation_axes": rotation_axes}
