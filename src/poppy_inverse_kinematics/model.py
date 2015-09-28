@@ -9,11 +9,12 @@ from .tools import transformations as tr
 
 class Model(object):
 
-    def __init__(self, links, rot=None, trans=None, representation="euler"):
+    def __init__(self, links, rot=None, trans=None, representation="euler", model_type="custom"):
         self.links = links
         self.nb_joints = len(links)
         # initialize the parameters according to the kinematic library
         self.init_params(links)
+        self.model_type = model_type
         # set the transformations from world to base
         self.set_base_transformations(rot, trans)
         # initialize starting configuration
@@ -47,7 +48,7 @@ class Model(object):
         if q is None:
             q = self.current_joints
         # calculate the forward kinematic
-        X = fk.get_nodes(self.parameters, q, length=self.arm_length, representation=self.representation)
+        X = fk.get_nodes(self.parameters, q, representation=self.representation, model_type=self.model_type)
         # return the result in the world frame
         W_X = tr.transform_point(X["positions"][-1], self.world_to_base)
         return W_X
@@ -68,13 +69,14 @@ class Model(object):
             q = self.current_joints
         ax = pl.init_3d_figure()
         pl.plot_robot(self.parameters, q, ax, representation=self.representation)
+        pl.plot_basis(self.parameters, ax, self.arm_length)
         if target is not None:
             pl.plot_target(target, ax)
         pl.show_figure()
 
     def get_robot_length(self):
         """Calcul la longueur du robot (tendu)"""
-        translations_vectors = [x[0] for x in  self.parameters]
+        translations_vectors = [x[0] for x in self.parameters]
         joints_lengths = [np.sqrt(sum([x**2 for x in vector]))
                           for vector in translations_vectors]
         return sum(joints_lengths)

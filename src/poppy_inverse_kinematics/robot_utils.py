@@ -61,10 +61,11 @@ def get_urdf_parameters(urdf_file, base_link_name):
     parameters = []
     for joint in joints:
         translation = joint.find("origin").attrib["xyz"].split()
-        rotation = joint.find("origin").attrib["rpy"].split()
+        orientation = joint.find("origin").attrib["rpy"].split()
+        rotation = joint.find("axis").attrib['xyz'].split()
         parameters.append((
             (float(translation[0]), float(translation[1]), float(translation[2])),
-            [float(rotation[0]), float(rotation[1]), float(rotation[2])]
+            [float(orientation[0]), float(orientation[1]), float(orientation[2])]
         ))
 
     return(parameters)

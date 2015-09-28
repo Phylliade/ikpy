@@ -80,12 +80,18 @@ def FK_jacobian(robot_parameters, nodes_angles):
     pass
 
 
-def get_nodes(robot_parameters, nodes_angles, length=1, representation="euler",):
+def get_nodes(robot_parameters, nodes_angles, representation="euler", model_type="custom"):
     """Renvoie la liste des position des noeuds du robot, à partir de ses paramètres, et de la liste des angles
     La liste a len(robot_parameters) + 1 éléments et commence par (0,0,0)"""
-    full_list = [
-        (rot, trans, t) for ((rot, trans), t) in zip(robot_parameters, nodes_angles)
-    ]
+    if model_type == "custom":
+        full_list = [
+            (trans, rot, t) for ((trans, rot), t) in zip(robot_parameters, nodes_angles)
+        ]
+
+    elif model_type == "URDF":
+        full_list = [
+            (trans, orientation, rotation, t) for ((trans, orientation, rotation), t) in zip(robot_parameters, nodes_angles)
+        ]
 
     print(representation)
     #  Initialisations
@@ -101,7 +107,12 @@ def get_nodes(robot_parameters, nodes_angles, length=1, representation="euler",)
     rotation_axes = []
 
     # Calcul des positions de chaque noeud
-    for index, (translation_vector, rot, psi) in enumerate(full_list):
+    for index, params in enumerate(full_list):
+
+        if model_type == "custom":
+            (translation_vector, rot, psi) = params
+        elif model_type == "URDF":
+            (translation_vector, orientation, rot, psi) = params
 
         pos_index = index + 1
         origin = pos_list[pos_index - 1]
@@ -114,6 +125,8 @@ def get_nodes(robot_parameters, nodes_angles, length=1, representation="euler",)
         joint_length = np.sqrt(sum([x**2 for x in translation_vector]))
 
         # Calcul des coordonnées de l'axe de rotation
+        if model_type == "custom"
+        relative_rotation_axe = np.array([0, 0, 1])
         rotation_axe = np.dot(frame_matrix, np.array([0, 0, 1]) * joint_length / 2)
 
         if representation == "rpy":

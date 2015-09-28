@@ -6,10 +6,11 @@ import matplotlib.animation
 from mpl_toolkits.mplot3d import Axes3D
 
 
-def plot_basis(robot_parameters, ax):
+def plot_basis(robot_parameters, ax, arm_length=None):
     """Plot le repère adapté à la taille du robot"""
     # Calcul de la taille du bras tendu
-    arm_length = forward_kinematics.get_robot_length(robot_parameters)
+    if arm_length is None:
+        arm_length = forward_kinematics.get_robot_length(robot_parameters)
 
     ax.set_xlim3d([-1.0, 1.0])
     ax.set_xlabel('X')
@@ -34,9 +35,6 @@ def plot_robot(robot_parameters, nodes_angles, ax, representation):
     points = nodes["positions"]
     axes = nodes["rotation_axes"]
     # print(points)
-
-    # Plot du repère
-    plot_basis(robot_parameters, ax)
 
     # Plot des axes entre les noeuds
     ax.plot([x[0] for x in points], [x[1]
