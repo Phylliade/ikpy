@@ -117,7 +117,7 @@ def get_nodes(robot_parameters, nodes_angles, representation="euler", model_type
     rotation_axes = []
 
     # Calcul des positions de chaque noeud
-    print(representation, full_list)
+    # print(representation, full_list)
     for index, params in enumerate(full_list):
 
         if model_type == "custom":
