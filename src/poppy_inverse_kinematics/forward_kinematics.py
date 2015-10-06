@@ -1,5 +1,6 @@
 # coding: utf8
 import numpy as np
+import sympy
 
 
 def euler_from_unit_vector(x, y, z):
@@ -58,6 +59,15 @@ def Rz_matrix(theta):
     ])
 
 
+def symbolic_Rz_matrix(symbolic_theta):
+    """Matrice symbolique de rotation autour de l'axe Z"""
+    return sympy.Matrix([
+        [sympy.cos(symbolic_theta), -sympy.sin(symbolic_theta), 0],
+        [sympy.sin(symbolic_theta), sympy.cos(symbolic_theta), 0],
+        [0, 0, 1]
+    ])
+
+
 def Ry_matrix(theta):
     return np.array([
         [np.cos(theta), 0, np.sin(theta)],
@@ -69,6 +79,11 @@ def Ry_matrix(theta):
 def rotation_matrix(phi, theta, psi):
     """Retourne la matrice de rotation décrite par les angles d'Euler donnés en paramètres"""
     return np.dot(Rz_matrix(phi), np.dot(Rx_matrix(theta), Rz_matrix(psi)))
+
+
+def symbolic_rotation_matrix(phi, theta, symbolic_psi):
+    """Retourne une matrice de rotation où psi est symbolique"""
+    return sympy.Matrix(Rz_matrix(phi)) * sympy.Matrix(Rx_matrix(theta)) * symbolic_Rz_matrix(symbolic_psi)
 
 
 def axis_rotation_matrix(axis, theta):
@@ -137,6 +152,7 @@ def get_nodes(robot_parameters, nodes_angles, representation="euler", model_type
 
         # Calcul des coordonnées de l'axe de rotation
         if model_type == "custom":
+            # En custom, l'axe de rotation relatif est confondu avec [0, 0, 1]
             relative_rotation_axe = np.array([0, 0, 1])
             rotation_axe = np.dot(frame_matrix, relative_rotation_axe * joint_length / 2)
             if representation == "euler":
@@ -145,6 +161,7 @@ def get_nodes(robot_parameters, nodes_angles, representation="euler", model_type
                 # print(index, frame_matrix)
 
         elif model_type == "URDF":
+            # En URDF, l'axe de rotation relatif est donné par rot
             relative_rotation_axe = np.array(rot)
             rotation_axe = np.dot(frame_matrix, relative_rotation_axe * joint_length / 2)
             if representation == "rpy":
@@ -153,3 +170,34 @@ def get_nodes(robot_parameters, nodes_angles, representation="euler", model_type
         rotation_axes.append(rotation_axe)
 
     return {"positions": pos_list, "rotation_axes": rotation_axes}
+
+
+def compute_symbolic_rotation_matrix(robot_parameters, representation="euler", model_type="custom"):
+    """Retourn la matrice de la forward_kinematic"""
+    frame_matrix = sympy.Matrix([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    joint_angles = []
+
+    # Calcul itératif de la matrice de le FK
+    for index, params in enumerate(robot_parameters):
+
+        # Angle symbolique qui paramètre la rotation du joint en cours
+        psi = sympy.symbols("psi")
+        joint_angles.append(psi)
+
+        if model_type == "custom":
+            (translation_vector, rot) = params
+        elif model_type == "URDF":
+            (translation_vector, orientation, rot) = params
+
+        # Calcul des coordonnées de l'axe de rotation
+        if model_type == "custom":
+            if representation == "euler":
+                # Calcul de la nouvelle matrice de rotation
+                frame_matrix = frame_matrix * rotation_matrix(rot[0], rot[1], psi)
+
+        elif model_type == "URDF":
+            if representation == "rpy":
+                frame_matrix = np.dot(frame_matrix, rpy_matrix(*orientation))
+
+    # On retourne une fonction lambda de la FK
+    return sympy.lambdify(joint_angles, frame_matrix, "numpy")

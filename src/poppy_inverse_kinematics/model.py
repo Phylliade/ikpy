@@ -1,6 +1,4 @@
 import numpy as np
-import copy as cp
-import math
 from . import forward_kinematics as fk
 from . import inverse_kinematic as ik
 from . import plot_utils as pl
@@ -23,6 +21,7 @@ class Model(object):
         self.representation = representation
         self.pypot_object = pypot_object
         self.current_pose = self.forward_kinematic(self.current_joints)
+        self.transformation_matrix = fk.compute_symbolic_rotation_matrix(self.parameters, representation=self.representation, model_type=self.model_type)
 
     def set_base_transformations(self, rot=None, trans=None):
         if rot is None:
@@ -63,6 +62,13 @@ class Model(object):
         X = tr.transform_point(W_X, self.base_to_world)
         # return the inverse kinematic
         return ik.inverse_kinematic(self.parameters, seed, X, model_type=self.model_type, representation=self.representation)
+
+    def inverse_kinematic_symbolic(self, absolute_target, seed=None):
+        if seed is None:
+            seed = self.current_joints
+        # calculate the coordinate of the target in the robot frame
+        target = tr.transform_point(absolute_target, self.base_to_world)
+        return ik.inverse_kinematic_transformation_matrix(self.transformation_matrix, seed, target)
 
     def set_current_joints(self, q):
         self.current_joints = q

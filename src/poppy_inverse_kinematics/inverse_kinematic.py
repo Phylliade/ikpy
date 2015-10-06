@@ -11,14 +11,22 @@ def get_squared_distance_to_target(robot_parameters, nodes_angles, target, end_p
     # Extrêmité du robot
     # On prend bien la position n (au lieu de n-1)
     end_point = forward_kinematics.get_nodes(robot_parameters, nodes_angles, model_type=model_type, representation=representation)["positions"][n]
-
-    return sum([(end_point_i - target_i) ** 2 for (end_point_i, target_i) in zip(end_point, target)])
+    return np.linalg.norm(end_point - target)
+    # return sum([(end_point_i - target_i) ** 2 for (end_point_i, target_i) in zip(end_point, target)])
 
 
 def inverse_kinematic(robot_parameters, starting_nodes_angles, target, bounds=None, model_type="custom", representation="euler"):
     """Calcule les angles pour atteindre la target"""
+
     # Utilisation d'une optimisation L-BFGS-B
-    res = scipy.optimize.minimize(lambda x: get_squared_distance_to_target(robot_parameters, x, target, model_type=model_type, representation=representation), starting_nodes_angles, method='L-BFGS-B', bounds=bounds)
+    res = scipy.optimize.minimize(lambda x: get_distance_to_target(robot_parameters, x, target, model_type=model_type, representation=representation), starting_nodes_angles, method='L-BFGS-B', bounds=bounds)
+
+    return(res.x)
+
+
+def inverse_kinematic_transformation_matrix(transformation_matrix, starting_nodes_angles, target, bounds=None):
+    """Calcule la IK en utilisant une matrice précalculée"""
+    res = scipy.optimize.minimize(lambda x: np.linalg.norm(np.dot(transformation_matrix, x) - target), starting_nodes_angles, method='L-BFGS-B', bounds=bounds)
     return(res.x)
 
 
