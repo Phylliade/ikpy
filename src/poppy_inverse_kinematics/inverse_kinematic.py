@@ -4,7 +4,7 @@ import numpy as np
 from . import forward_kinematics
 
 
-def get_squared_distance_to_target(robot_parameters, nodes_angles, target, end_point=None, model_type="custom", representation="euler"):
+def get_distance_to_target(robot_parameters, nodes_angles, target, end_point=None, model_type="custom", representation="euler"):
     """Calcule la distance au carré de l'extrêmité du robot à la target"""
     n = len(robot_parameters)
 
@@ -20,13 +20,21 @@ def inverse_kinematic(robot_parameters, starting_nodes_angles, target, bounds=No
 
     # Utilisation d'une optimisation L-BFGS-B
     res = scipy.optimize.minimize(lambda x: get_distance_to_target(robot_parameters, x, target, model_type=model_type, representation=representation), starting_nodes_angles, method='L-BFGS-B', bounds=bounds)
-
+    # print(res.message, res.nit)
     return(res.x)
 
 
-def inverse_kinematic_transformation_matrix(transformation_matrix, starting_nodes_angles, target, bounds=None):
+def inverse_kinematic_transformation_matrix(transformation_matrix_lambda, starting_nodes_angles, target, bounds=None):
     """Calcule la IK en utilisant une matrice précalculée"""
-    res = scipy.optimize.minimize(lambda x: np.linalg.norm(np.dot(transformation_matrix, x) - target), starting_nodes_angles, method='L-BFGS-B', bounds=bounds)
+    res = scipy.optimize.minimize(lambda x: np.linalg.norm(forward_kinematics.get_node_symbolic(transformation_matrix_lambda, x) - target), starting_nodes_angles, method='L-BFGS-B', bounds=bounds)
+    # print(res.message, res.nit)
+    return(res.x)
+
+
+def inverse_kinematic_hybrid(transformation_matrixes_lambda, starting_nodes_angles, target, bounds=None):
+    """Calcule la IK en utilisant une matrice précalculée"""
+    res = scipy.optimize.minimize(lambda x: np.linalg.norm(forward_kinematics.get_node_hybrid(transformation_matrixes_lambda, x) - target), starting_nodes_angles, method='L-BFGS-B', bounds=bounds, options={"maxiter" : 3})
+    # print(res.message, res.nit)
     return(res.x)
 
 
