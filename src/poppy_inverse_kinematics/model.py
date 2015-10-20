@@ -57,15 +57,14 @@ class Model(object):
         # calculate the forward kinematic
         if self.computation_method == "default":
             # Special args for the default method
-            X = fk.get_end_effector(nodes_angles=q, method=self.computation_method, transformation_lambda=self.transformation_lambda, representation=self.representation, model_type=self.model_type)
+            X = fk.get_end_effector(nodes_angles=q, method=self.computation_method, transformation_lambda=self.transformation_lambda, representation=self.representation, model_type=self.model_type, robot_parameters=self.parameters)
         else:
-            print(self.transformation_lambda)
             X = fk.get_end_effector(nodes_angles=q, method=self.computation_method, transformation_lambda=self.transformation_lambda)
         # return the result in the world frame
         W_X = tr.transform_point(X, self.world_to_base)
         return W_X
 
-    def inverse_kinematic(self, absolute_target):
+    def inverse_kinematic(self, absolute_target=None):
         """Computes the IK for given target"""
         # If absolute_target is not given, use self.target
         if absolute_target is None:

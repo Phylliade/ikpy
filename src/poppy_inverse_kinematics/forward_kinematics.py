@@ -220,11 +220,13 @@ def get_nodes(robot_parameters, nodes_angles, representation="euler", model_type
         # Calcul de la position du noeud actuel
         pos_relat = np.array(translation_vector)
 
+        pos_list.append(np.dot(frame_matrix, pos_relat) + origin)
+
         if model_type == "URDF":
             frame_matrix = np.dot(frame_matrix, axis_rotation_matrix(rot, psi))
             # pos_relat = np.dot(axis_rotation_matrix(rot, psi), pos_relat)
 
-        pos_list.append(np.dot(frame_matrix, pos_relat) + origin)
+
 
         joint_length = np.sqrt(sum([x**2 for x in translation_vector]))
 
