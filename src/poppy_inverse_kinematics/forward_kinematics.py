@@ -250,8 +250,8 @@ def get_nodes(robot_parameters, nodes_angles, representation="euler", model_type
     return {"positions": pos_list, "rotation_axes": rotation_axes}
 
 
-def compute_symbolic_rotation_matrix(robot_parameters, representation="euler", model_type="custom", simplify=False):
-    """Retourn la matrice de la forward_kinematic"""
+def compute_transformation_symbolic(robot_parameters, representation="euler", model_type="custom", simplify=False):
+    """Retourne la matrice de la forward_kinematic"""
 
     # Initial value of the frame matrix in homogeneous coordinates
     frame_matrix = sympy.eye(4)
@@ -292,13 +292,13 @@ def compute_symbolic_rotation_matrix(robot_parameters, representation="euler", m
     return sympy.lambdify(joint_angles, frame_matrix, dummify=False, use_imps=False)
 
 
-def get_node_symbolic(symbolic_transformation_matrix, nodes_angles):
+def get_end_effector_symbolic(symbolic_transformation_matrix, nodes_angles):
     """Renvoie la position du end effector en fonction de la configuration des joints"""
     # On applique la matrice transformation au vecteur [0, 0, 0]
     return homogeneous_transformation(symbolic_transformation_matrix(*nodes_angles), np.array([0, 0, 0]))
 
 
-def compute_rotation_matrixes(robot_parameters, representation="euler", model_type="custom", simplify=False):
+def compute_transformation_hybrid(robot_parameters, representation="euler", model_type="custom", simplify=False):
     """Returns the list of transformation matrixes for each joint"""
 
     joint_matrixes = []
@@ -341,7 +341,7 @@ def compute_rotation_matrixes(robot_parameters, representation="euler", model_ty
     return joint_matrixes
 
 
-def get_node_hybrid(symbolic_transformation_matrixes, nodes_angles):
+def get_end_effector_hybrid(symbolic_transformation_matrixes, nodes_angles):
     """Renvoie la position du end effector en fonction de la configuration des joints"""
     frame_matrix = np.eye(4)
 
@@ -350,3 +350,27 @@ def get_node_hybrid(symbolic_transformation_matrixes, nodes_angles):
         frame_matrix = np.dot(frame_matrix, joint_matrix(joint_angle))
     # Return the matrix origin
     return homogeneous_to_cartesian_vectors(np.dot(frame_matrix, np.array([0, 0, 0, 1])))
+
+
+def compute_transformation(robot_parameters, method="default", representation="euler", model_type="custom", simplify=False):
+    """Computes a transformation and returns an object depending of the selected method"""
+    if method == "symbolic":
+        # Symbolic method
+        return compute_transformation_symbolic(robot_parameters, representation=representation, model_type=model_type, simplify=simplify)
+    elif method == "hybrid":
+        # Hybrid method
+        return compute_transformation_hybrid(robot_parameters, representation=representation, model_type=model_type, simplify=simplify)
+    else:
+        # Default
+        return None
+
+
+def get_end_effector(nodes_angles, method="default", transformation_lambda=None, **kwargs):
+    """Returns the a position of the end-effoctor, computed with the selected method"""
+    if method == "hybrid":
+        return get_end_effector_hybrid(transformation_lambda, nodes_angles)
+    elif method == "symbolic":
+        return get_end_effector_symbolic(transformation_lambda, nodes_angles)
+    else:
+        # Default method
+        return get_nodes(kwargs["robot_parameters"], nodes_angles, representation=kwargs["representation"], model_type=kwargs["model_type"])["positions"][-1]

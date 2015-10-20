@@ -15,25 +15,11 @@ def get_distance_to_target(robot_parameters, nodes_angles, target, end_point=Non
     # return sum([(end_point_i - target_i) ** 2 for (end_point_i, target_i) in zip(end_point, target)])
 
 
-def inverse_kinematic(robot_parameters, starting_nodes_angles, target, bounds=None, model_type="custom", representation="euler"):
+def inverse_kinematic(target, transformation_lambda, starting_nodes_angles, fk_method="default", bounds=None, **kwargs):
     """Calcule les angles pour atteindre la target"""
 
     # Utilisation d'une optimisation L-BFGS-B
-    res = scipy.optimize.minimize(lambda x: get_distance_to_target(robot_parameters, x, target, model_type=model_type, representation=representation), starting_nodes_angles, method='L-BFGS-B', bounds=bounds)
-    # print(res.message, res.nit)
-    return(res.x)
-
-
-def inverse_kinematic_transformation_matrix(transformation_matrix_lambda, starting_nodes_angles, target, bounds=None):
-    """Calcule la IK en utilisant une matrice précalculée"""
-    res = scipy.optimize.minimize(lambda x: np.linalg.norm(forward_kinematics.get_node_symbolic(transformation_matrix_lambda, x) - target), starting_nodes_angles, method='L-BFGS-B', bounds=bounds)
-    # print(res.message, res.nit)
-    return(res.x)
-
-
-def inverse_kinematic_hybrid(transformation_matrixes_lambda, starting_nodes_angles, target, bounds=None):
-    """Calcule la IK en utilisant une matrice précalculée"""
-    res = scipy.optimize.minimize(lambda x: np.linalg.norm(forward_kinematics.get_node_hybrid(transformation_matrixes_lambda, x) - target), starting_nodes_angles, method='L-BFGS-B', bounds=bounds, options={"maxiter" : 3})
+    res = scipy.optimize.minimize(lambda x: np.linalg.norm(forward_kinematics.get_end_effector(x, method=fk_method, transformation_lambda=transformation_lambda, **kwargs) - target), starting_nodes_angles, method='L-BFGS-B', bounds=bounds, options={"maxiter": 3})
     # print(res.message, res.nit)
     return(res.x)
 

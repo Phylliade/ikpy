@@ -13,20 +13,15 @@ class Model(object):
         self.nb_joints = len(links)
         self.init_params(links)
         self.model_type = model_type
+        self.representation = representation
         self.computation_method = computation_method
+        self.pypot_object = pypot_object
+        self.simplify = simplify
+        self.transformation_lambda = fk.compute_transformation(self.parameters, method=self.computation_method, representation=self.representation, model_type=self.model_type, simplify=self.simplify)
         # set the transformations from world to base
         self.set_base_transformations(rot, trans)
         # initialize starting configuration
         self.current_joints = np.zeros(len(links))
-        self.representation = representation
-        self.pypot_object = pypot_object
-        if self.computation_method == "symbolic":
-            # Compute the transformation matrix only if the computation_method is "symbolic"
-            self.simplify = simplify
-            self.symbolic_transformation_matrix = fk.compute_symbolic_rotation_matrix(self.parameters, representation=self.representation, model_type=self.model_type, simplify=self.simplify)
-        elif self.computation_method == "hybrid":
-            self.simplify = simplify
-            self.hybrid_transformation_matrixes = fk.compute_rotation_matrixes(self.parameters, representation=self.representation, model_type=self.model_type, simplify=self.simplify)
         self.current_pose = self.forward_kinematic(self.current_joints)
         self.target = self.current_pose
 
@@ -61,48 +56,28 @@ class Model(object):
             q = self.current_joints
         # calculate the forward kinematic
         if self.computation_method == "default":
-            X = fk.get_nodes(self.parameters, q, representation=self.representation, model_type=self.model_type)["positions"][-1]
-
-        elif self.computation_method == "symbolic":
-            # On applique la matrice transformation au vecteur [0, 0, 0]
-            X = fk.get_node_symbolic(self.sym_mat, q)
-        elif self.computation_method == "hybrid":
-            X = fk.get_node_hybrid(self.hybrid_transformation_matrixes, q)
+            # Special args for the default method
+            X = fk.get_end_effector(nodes_angles=q, method=self.computation_method, transformation_lambda=self.transformation_lambda, representation=self.representation, model_type=self.model_type)
+        else:
+            print(self.transformation_lambda)
+            X = fk.get_end_effector(nodes_angles=q, method=self.computation_method, transformation_lambda=self.transformation_lambda)
         # return the result in the world frame
         W_X = tr.transform_point(X, self.world_to_base)
         return W_X
 
-    def inverse_kinematic_raw(self, W_X, seed=None):
-        if seed is None:
-            seed = self.current_joints
-        # calculate the coordinate of the target in the robot frame
-        X = tr.transform_point(W_X, self.base_to_world)
-        # return the inverse kinematic
-        return ik.inverse_kinematic(self.parameters, seed, X, model_type=self.model_type, representation=self.representation)
-
-    def inverse_kinematic_raw_symbolic(self, absolute_target, seed=None):
-        if seed is None:
-            seed = self.current_joints
-        # calculate the coordinate of the target in the robot frame
-        target = tr.transform_point(absolute_target, self.base_to_world)
-        return ik.inverse_kinematic_transformation_matrix(self.sym_mat, seed, target)
-
-    def inverse_kinematic_raw_hybrid(self, absolute_target, seed=None):
-        if seed is None:
-            seed = self.current_joints
-        # calculate the coordinate of the target in the robot frame
-        target = tr.transform_point(absolute_target, self.base_to_world)
-        return ik.inverse_kinematic_hybrid(self.hybrid_transformation_matrixes, seed, target)
-
     def inverse_kinematic(self, absolute_target):
         """Computes the IK for given target"""
+        # If absolute_target is not given, use self.target
+        if absolute_target is None:
+            absolute_target = self.target
+
+        # Compute relative target
+        target = tr.transform_point(absolute_target, self.base_to_world)
         # Choose computation method
         if self.computation_method == "default":
-            return self.inverse_kinematic_raw(absolute_target, self.current_joints)
-        elif self.computation_method == "symbolic":
-            return self.inverse_kinematic_raw_symbolic(absolute_target, self.current_joints)
-        elif self.computation_method == "hybrid":
-            return self.inverse_kinematic_raw_hybrid(absolute_target, self.current_joints)
+            return ik.inverse_kinematic(target, self.transformation_lambda, self.current_joints, fk_method=self.computation_method, model_type=self.model_type, representation=self.representation, robot_parameters=self.parameters)
+        else:
+            return ik.inverse_kinematic(target, self.transformation_lambda, self.current_joints, fk_method=self.computation_method)
 
     def set_current_joints(self, q):
         self.current_joints = q
