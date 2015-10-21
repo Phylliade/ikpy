@@ -19,7 +19,7 @@ def inverse_kinematic(target, transformation_lambda, starting_nodes_angles, fk_m
     """Calcule les angles pour atteindre la target"""
 
     # Utilisation d'une optimisation L-BFGS-B
-    res = scipy.optimize.minimize(lambda x: np.linalg.norm(forward_kinematics.get_end_effector(x, method=fk_method, transformation_lambda=transformation_lambda, **kwargs) - target), starting_nodes_angles, method='L-BFGS-B', bounds=bounds, options={"maxiter": 2})
+    res = scipy.optimize.minimize(lambda x: np.linalg.norm(forward_kinematics.get_end_effector(x, method=fk_method, transformation_lambda=transformation_lambda, **kwargs) - target), starting_nodes_angles, method='L-BFGS-B', bounds=bounds, options={"maxiter": 100})
     # print(res.message, res.nit)
     return(res.x)
 

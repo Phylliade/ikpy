@@ -33,7 +33,8 @@ def find_next_link(root, current_joint):
     return(has_next, next_link)
 
 
-def get_urdf_parameters(urdf_file, base_link_name):
+def get_urdf_parameters(urdf_file, base_link_name="base_link", last_link_vector=None):
+    """Returns translated parameters from the given URDF file"""
     tree = ET.parse(urdf_file)
     root = tree.getroot()
 
@@ -47,6 +48,7 @@ def get_urdf_parameters(urdf_file, base_link_name):
     node_type = "link"
     joints = []
     links = []
+    # Parcours récursif de la structure du bras
     while(has_next):
         if node_type == "link":
             links.append(link)
@@ -67,6 +69,13 @@ def get_urdf_parameters(urdf_file, base_link_name):
             [float(translation[0]), float(translation[1]), float(translation[2])],
             [float(orientation[0]), float(orientation[1]), float(orientation[2])],
             [float(rotation[0]), float(rotation[1]), float(rotation[2])]
+        ))
+
+    if last_link_vector is not None:
+        parameters.append((
+            last_link_vector,
+            [0, 0, 0],
+            [0, 0, 0]
         ))
 
     return(parameters)
