@@ -16,7 +16,7 @@ python setup.py install
 NB : You must have the proper rights to execute this command
 
 
-# Dependencies and compatiblity
+# Dependencies and compatibility
 The library can work with both versions of Python (2.7 and 3.x).
 It requires numpy and scipy.
 
