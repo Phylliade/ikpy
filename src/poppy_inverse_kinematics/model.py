@@ -5,20 +5,20 @@ import numpy as np
 from . import forward_kinematics as fk
 from . import inverse_kinematic as ik
 from . import plot_utils as pl
-from .tools import transformations as tr
 
 
 class Model(object):
     """Base model class
-    :param numerateur: le numerateur de la division
-    :type numerateur: int
-    :param denominateur: le denominateur de la division
-    :type denominateur: int
-    :return: la valeur entiere de la division
-    :rtype: int
+
+   :param links: The configuration of the robot
+   :type links: dict
+   :param denominateur: le denominateur de la division
+   :type denominateur: int
+   :return: la valeur entiere de la division
+   :rtype: int
     """
 
-    def __init__(self, links, rot=None, trans=None, representation="euler", model_type="custom", pypot_object=None, computation_method="default", simplify=False):
+    def __init__(self, links, representation="euler", model_type="custom", pypot_object=None, computation_method="default", simplify=False):
         # Configuration 2D
         self.links = links
         self.nb_joints = len(links)
@@ -30,8 +30,6 @@ class Model(object):
         self.pypot_object = pypot_object
         self.simplify = simplify
         self.transformation_lambda = fk.compute_transformation(self.parameters, method=self.computation_method, representation=self.representation, model_type=self.model_type, simplify=self.simplify)
-        # set the transformations from world to base
-        self.set_base_transformations(rot, trans)
         # initialize starting configuration
         self.current_joints = np.zeros(len(links))
         self.current_pose = self.forward_kinematic(self.current_joints)
@@ -39,14 +37,6 @@ class Model(object):
 
     def sym_mat(self, *args, **kwargs):
         return self.symbolic_transformation_matrix(*args, **kwargs)
-
-    def set_base_transformations(self, rot=None, trans=None):
-        if rot is None:
-            rot = np.eye(3)
-        if trans is None:
-            trans = [0, 0, 0]
-        self.world_to_base = tr.transformation(rot, trans)
-        self.base_to_world = tr.inverse_transform(self.world_to_base)
 
     def init_params_2d(self, links):
         vectors = []
@@ -68,18 +58,14 @@ class Model(object):
             X = fk.get_end_effector(nodes_angles=q, method=self.computation_method, transformation_lambda=self.transformation_lambda, representation=self.representation, model_type=self.model_type, robot_parameters=self.parameters)
         else:
             X = fk.get_end_effector(nodes_angles=q, method=self.computation_method, transformation_lambda=self.transformation_lambda)
-        # return the result in the world frame
-        W_X = tr.transform_point(X, self.world_to_base)
-        return W_X
+        return X
 
-    def inverse_kinematic(self, absolute_target=None):
+    def inverse_kinematic(self, target=None):
         """Computes the IK for given target"""
         # If absolute_target is not given, use self.target
-        if absolute_target is None:
-            absolute_target = self.target
+        if target is None:
+            target = self.target
 
-        # Compute relative target
-        target = tr.transform_point(absolute_target, self.base_to_world)
         # Choose computation method
         if self.computation_method == "default":
             return ik.inverse_kinematic(target, self.transformation_lambda, self.current_joints, fk_method=self.computation_method, model_type=self.model_type, representation=self.representation, robot_parameters=self.parameters)
