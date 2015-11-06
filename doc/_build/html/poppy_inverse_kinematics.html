@@ -1,0 +1,550 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>poppy_inverse_kinematics package &mdash; poppy-inverse-kinematics 1.0.2 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="poppy-inverse-kinematics 1.0.2 documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> poppy-inverse-kinematics
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="simple">
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">poppy-inverse-kinematics</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>poppy_inverse_kinematics package</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/poppy_inverse_kinematics.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="poppy-inverse-kinematics-package">
+<h1>poppy_inverse_kinematics package<a class="headerlink" href="#poppy-inverse-kinematics-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-poppy_inverse_kinematics.forward_kinematics">
+<span id="poppy-inverse-kinematics-forward-kinematics-module"></span><h2>poppy_inverse_kinematics.forward_kinematics module<a class="headerlink" href="#module-poppy_inverse_kinematics.forward_kinematics" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.FK_jacobian">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">FK_jacobian</code><span class="sig-paren">(</span><em>robot_parameters</em>, <em>nodes_angles</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#FK_jacobian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.FK_jacobian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retourne le jacobien de la FK</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.Rx_matrix">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">Rx_matrix</code><span class="sig-paren">(</span><em>theta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#Rx_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.Rx_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotation matrix around the X axis</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.Ry_matrix">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">Ry_matrix</code><span class="sig-paren">(</span><em>theta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#Ry_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.Ry_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotation matrix around the Y axis</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.Rz_matrix">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">Rz_matrix</code><span class="sig-paren">(</span><em>theta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#Rz_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.Rz_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotation matrix around the Z axis</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.axis_rotation_matrix">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">axis_rotation_matrix</code><span class="sig-paren">(</span><em>axis</em>, <em>theta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#axis_rotation_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.axis_rotation_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a translation matrix around the given axis</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.cartesian_to_homogeneous">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">cartesian_to_homogeneous</code><span class="sig-paren">(</span><em>cartesian_matrix</em>, <em>matrix_type='numpy'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#cartesian_to_homogeneous"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.cartesian_to_homogeneous" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a cartesian matrix to an homogenous matrix</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.cartesian_to_homogeneous_vectors">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">cartesian_to_homogeneous_vectors</code><span class="sig-paren">(</span><em>cartesian_vector</em>, <em>matrix_type='numpy'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#cartesian_to_homogeneous_vectors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.cartesian_to_homogeneous_vectors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a cartesian vector to an homogenous vector</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.compute_transformation">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">compute_transformation</code><span class="sig-paren">(</span><em>robot_parameters</em>, <em>method='default'</em>, <em>representation='euler'</em>, <em>model_type='custom'</em>, <em>simplify=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#compute_transformation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.compute_transformation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes a transformation and returns an object depending of the selected method</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.compute_transformation_hybrid">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">compute_transformation_hybrid</code><span class="sig-paren">(</span><em>robot_parameters</em>, <em>representation='euler'</em>, <em>model_type='custom'</em>, <em>simplify=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#compute_transformation_hybrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.compute_transformation_hybrid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the list of transformation matrixes for each joint</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.compute_transformation_symbolic">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">compute_transformation_symbolic</code><span class="sig-paren">(</span><em>robot_parameters</em>, <em>representation='euler'</em>, <em>model_type='custom'</em>, <em>simplify=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#compute_transformation_symbolic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.compute_transformation_symbolic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retourne la matrice de la forward_kinematic</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.euler_from_URDF_parameters">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">euler_from_URDF_parameters</code><span class="sig-paren">(</span><em>URDF_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#euler_from_URDF_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.euler_from_URDF_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts URDF_parameters to euler_parameters</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.euler_from_unit_vector">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">euler_from_unit_vector</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>z</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#euler_from_unit_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.euler_from_unit_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retourne les angles d&#8217;euler associés à un vecteur unitaire</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.get_end_effector">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">get_end_effector</code><span class="sig-paren">(</span><em>nodes_angles</em>, <em>method='default'</em>, <em>transformation_lambda=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#get_end_effector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.get_end_effector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the a position of the end-effoctor, computed with the selected method</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.get_end_effector_hybrid">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">get_end_effector_hybrid</code><span class="sig-paren">(</span><em>symbolic_transformation_matrixes</em>, <em>nodes_angles</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#get_end_effector_hybrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.get_end_effector_hybrid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renvoie la position du end effector en fonction de la configuration des joints</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.get_end_effector_symbolic">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">get_end_effector_symbolic</code><span class="sig-paren">(</span><em>symbolic_transformation_matrix</em>, <em>nodes_angles</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#get_end_effector_symbolic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.get_end_effector_symbolic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renvoie la position du end effector en fonction de la configuration des joints</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.get_nodes">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">get_nodes</code><span class="sig-paren">(</span><em>robot_parameters</em>, <em>nodes_angles</em>, <em>representation='euler'</em>, <em>model_type='custom'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#get_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.get_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renvoie la liste des position des noeuds du robot, à partir de ses paramètres, et de la liste des angles
+La liste a len(robot_parameters) + 1 éléments et commence par (0,0,0)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.get_relative_angles">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">get_relative_angles</code><span class="sig-paren">(</span><em>absolute_vectors</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#get_relative_angles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.get_relative_angles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a list of absolute_vectors to a list of vectors relative to the frame oriented by the previous in the list</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.get_robot_length">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">get_robot_length</code><span class="sig-paren">(</span><em>robot_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#get_robot_length"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.get_robot_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calcul la longueur du robot (tendu)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.homogeneous_to_cartesian">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">homogeneous_to_cartesian</code><span class="sig-paren">(</span><em>homogeneous_matrix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#homogeneous_to_cartesian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.homogeneous_to_cartesian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a cartesian vector to an homogenous matrix</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.homogeneous_to_cartesian_vectors">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">homogeneous_to_cartesian_vectors</code><span class="sig-paren">(</span><em>homogeneous_vector</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#homogeneous_to_cartesian_vectors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.homogeneous_to_cartesian_vectors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a cartesian vector to an homogenous vector</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.homogeneous_transformation">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">homogeneous_transformation</code><span class="sig-paren">(</span><em>homogeneous_matrix</em>, <em>cartesian_vector</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#homogeneous_transformation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.homogeneous_transformation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the cartesian coordinates of the transformation_matrix applied to the input vector</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.homogeneous_translation_matrix">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">homogeneous_translation_matrix</code><span class="sig-paren">(</span><em>trans_x</em>, <em>trans_y</em>, <em>trans_z</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#homogeneous_translation_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.homogeneous_translation_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a translation matrix the homogeneous space</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.rotation_matrix">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">rotation_matrix</code><span class="sig-paren">(</span><em>phi</em>, <em>theta</em>, <em>psi</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#rotation_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.rotation_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retourne la matrice de rotation décrite par les angles d&#8217;Euler donnés en paramètres</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.rpy_matrix">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">rpy_matrix</code><span class="sig-paren">(</span><em>roll</em>, <em>pitch</em>, <em>yaw</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#rpy_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.rpy_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a rotation matrix described by the extrinsinc roll, pitch, yaw coordinates</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.symbolic_Rz_matrix">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">symbolic_Rz_matrix</code><span class="sig-paren">(</span><em>symbolic_theta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#symbolic_Rz_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.symbolic_Rz_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Matrice symbolique de rotation autour de l&#8217;axe Z</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.symbolic_axis_rotation_matrix">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">symbolic_axis_rotation_matrix</code><span class="sig-paren">(</span><em>axis</em>, <em>symbolic_theta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#symbolic_axis_rotation_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.symbolic_axis_rotation_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a translation matrix around the given axis</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.symbolic_rotation_matrix">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">symbolic_rotation_matrix</code><span class="sig-paren">(</span><em>phi</em>, <em>theta</em>, <em>symbolic_psi</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#symbolic_rotation_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.symbolic_rotation_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retourne une matrice de rotation où psi est symbolique</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.forward_kinematics.symbolic_rpy_matrix">
+<code class="descclassname">poppy_inverse_kinematics.forward_kinematics.</code><code class="descname">symbolic_rpy_matrix</code><span class="sig-paren">(</span><em>roll</em>, <em>pitch</em>, <em>symbolic_yaw</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/forward_kinematics.html#symbolic_rpy_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.forward_kinematics.symbolic_rpy_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a symbolic rotation matrix described by the extrinsinc roll, pitch and symbolic yaw coordinates</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-poppy_inverse_kinematics.inverse_kinematic">
+<span id="poppy-inverse-kinematics-inverse-kinematic-module"></span><h2>poppy_inverse_kinematics.inverse_kinematic module<a class="headerlink" href="#module-poppy_inverse_kinematics.inverse_kinematic" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="poppy_inverse_kinematics.inverse_kinematic.get_distance_to_target">
+<code class="descclassname">poppy_inverse_kinematics.inverse_kinematic.</code><code class="descname">get_distance_to_target</code><span class="sig-paren">(</span><em>robot_parameters</em>, <em>nodes_angles</em>, <em>target</em>, <em>end_point=None</em>, <em>model_type='custom'</em>, <em>representation='euler'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/inverse_kinematic.html#get_distance_to_target"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.inverse_kinematic.get_distance_to_target" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calcule la distance au carré de l&#8217;extrêmité du robot à la target</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.inverse_kinematic.inverse_kinematic">
+<code class="descclassname">poppy_inverse_kinematics.inverse_kinematic.</code><code class="descname">inverse_kinematic</code><span class="sig-paren">(</span><em>target</em>, <em>transformation_lambda</em>, <em>starting_nodes_angles</em>, <em>fk_method='default'</em>, <em>bounds=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/inverse_kinematic.html#inverse_kinematic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.inverse_kinematic.inverse_kinematic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calcule les angles pour atteindre la target</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.inverse_kinematic.inverse_kinematic_jacobian_method">
+<code class="descclassname">poppy_inverse_kinematics.inverse_kinematic.</code><code class="descname">inverse_kinematic_jacobian_method</code><span class="sig-paren">(</span><em>robot_parameters</em>, <em>starting_nodes_angles</em>, <em>target</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/inverse_kinematic.html#inverse_kinematic_jacobian_method"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.inverse_kinematic.inverse_kinematic_jacobian_method" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.inverse_kinematic.inverse_kinematic_trajectory">
+<code class="descclassname">poppy_inverse_kinematics.inverse_kinematic.</code><code class="descname">inverse_kinematic_trajectory</code><span class="sig-paren">(</span><em>robot_parameters</em>, <em>starting_nodes_angles</em>, <em>targets_x</em>, <em>targets_y</em>, <em>targets_z</em>, <em>bounds=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/inverse_kinematic.html#inverse_kinematic_trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.inverse_kinematic.inverse_kinematic_trajectory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renvoie la liste des angles pour suivre la trajectoire (liste &#8220;targets&#8221;) donnée en argument</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-poppy_inverse_kinematics.model">
+<span id="poppy-inverse-kinematics-model-module"></span><h2>poppy_inverse_kinematics.model module<a class="headerlink" href="#module-poppy_inverse_kinematics.model" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="poppy_inverse_kinematics.model.Model">
+<em class="property">class </em><code class="descclassname">poppy_inverse_kinematics.model.</code><code class="descname">Model</code><span class="sig-paren">(</span><em>links</em>, <em>rot=None</em>, <em>trans=None</em>, <em>representation='euler'</em>, <em>model_type='custom'</em>, <em>pypot_object=None</em>, <em>computation_method='default'</em>, <em>simplify=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/model.html#Model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.model.Model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="poppy_inverse_kinematics.model.Model.forward_kinematic">
+<code class="descname">forward_kinematic</code><span class="sig-paren">(</span><em>q=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/model.html#Model.forward_kinematic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.model.Model.forward_kinematic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renvoie la position du end effector en fonction de la configuration des joints</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="poppy_inverse_kinematics.model.Model.get_robot_length">
+<code class="descname">get_robot_length</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/model.html#Model.get_robot_length"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.model.Model.get_robot_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calcul la longueur du robot (tendu)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="poppy_inverse_kinematics.model.Model.goto_target">
+<code class="descname">goto_target</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/model.html#Model.goto_target"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.model.Model.goto_target" title="Permalink to this definition">¶</a></dt>
+<dd><p>Déplace le robot vers la target donnée</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="poppy_inverse_kinematics.model.Model.init_params">
+<code class="descname">init_params</code><span class="sig-paren">(</span><em>links</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/model.html#Model.init_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.model.Model.init_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="poppy_inverse_kinematics.model.Model.init_params_2d">
+<code class="descname">init_params_2d</code><span class="sig-paren">(</span><em>links</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/model.html#Model.init_params_2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.model.Model.init_params_2d" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="poppy_inverse_kinematics.model.Model.inverse_kinematic">
+<code class="descname">inverse_kinematic</code><span class="sig-paren">(</span><em>absolute_target=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/model.html#Model.inverse_kinematic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.model.Model.inverse_kinematic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the IK for given target</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="poppy_inverse_kinematics.model.Model.plot_model">
+<code class="descname">plot_model</code><span class="sig-paren">(</span><em>q=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/model.html#Model.plot_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.model.Model.plot_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Affiche le modèle du robot</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="poppy_inverse_kinematics.model.Model.pypot_sync_current_joints">
+<code class="descname">pypot_sync_current_joints</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/model.html#Model.pypot_sync_current_joints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.model.Model.pypot_sync_current_joints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Synchronise les valeurs de current_joints</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="poppy_inverse_kinematics.model.Model.pypot_sync_goal_joints">
+<code class="descname">pypot_sync_goal_joints</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/model.html#Model.pypot_sync_goal_joints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.model.Model.pypot_sync_goal_joints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Synchronise les valeurs de goal_joints</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="poppy_inverse_kinematics.model.Model.set_base_transformations">
+<code class="descname">set_base_transformations</code><span class="sig-paren">(</span><em>rot=None</em>, <em>trans=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/model.html#Model.set_base_transformations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.model.Model.set_base_transformations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="poppy_inverse_kinematics.model.Model.set_current_joints">
+<code class="descname">set_current_joints</code><span class="sig-paren">(</span><em>q</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/model.html#Model.set_current_joints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.model.Model.set_current_joints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="poppy_inverse_kinematics.model.Model.set_max_velocity">
+<code class="descname">set_max_velocity</code><span class="sig-paren">(</span><em>v</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/model.html#Model.set_max_velocity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.model.Model.set_max_velocity" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="poppy_inverse_kinematics.model.Model.sym_mat">
+<code class="descname">sym_mat</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/model.html#Model.sym_mat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.model.Model.sym_mat" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-poppy_inverse_kinematics.plot_utils">
+<span id="poppy-inverse-kinematics-plot-utils-module"></span><h2>poppy_inverse_kinematics.plot_utils module<a class="headerlink" href="#module-poppy_inverse_kinematics.plot_utils" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="poppy_inverse_kinematics.plot_utils.animate_IK">
+<code class="descclassname">poppy_inverse_kinematics.plot_utils.</code><code class="descname">animate_IK</code><span class="sig-paren">(</span><em>robot_parameters</em>, <em>starting_nodes_angles</em>, <em>targets_x</em>, <em>targets_y</em>, <em>targets_z</em>, <em>figure</em>, <em>bounds=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/plot_utils.html#animate_IK"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.plot_utils.animate_IK" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.plot_utils.init_3d_figure">
+<code class="descclassname">poppy_inverse_kinematics.plot_utils.</code><code class="descname">init_3d_figure</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/plot_utils.html#init_3d_figure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.plot_utils.init_3d_figure" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.plot_utils.plot_basis">
+<code class="descclassname">poppy_inverse_kinematics.plot_utils.</code><code class="descname">plot_basis</code><span class="sig-paren">(</span><em>robot_parameters</em>, <em>ax</em>, <em>arm_length=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/plot_utils.html#plot_basis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.plot_utils.plot_basis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot le repère adapté à la taille du robot</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.plot_utils.plot_robot">
+<code class="descclassname">poppy_inverse_kinematics.plot_utils.</code><code class="descname">plot_robot</code><span class="sig-paren">(</span><em>robot_parameters</em>, <em>nodes_angles</em>, <em>ax</em>, <em>representation</em>, <em>model_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/plot_utils.html#plot_robot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.plot_utils.plot_robot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dessine le robot</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.plot_utils.plot_target">
+<code class="descclassname">poppy_inverse_kinematics.plot_utils.</code><code class="descname">plot_target</code><span class="sig-paren">(</span><em>target</em>, <em>ax</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/plot_utils.html#plot_target"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.plot_utils.plot_target" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ajoute la target au plot</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.plot_utils.plot_target_trajectory">
+<code class="descclassname">poppy_inverse_kinematics.plot_utils.</code><code class="descname">plot_target_trajectory</code><span class="sig-paren">(</span><em>targets_x</em>, <em>targets_y</em>, <em>targets_z</em>, <em>ax</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/plot_utils.html#plot_target_trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.plot_utils.plot_target_trajectory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ajoute la trajectoire (liste des targets) au plot</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.plot_utils.show_figure">
+<code class="descclassname">poppy_inverse_kinematics.plot_utils.</code><code class="descname">show_figure</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/plot_utils.html#show_figure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.plot_utils.show_figure" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.plot_utils.update_line">
+<code class="descclassname">poppy_inverse_kinematics.plot_utils.</code><code class="descname">update_line</code><span class="sig-paren">(</span><em>num</em>, <em>robot_parameters</em>, <em>nodes_angles_list</em>, <em>line</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/plot_utils.html#update_line"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.plot_utils.update_line" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-poppy_inverse_kinematics.robot_utils">
+<span id="poppy-inverse-kinematics-robot-utils-module"></span><h2>poppy_inverse_kinematics.robot_utils module<a class="headerlink" href="#module-poppy_inverse_kinematics.robot_utils" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="poppy_inverse_kinematics.robot_utils.find_next_joint">
+<code class="descclassname">poppy_inverse_kinematics.robot_utils.</code><code class="descname">find_next_joint</code><span class="sig-paren">(</span><em>root</em>, <em>current_link</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/robot_utils.html#find_next_joint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.robot_utils.find_next_joint" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.robot_utils.find_next_link">
+<code class="descclassname">poppy_inverse_kinematics.robot_utils.</code><code class="descname">find_next_link</code><span class="sig-paren">(</span><em>root</em>, <em>current_joint</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/robot_utils.html#find_next_link"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.robot_utils.find_next_link" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.robot_utils.get_urdf_parameters">
+<code class="descclassname">poppy_inverse_kinematics.robot_utils.</code><code class="descname">get_urdf_parameters</code><span class="sig-paren">(</span><em>urdf_file</em>, <em>base_link_name='base_link'</em>, <em>last_link_vector=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/robot_utils.html#get_urdf_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.robot_utils.get_urdf_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns translated parameters from the given URDF file</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="poppy_inverse_kinematics.robot_utils.robot_from_urdf_parameters">
+<code class="descclassname">poppy_inverse_kinematics.robot_utils.</code><code class="descname">robot_from_urdf_parameters</code><span class="sig-paren">(</span><em>urdf_params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poppy_inverse_kinematics/robot_utils.html#robot_from_urdf_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poppy_inverse_kinematics.robot_utils.robot_from_urdf_parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-poppy_inverse_kinematics.test_sets">
+<span id="poppy-inverse-kinematics-test-sets-module"></span><h2>poppy_inverse_kinematics.test_sets module<a class="headerlink" href="#module-poppy_inverse_kinematics.test_sets" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-poppy_inverse_kinematics">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-poppy_inverse_kinematics" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Pierre Manceron.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0.2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

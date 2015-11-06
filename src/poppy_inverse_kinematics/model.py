@@ -1,3 +1,6 @@
+"""
+.. module:: model
+"""
 import numpy as np
 from . import forward_kinematics as fk
 from . import inverse_kinematic as ik
@@ -6,12 +9,21 @@ from .tools import transformations as tr
 
 
 class Model(object):
+    """Base model class
+    :param numerateur: le numerateur de la division
+    :type numerateur: int
+    :param denominateur: le denominateur de la division
+    :type denominateur: int
+    :return: la valeur entiere de la division
+    :rtype: int
+    """
 
     def __init__(self, links, rot=None, trans=None, representation="euler", model_type="custom", pypot_object=None, computation_method="default", simplify=False):
         # Configuration 2D
         self.links = links
         self.nb_joints = len(links)
-        self.init_params(links)
+        self.parameters = links
+        self.arm_length = self.get_robot_length()
         self.model_type = model_type
         self.representation = representation
         self.computation_method = computation_method
@@ -42,12 +54,8 @@ class Model(object):
             vectors.append(([0, 0, 1], [l, 0, 0]))
         self.parameters = fk.euler_from_URDF_parameters(vectors)
 
-    def init_params(self, links):
-        self.parameters = links
-        self.arm_length = self.get_robot_length()
-        # print(self.arm_length)
-
     def set_max_velocity(self, v):
+        """Set maximum velocity of the robot"""
         self.max_velocity = v
 
     def forward_kinematic(self, q=None):
@@ -79,6 +87,7 @@ class Model(object):
             return ik.inverse_kinematic(target, self.transformation_lambda, self.current_joints, fk_method=self.computation_method)
 
     def set_current_joints(self, q):
+        """Set the position of the current joints"""
         self.current_joints = q
 
     def goto_target(self):
@@ -104,6 +113,7 @@ class Model(object):
 
     def pypot_sync_current_joints(self):
         """Synchronise les valeurs de current_joints"""
+        pass
 
     def plot_model(self, q=None):
         """Affiche le modèle du robot"""
@@ -119,7 +129,7 @@ class Model(object):
         pl.show_figure()
 
     def get_robot_length(self):
-        """Calcul la longueur du robot (tendu)"""
+        """Calcule la longueur du robot (tendu)"""
         translations_vectors = [x[0] for x in self.parameters]
         joints_lengths = [np.sqrt(sum([x**2 for x in vector]))
                           for vector in translations_vectors]

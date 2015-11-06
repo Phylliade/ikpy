@@ -1,8 +1,13 @@
+"""
+.. module:: robot_utils
+"""
+
 from . import forward_kinematics
 import xml.etree.ElementTree as ET
 
 
 def robot_from_urdf_parameters(urdf_params):
+    """Converts URDF-formated parameters to compatible parameters"""
     robot_params = []
     for (rot, trans) in urdf_params:
         euler_angles = forward_kinematics.euler_from_unit_vector(*rot)
@@ -11,6 +16,7 @@ def robot_from_urdf_parameters(urdf_params):
 
 
 def find_next_joint(root, current_link):
+    """Find the next joint in the URDF tree"""
     # Trouver le joint attaché
     has_next = False
     next_joint = 0
@@ -23,6 +29,7 @@ def find_next_joint(root, current_link):
 
 
 def find_next_link(root, current_joint):
+    """Find the next link in the URDF tree"""
     # Trouver le next_link
     has_next = False
     next_link = 0
