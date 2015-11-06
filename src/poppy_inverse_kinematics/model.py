@@ -99,11 +99,10 @@ class Model(object):
             self.pypot_sync_goal_joints()
 
             # On actualise la position des joints
-            self.pypot_sync_current_joints()
+            # self.pypot_sync_current_joints()
 
-        else:
-            # Sinon on place le modèle directement dans la position voulue
-            self.current_joints = self.goal_joints
+        # On place le modèle directement dans la position voulue
+        self.current_joints = self.goal_joints
 
     def pypot_sync_goal_joints(self):
         """Synchronise les valeurs de goal_joints"""
@@ -113,7 +112,10 @@ class Model(object):
 
     def pypot_sync_current_joints(self):
         """Synchronise les valeurs de current_joints"""
-        pass
+        if self.pypot_object is not None:
+            for i, m in enumerate(self.pypot_object.motors):
+                print(m.present_position)
+                self.current_joints[i] = m.present_position * (np.pi / 2) / 180
 
     def plot_model(self, q=None):
         """Affiche le modèle du robot"""
