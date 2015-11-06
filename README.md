@@ -16,7 +16,7 @@ python setup.py install
 NB : You must have the proper rights to execute this command
 
 # API Documentation
-An exhaustive documentation of the API can be found [here](http://poppy-inverse-kinematics.readthedocs.org)
+An exhaustive documentation of the API can be found [here](http://poppy-inverse-kinematics.readthedocs.org).
 
 
 # Dependencies and compatibility
