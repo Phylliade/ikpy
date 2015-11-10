@@ -6,4 +6,5 @@ python:
   - "3.3"
   - "3.4"
 before_install: sudo apt-get install -y python-numpy python-scipy python-sympy
+install: pip install .
 script: python tests/test_model.py
