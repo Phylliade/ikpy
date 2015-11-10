@@ -1,10 +1,13 @@
 language: python
 python:
-  - "2.6"
   - "2.7"
-  - "3.2"
-  - "3.3"
-  - "3.4"
-before_install: sudo apt-get install -y python-numpy python-scipy python-sympy
-install: pip install .
+before_install:
+  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b
+  - export PATH=/home/travis/miniconda/bin:$PATH
+  - conda update --yes conda
+install:
+  -  conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy sympy
+  - pip install .
 script: python tests/test_model.py
