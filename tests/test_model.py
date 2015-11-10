@@ -1,7 +1,4 @@
 import unittest
-from poppy_inverse_kinematics.model import Model
-from poppy_inverse_kinematics.tools import transformations as tr
-import math
 import numpy as np
 import poppy_inverse_kinematics.robot_utils
 import poppy_inverse_kinematics.model
