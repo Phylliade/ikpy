@@ -90,6 +90,7 @@ def init_3d_figure():
 def show_figure():
     matplotlib.pyplot.show()
 
-# Définition d'un writer pour enregistrer une video depuis l'animation
-Writer = matplotlib.animation.writers['ffmpeg']
-animation_writer = Writer(fps=30, bitrate=3600)
+if __name__ == "__main__":
+    # Définition d'un writer pour enregistrer une video depuis l'animation
+    Writer = matplotlib.animation.writers['ffmpeg']
+    animation_writer = Writer(fps=30, bitrate=3600)
