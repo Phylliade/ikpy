@@ -2,7 +2,7 @@
 from setuptools import setup
 
 setup(name='poppy-inverse-kinematics',
-      version='1.0.3',
+      version='1.1.0',
       author="Pierre Manceron",
       description="An inverse kinematics library aiming performance and modularity",
       url="https://github.com/Phylliade/poppy-inverse-kinematics",
