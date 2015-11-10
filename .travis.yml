@@ -5,7 +5,5 @@ python:
   - "3.2"
   - "3.3"
   - "3.4"
-virtualenv:
-  system_site_packages: true
 install: apt-get install -y python-numpy python-scipy python-sympy
 script: python tests/test_model.py
