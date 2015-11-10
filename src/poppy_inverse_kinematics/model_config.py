@@ -4,7 +4,8 @@ from . import robot_utils
 class model_config():
     """Configuration of a model"""
     def __init__(self, links, representation="euler", model_type="custom", name="robot"):
-        self.links = links
+        self.parameters = links
+        print(links)
         self.joints_number = len(links)
         self.representation = representation
         self.model_type = model_type
