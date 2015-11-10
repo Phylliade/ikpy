@@ -10,4 +10,4 @@ before_install:
 install:
   -  conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy sympy matplotlib
   - pip install .
-script: python tests/test_model.py
+script: cd tests && python test_model.py
