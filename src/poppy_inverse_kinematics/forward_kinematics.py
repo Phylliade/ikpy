@@ -337,7 +337,7 @@ def compute_transformation_hybrid(robot_parameters, representation="euler", mode
             frame_matrix = sympy.simplify(frame_matrix)
 
         # Save the joint transformation_matrix
-        joint_matrixes.append(sympy.lambdify(psi, frame_matrix, "numpy", dummify=False, use_imps=False))
+        joint_matrixes.append(sympy.lambdify(psi, frame_matrix, "numpy"))
 
     # On retourne une fonction lambda de la FK
     return joint_matrixes
