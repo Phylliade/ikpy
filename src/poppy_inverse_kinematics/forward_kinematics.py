@@ -297,7 +297,7 @@ def compute_transformation_symbolic(robot_parameters, representation="euler", mo
 def get_end_effector_symbolic(symbolic_transformation_matrix, nodes_angles):
     """Renvoie la position du end effector en fonction de la configuration des joints"""
     # On applique la matrice transformation au vecteur [0, 0, 0]
-    return homogeneous_transformation(symbolic_transformation_matrix(*nodes_angles), np.array([0, 0, 0]))
+    return homogeneous_transformation(np.asarray(symbolic_transformation_matrix(*nodes_angles)), np.array([0, 0, 0]))
 
 
 def compute_transformation_hybrid(robot_parameters, representation="euler", model_type="custom", simplify=False):
