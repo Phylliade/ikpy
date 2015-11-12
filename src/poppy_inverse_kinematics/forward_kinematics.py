@@ -291,7 +291,7 @@ def compute_transformation_symbolic(robot_parameters, representation="euler", mo
         frame_matrix = sympy.simplify(frame_matrix)
 
     # On retourne une fonction lambda de la FK
-    return sympy.lambdify(joint_angles, frame_matrix, dummify=False, use_imps=False)
+    return sympy.lambdify(joint_angles, frame_matrix)
 
 
 def get_end_effector_symbolic(symbolic_transformation_matrix, nodes_angles):
