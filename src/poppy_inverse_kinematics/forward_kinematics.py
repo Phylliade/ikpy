@@ -349,7 +349,8 @@ def get_end_effector_hybrid(symbolic_transformation_matrixes, nodes_angles):
 
     for index, (joint_matrix, joint_angle) in enumerate(zip(symbolic_transformation_matrixes, nodes_angles)):
         # Compute iteratively the position
-        frame_matrix = np.dot(frame_matrix, joint_matrix(joint_angle))
+        # NB : Use asarray to avoid old sympy problems
+        frame_matrix = np.dot(frame_matrix, np.asarray(joint_matrix(joint_angle)))
     # Return the matrix origin
     return homogeneous_to_cartesian_vectors(np.dot(frame_matrix, np.array([0, 0, 0, 1])))
 
