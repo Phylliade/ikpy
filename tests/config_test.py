@@ -6,7 +6,7 @@ model_type = "URDF"
 if robot == "ergo":
     urdf_file = "../resources/poppy_ergo.URDF"
     base_link = "base_link"
-    last_link_vector = None
+    last_link_vector = [0.05, 0, 0]
     vrep_scene = '../resources/poppy_ergo.ttt'
     robot_json = "../resources/poppy_ergo.json"
 elif robot == "torso":
