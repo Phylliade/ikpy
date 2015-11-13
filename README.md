@@ -1,5 +1,5 @@
 # Poppy Inverse Kinematics #
-![](https://travis-ci.org/Phylliade/poppy-inverse-kinematics.svg?branch=master)
+![Travis-CI](https://travis-ci.org/Phylliade/poppy-inverse-kinematics.svg?branch=master)
 [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/Phylliade/poppy-inverse-kinematics)
 
 # Installation
