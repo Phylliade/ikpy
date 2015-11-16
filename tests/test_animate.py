@@ -5,6 +5,8 @@ import poppy_inverse_kinematics.model_config
 import poppy_inverse_kinematics.creature
 import poppy_inverse_kinematics.plot_utils as plot_utils
 import numpy as np
+import matplotlib.animation
+
 
 class TestModel(unittest.TestCase):
     def test_animate(self):
@@ -21,6 +23,10 @@ class TestModel(unittest.TestCase):
 
         # Génération de l'animation
         animation = creature.animate_model(x, y, z)
+
+        # Définition d'un writer pour enregistrer une video depuis l'animation
+        Writer = matplotlib.animation.writers['ffmpeg']
+        animation_writer = Writer(fps=30, bitrate=3600)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
