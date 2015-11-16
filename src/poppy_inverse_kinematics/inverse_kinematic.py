@@ -24,15 +24,11 @@ def inverse_kinematic(target, transformation_lambda, starting_nodes_angles, fk_m
     return(res.x)
 
 
-def inverse_kinematic_jacobian_method(robot_parameters, starting_nodes_angles, target):
-    pass
-
-
-def inverse_kinematic_trajectory(robot_parameters, starting_nodes_angles, targets_x, targets_y, targets_z, bounds=None):
+def inverse_kinematic_trajectory(targets_x, targets_y, targets_z, transformation_lambda, starting_nodes_angles, fk_method="default", bounds=None, **kwargs):
     """Renvoie la liste des angles pour suivre la trajectoire (liste "targets") donnée en argument"""
     IK_angles = []
     nodes_angles = starting_nodes_angles
     for target in zip(targets_x, targets_y, targets_z):
-        IK_angles.append(inverse_kinematic(robot_parameters, nodes_angles, target, bounds))
+        IK_angles.append(inverse_kinematic(target, transformation_lambda, nodes_angles, fk_method="default", bounds=None, **kwargs))
         nodes_angles = IK_angles[-1]
     return IK_angles

@@ -5,6 +5,7 @@ import numpy as np
 from . import forward_kinematics as fk
 from . import inverse_kinematic as ik
 from . import plot_utils as pl
+import matplotlib.pyplot
 
 
 class Model():
@@ -43,17 +44,20 @@ class Model():
             X = fk.get_end_effector(nodes_angles=q, method=self.computation_method, transformation_lambda=self.transformation_lambda)
         return X
 
-    def inverse_kinematic(self, target=None):
+    def inverse_kinematic(self, target=None, initial_position=None):
         """Computes the IK for given target"""
         # If absolute_target is not given, use self.target
         if target is None:
             target = self.target
 
+        if initial_position is None:
+            initial_position = self.current_joints
+
         # Choose computation method
         if self.computation_method == "default":
-            return ik.inverse_kinematic(target, self.transformation_lambda, self.current_joints, fk_method=self.computation_method, model_type=self.config.model_type, representation=self.config.representation, robot_parameters=self.config.parameters)
+            return ik.inverse_kinematic(target, self.transformation_lambda, initial_position, fk_method=self.computation_method, model_type=self.config.model_type, representation=self.config.representation, robot_parameters=self.config.parameters)
         else:
-            return ik.inverse_kinematic(target, self.transformation_lambda, self.current_joints, fk_method=self.computation_method)
+            return ik.inverse_kinematic(target, self.transformation_lambda, initial_position, fk_method=self.computation_method)
 
     def set_current_joints(self, q):
         """Set the position of the current joints"""
@@ -83,7 +87,6 @@ class Model():
         """Synchronise les valeurs de current_joints"""
         if self.pypot_object is not None:
             for i, m in enumerate(self.pypot_object.motors):
-                print(m.present_position)
                 self.current_joints[i] = m.present_position * (np.pi / 2) / 180
 
     def plot_model(self, q=None, ax=None, show=True):
@@ -101,6 +104,29 @@ class Model():
             pl.plot_target(self.target, ax)
         if(show):
             pl.show_figure()
+
+    def animate_model(self, targets_x, targets_y, targets_z):
+        """Animate the model moving along the trajectory"""
+        fig = matplotlib.pyplot.figure()
+        ax = fig.add_subplot(111, projection='3d')
+
+        # Création d'un objet line
+        line = ax.plot([0, 0], [0, 0], [0, 0])[0]
+
+        # Plot de la trajectoire et du repère
+        pl.plot_target_trajectory(targets_x, targets_y, targets_z, ax)
+        pl.plot_basis(self.config.parameters, ax)
+
+        IK_angles = []
+        nodes_angles = self.current_joints
+        for target in zip(targets_x, targets_y, targets_z):
+            IK_angles.append(self.inverse_kinematic(target, initial_position=nodes_angles))
+            nodes_angles = IK_angles[-1]
+
+        animation = matplotlib.animation.FuncAnimation(fig, pl.update_line, len(IK_angles), fargs=(self.config.parameters, IK_angles, line, self.config.representation, self.config.model_type), interval=50)
+        matplotlib.pyplot.show()
+
+        return animation
 
     def get_robot_length(self):
         """Calcule la longueur du robot (tendu)"""

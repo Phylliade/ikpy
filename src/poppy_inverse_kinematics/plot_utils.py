@@ -59,14 +59,14 @@ def plot_target_trajectory(targets_x, targets_y, targets_z, ax):
     ax.scatter(targets_x, targets_y, targets_z)
 
 
-def update_line(num, robot_parameters, nodes_angles_list, line):
-    nodes = forward_kinematics.get_nodes(robot_parameters, nodes_angles_list[num])
+def update_line(num, robot_parameters, nodes_angles_list, line, representation, model_type):
+    nodes = forward_kinematics.get_nodes(robot_parameters, nodes_angles_list[num], representation=representation, model_type=model_type)
     points = nodes["positions"]
     line.set_data([x[0] for x in points], [x[1] for x in points])
     line.set_3d_properties([x[2] for x in points])
 
 
-def animate_IK(robot_parameters, starting_nodes_angles, targets_x, targets_y, targets_z, figure, bounds=None):
+def animate_trajectory(robot_parameters, representation, model_type, starting_nodes_angles, targets_x, targets_y, targets_z, figure, bounds=None):
     ax = figure.add_subplot(111, projection='3d')
 
     # Création d'un objet line
@@ -78,7 +78,7 @@ def animate_IK(robot_parameters, starting_nodes_angles, targets_x, targets_y, ta
 
     # Liste des angles qui satisfont
     IK_angles = inverse_kinematic.inverse_kinematic_trajectory(robot_parameters, starting_nodes_angles, targets_x, targets_y, targets_z, bounds)
-    return matplotlib.animation.FuncAnimation(figure, update_line, len(IK_angles), fargs=(robot_parameters, IK_angles, line), interval=50)
+    return matplotlib.animation.FuncAnimation(figure, update_line, len(IK_angles), fargs=(robot_parameters, IK_angles, line, representation, model_type), interval=50)
 
 
 def init_3d_figure():
@@ -90,7 +90,6 @@ def init_3d_figure():
 def show_figure():
     matplotlib.pyplot.show()
 
-if __name__ == "__main__":
-    # Définition d'un writer pour enregistrer une video depuis l'animation
-    Writer = matplotlib.animation.writers['ffmpeg']
-    animation_writer = Writer(fps=30, bitrate=3600)
+# Définition d'un writer pour enregistrer une video depuis l'animation
+Writer = matplotlib.animation.writers['ffmpeg']
+animation_writer = Writer(fps=30, bitrate=3600)
