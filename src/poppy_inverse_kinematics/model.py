@@ -61,7 +61,7 @@ class Model():
 
     def goto_target(self):
         """Déplace le robot vers la target donnée"""
-        self.goal_joints = self.inverse_kinematic(self.target)
+        self.goal_joints = self.inverse_kinematic()
 
         if self.pypot_object is not None:
             # Si un robot pypot est attaché au modèle, on demande au robot d'aller vers les angles voulus
@@ -86,18 +86,21 @@ class Model():
                 print(m.present_position)
                 self.current_joints[i] = m.present_position * (np.pi / 2) / 180
 
-    def plot_model(self, q=None):
+    def plot_model(self, q=None, ax=None, show=True):
         """Affiche le modèle du robot"""
         if q is None:
             q = self.current_joints
-        ax = pl.init_3d_figure()
+        if ax is None:
+            # If ax is not given, create one
+            ax = pl.init_3d_figure()
         pl.plot_robot(self.config.parameters, q, ax, representation=self.config.representation, model_type=self.config.model_type)
         pl.plot_basis(self.config.parameters, ax, self.arm_length)
 
         # Plot the goal position
         if self.target is not None:
             pl.plot_target(self.target, ax)
-        pl.show_figure()
+        if(show):
+            pl.show_figure()
 
     def get_robot_length(self):
         """Calcule la longueur du robot (tendu)"""

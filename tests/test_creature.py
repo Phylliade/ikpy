@@ -1,7 +1,4 @@
 import unittest
-import poppy_inverse_kinematics.robot_utils
-import poppy_inverse_kinematics.model
-import poppy_inverse_kinematics.model_config
 import poppy_inverse_kinematics.creature
 import numpy as np
 

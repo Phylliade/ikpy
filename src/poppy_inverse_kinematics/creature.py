@@ -20,5 +20,6 @@ class creature(model.Model):
             urdf_file = resource_file + "/Poppy_Torso.URDF"
             base_link = ["chest", "r_shoulder_y"]
             last_link_vector = [0, 0.1, 0]
+
         params = model_config.from_urdf_file(urdf_file, base_link, last_link_vector)
         model.Model.__init__(self, params, computation_method="hybrid", simplify=False)
