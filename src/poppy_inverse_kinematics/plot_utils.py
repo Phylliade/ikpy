@@ -1,4 +1,4 @@
-# coding: utf8
+# coding= utf8
 import matplotlib.pyplot
 from . import forward_kinematics
 from . import inverse_kinematic

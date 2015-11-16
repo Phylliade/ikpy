@@ -1,4 +1,4 @@
-# coding: utf8
+# coding= utf8
 import scipy.optimize
 import numpy as np
 from . import forward_kinematics

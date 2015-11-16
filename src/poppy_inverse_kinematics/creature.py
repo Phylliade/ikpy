@@ -1,3 +1,4 @@
+# coding= utf8
 from . import resources
 from . import model
 from . import model_config
@@ -5,6 +6,7 @@ import os
 import pypot.vrep
 import json
 resource_file = os.path.dirname(resources.__file__)
+wd = os.getcwd()
 
 
 class creature(model.Model):
@@ -16,8 +18,8 @@ class creature(model.Model):
             base_link = ["base_link"]
             last_link_vector = [0, 0.05, 0]
             if pypot_type == "vrep":
-                pypot_config_file = '../../resources/poppy_ergo.json'
-                vrep_scene = '../../resources/poppy_ergo.ttt'
+                pypot_config_file = wd + '/../resources/poppy_ergo.json'
+                vrep_scene = wd + '/../resources/poppy_ergo.ttt'
         elif creature_type == "torso_left_arm":
             urdf_file = resource_file + "/Poppy_Torso.URDF"
             base_link = ["chest", "l_shoulder_y"]
