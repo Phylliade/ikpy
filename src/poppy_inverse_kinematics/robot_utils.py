@@ -20,7 +20,6 @@ def find_next_joint(root, current_link, next_joints):
     # Trouver le joint attaché
     has_next = False
     next_joint = None
-    print(current_link, next_joints)
 
     if next_joints == []:
         # If no next joints, find it automaticly
@@ -48,14 +47,12 @@ def find_next_link(root, current_joint, next_links):
     """Find the next link in the URDF tree"""
     has_next = False
     next_link = None
-    print("Find next link : ", current_joint, next_links)
     # If no next link, find it automaticly
     if next_links == []:
         next_link_name = current_joint.find("child").attrib["link"]
     else:
         # If a next link is provided, use it
         next_link_name = next_links.pop(0)
-        print("Next Link : ", next_link_name)
 
     for link in root.iter("link"):
         if link.attrib["name"] == next_link_name:
@@ -117,8 +114,6 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
     chain = []
     for link in links:
         chain.append(link.attrib["name"])
-
-    print(chain)
 
     # Add last_link_vector to parameters
     if last_link_vector is not None:
