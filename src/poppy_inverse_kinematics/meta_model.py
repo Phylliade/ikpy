@@ -4,11 +4,13 @@ from . import plot_utils
 
 class MetaModel():
     """MetaModel class"""
-    def __init__(self, models=[]):
+    def __init__(self, models=[], pypot_object=None):
         self.models = models
+        self.pypot_object = pypot_object
 
     def add_model(self, model):
         """Add a model to the meta model"""
+        model.pypot_object = self.pypot_object
         self.models.append(model)
 
     def plot_meta_model(self):

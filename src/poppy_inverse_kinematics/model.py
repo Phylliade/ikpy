@@ -79,10 +79,13 @@ class Model():
         self.current_joints = self.goal_joints
 
     def pypot_sync_goal_joints(self):
-        """Synchronise les valeurs de goal_joints"""
+        """Synchronize goal_joints value with goto_position value of Pypot object"""
         if self.pypot_object is not None:
-            for i, m in enumerate(self.pypot_object.motors):
-                m.goal_position = self.goal_joints[i] * 180 / (np.pi / 2)
+            for index, joint in enumerate(self.config.parameters):
+                if joint[3] != "last_joint":
+                    # If the joint is not the vlast (virtual) joint :
+                    # Use the name of the joint to map to the motor name
+                    getattr(self.pypot_object, joint[3]).goal_position = self.goal_joints[index] * 180 / (np.pi / 2)
 
     def pypot_sync_current_joints(self):
         """Synchronise les valeurs de current_joints"""

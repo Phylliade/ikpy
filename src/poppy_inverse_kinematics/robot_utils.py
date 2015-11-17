@@ -87,14 +87,16 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
     while(has_next):
         if node_type == "link":
             # Current element is a link, find child joint
-            (has_next, current_joint) = find_next_joint(root, current_link, base_joints)
+            (has_next, current_joint) = find_next_joint(
+                root, current_link, base_joints)
             node_type = "joint"
             if(has_next):
                 joints.append(current_joint)
 
         elif node_type == "joint":
             # Current element is a joint, find child link
-            (has_next, current_link) = find_next_link(root, current_joint, base_links)
+            (has_next, current_link) = find_next_link(
+                root, current_joint, base_links)
             node_type = "link"
             if(has_next):
                 links.append(current_link)
@@ -108,7 +110,8 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
         parameters.append((
             [float(translation[0]), float(translation[1]), float(translation[2])],
             [float(orientation[0]), float(orientation[1]), float(orientation[2])],
-            [float(rotation[0]), float(rotation[1]), float(rotation[2])]
+            [float(rotation[0]), float(rotation[1]), float(rotation[2])],
+            joint.attrib["name"]
         ))
 
     # Descriptive chain of the robot
@@ -121,7 +124,8 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
         parameters.append((
             last_link_vector,
             [0, 0, 0],
-            [0, 0, 0]
+            [0, 0, 0],
+            "last_joint"
         ))
 
     return(parameters)

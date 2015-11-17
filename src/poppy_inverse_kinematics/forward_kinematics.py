@@ -188,7 +188,7 @@ def get_nodes(robot_parameters, nodes_angles, representation="euler", model_type
 
     elif model_type == "URDF":
         full_list = [
-            (trans, orientation, rotation, t) for ((trans, orientation, rotation), t) in zip(robot_parameters, nodes_angles)
+            (trans, orientation, rotation, t) for ((trans, orientation, rotation, name), t) in zip(robot_parameters, nodes_angles)
         ]
 
     #  Initialisations
@@ -196,7 +196,7 @@ def get_nodes(robot_parameters, nodes_angles, representation="euler", model_type
     pos_list = []
     pos = np.array([0, 0, 0])
     pos_list.append(pos)
-    # Initiailisation de la matrice de changement de base
+    # Initialisation de la matrice de changement de base
     frame_matrix = np.eye(3)
 
     # Liste des axes de rotation de chaque noeud
@@ -225,8 +225,6 @@ def get_nodes(robot_parameters, nodes_angles, representation="euler", model_type
         if model_type == "URDF":
             frame_matrix = np.dot(frame_matrix, axis_rotation_matrix(rot, psi))
             # pos_relat = np.dot(axis_rotation_matrix(rot, psi), pos_relat)
-
-
 
         joint_length = np.sqrt(sum([x**2 for x in translation_vector]))
 
@@ -264,7 +262,7 @@ def compute_transformation_symbolic(robot_parameters, representation="euler", mo
         if model_type == "custom":
             (translation_vector, rot) = params
         elif model_type == "URDF":
-            (translation_vector, orientation, rot) = params
+            (translation_vector, orientation, rot, name) = params
 
         # Angle symbolique qui paramètre la rotation du joint en cours
         psi = sympy.symbols("psi_" + str(index))
@@ -311,7 +309,7 @@ def compute_transformation_hybrid(robot_parameters, representation="euler", mode
         if model_type == "custom":
             (translation_vector, rot) = params
         elif model_type == "URDF":
-            (translation_vector, orientation, rot) = params
+            (translation_vector, orientation, rot, name) = params
 
         # Angle symbolique qui paramètre la rotation du joint en cours
         psi = sympy.symbols("psi_" + str(index))
