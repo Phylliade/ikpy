@@ -1,17 +1,17 @@
 import poppy_inverse_kinematics.creature as model_creature
 import numpy as np
-import poppy_inverse_kinematics.plot_utils as plt_utils
 import poppy_inverse_kinematics.meta_model as meta_model
+import poppy_inverse_kinematics.meta_creature as meta_creature
 
 # Create creatures
 right_arm = model_creature.creature("torso_right_arm")
 left_arm = model_creature.creature("torso_left_arm")
-torso = meta_model.MetaModel()
+torso = meta_creature.MetaCreature(interface_type="vrep", creature_type="torso")
 torso.add_model(right_arm)
 torso.add_model(left_arm)
 
 # Set right arm position
-target_right = np.array([-0.2, -0.1, 0.1])
+target_right = np.array([1, 0, 0])
 right_arm.target = target_right
 right_arm.goto_target()
 
