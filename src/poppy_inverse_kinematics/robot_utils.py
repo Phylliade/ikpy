@@ -5,6 +5,8 @@
 
 from . import forward_kinematics
 import xml.etree.ElementTree as ET
+import json
+import numpy as np
 
 
 def robot_from_urdf_parameters(urdf_params):
@@ -129,3 +131,42 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
         ))
 
     return(parameters)
+
+
+def get_motor_parameters(json_file):
+    """Returns a dictionnary with joints as keys, and a description (dict) of each joint as value"""
+    with open(json_file) as motor_fd:
+        global_config = json.load(motor_fd)
+
+    motors = global_config["motors"]
+    # Returned dict
+    motor_config = {}
+
+    # Add motor to the config
+    for motor in motors:
+        motor_config[motor] = motors[motor]
+
+    return motor_config
+
+
+def convert_angle_to_pypot(angle, orientation, offset):
+    """Converts an angle to a PyPot-compatible format"""
+    angle_deg = (angle * 180 / (np.pi / 2))
+    angle_pypot = angle_deg - offset
+
+    if "orientation" == "indirect":
+        angle_pypot = 360 - angle_pypot
+
+    return angle_pypot
+
+
+def convert_angle_from_pypot(angle, orientation, offset):
+    """Converts an angle to a PyPot-compatible format"""
+    angle_pypot = angle
+
+    if "orientation" == "indirect":
+        angle_pypot = 360 - angle_pypot
+
+    angle_deg = angle_pypot + offset
+
+    return angle_deg * (np.pi / 2) / 180

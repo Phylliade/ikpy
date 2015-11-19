@@ -12,7 +12,6 @@ class CreatureInterface():
             import pypot.vrep
         if creature_type == "torso" or creature_type == "torso_right_arm" or creature_type == "torso_left_arm":
             pypot_config_file = wd + '/../resources/poppy_torso.json'
-            print(pypot_config_file)
             if interface_type == "vrep":
                 vrep_scene = wd + '/../resources/poppy_torso.ttt'
         elif creature_type == "ergo":

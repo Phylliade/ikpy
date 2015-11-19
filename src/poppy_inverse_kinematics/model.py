@@ -6,6 +6,7 @@ import numpy as np
 from . import forward_kinematics as fk
 from . import inverse_kinematic as ik
 from . import plot_utils as pl
+from . import robot_utils
 import matplotlib.pyplot
 
 
@@ -56,9 +57,9 @@ class Model():
 
         # Choose computation method
         if self.computation_method == "default":
-            return ik.inverse_kinematic(target, self.transformation_lambda, initial_position, fk_method=self.computation_method, model_type=self.config.model_type, representation=self.config.representation, robot_parameters=self.config.parameters)
+            return ik.inverse_kinematic(target, self.transformation_lambda, initial_position, fk_method=self.computation_method, model_type=self.config.model_type, representation=self.config.representation, robot_parameters=self.config.parameters, bounds=self.config.bounds)
         else:
-            return ik.inverse_kinematic(target, self.transformation_lambda, initial_position, fk_method=self.computation_method)
+            return ik.inverse_kinematic(target, self.transformation_lambda, initial_position, fk_method=self.computation_method, bounds=self.config.bounds)
 
     def set_current_joints(self, q):
         """Set the position of the current joints"""
@@ -83,9 +84,25 @@ class Model():
         if self.pypot_object is not None:
             for index, joint in enumerate(self.config.parameters):
                 if joint[3] != "last_joint":
-                    # If the joint is not the vlast (virtual) joint :
+                    # If the joint is not the last (virtual) joint :
+                    # Add offset
+                    offset = self.config.motor_parameters[joint[3]]["offset"]
+
+                    if self.config.motor_parameters is not None:
+                        # Manage orientation
+                        if self.config.motor_parameters[joint[3]]["orientation"] == "indirect":
+                            orientation = "indirect"
+                        else:
+                            orientation = "direct"
+                    else:
+                        offset = 0
+                        orientation = "direct"
+
+                    angle = robot_utils.convert_angle_to_pypot(self.goal_joints[index], orientation, offset)
+                    # print(joint[3], self.goal_joints[index] * 180 / (np.pi / 2), angle, offset)
+
                     # Use the name of the joint to map to the motor name
-                    getattr(self.pypot_object, joint[3]).goal_position = self.goal_joints[index] * 180 / (np.pi / 2)
+                    getattr(self.pypot_object, joint[3]).goal_position = angle
 
     def pypot_sync_current_joints(self):
         """Synchronise les valeurs de current_joints"""

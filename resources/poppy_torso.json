@@ -123,8 +123,8 @@
       "type": "MX-28",
       "id": 33,
       "angle_limit": [
-        -80,
-        80
+        0,
+        0
       ],
       "orientation": "direct"
     },
@@ -133,8 +133,8 @@
       "type": "MX-28",
       "id": 34,
       "angle_limit": [
-        -46,
-        23
+        0,
+        0
       ],
       "orientation": "indirect"
     },
@@ -143,8 +143,8 @@
       "type": "MX-28",
       "id": 35,
       "angle_limit": [
-        -40,
-        40
+        0,
+        0
       ],
       "orientation": "indirect"
     },
@@ -170,4 +170,3 @@
     }
   }
 }
-
