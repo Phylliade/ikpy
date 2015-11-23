@@ -154,5 +154,6 @@ class Model():
         """Set the compliance of the underlying PyPot object of the model"""
         if self.pypot_object is not None:
             for joint in self.config.parameters:
-                # For every joint of the model, set the PyPot compliance
-                getattr(self.pypot_object, joint["name"]).compliance = compliance
+                if joint["name"] != "last_joint":
+                    # For every joint of the model, set the PyPot compliance
+                    getattr(self.pypot_object, joint["name"]).compliance = compliance
