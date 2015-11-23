@@ -153,7 +153,7 @@ class Model():
     def set_compliance(self, compliance=False):
         """Set the compliance of the underlying PyPot object of the model"""
         if self.pypot_object is not None:
-            for joint in self.config.parameters:
-                if joint["name"] != "last_joint":
-                    # For every joint of the model, set the PyPot compliance
-                    getattr(self.pypot_object, joint["name"]).compliance = compliance
+            for motor in self.pypot_object.motors:
+                # For every joint of the model, set the PyPot compliance
+                if motor.name in self.config.joint_names:
+                    motor.compliant = compliance

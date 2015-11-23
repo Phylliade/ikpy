@@ -7,6 +7,10 @@ class model_config():
     """Configuration of a model"""
     def __init__(self, joints, representation="euler", model_type="custom", name="robot", motor_config_file=None, first_active_joint=0):
         self.parameters = joints
+        # Joints names
+        self.joint_names = []
+        for joint in self.config.parameters:
+            self.joints_names.append(joint["name"])
         self.joints_number = len(joints)
         self.representation = representation
         self.model_type = model_type
