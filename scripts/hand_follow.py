@@ -13,8 +13,8 @@ torso.add_model(right_arm)
 torso.add_model(left_arm)
 
 # Set right arm position
-# target_right = np.array([-0.27, -0.2, 0.1])
-target_right = np.array([-0.1, -0.4, 0.1])
+target_right = np.array([-0.27, -0.2, 0.5])
+# target_right = np.array([-0.1, -0.4, 0.1])
 right_arm.target = target_right
 right_arm.goto_target()
 

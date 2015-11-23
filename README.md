@@ -12,7 +12,7 @@ pip install poppy-inverse-kinematics
 ```
 2. From source : First download and extract the archive, the run :
 ```
-pip install -e ./
+pip install ./
 ```    
 NB : You must have the proper rights to execute this command
 

@@ -32,7 +32,10 @@ def inverse_kinematic(target, transformation_lambda, starting_nodes_angles, fk_m
 
     res = scipy.optimize.minimize(optimize_fun, starting_nodes_angles[first_active_joint:], method='L-BFGS-B', bounds=real_bounds, options={"maxiter": 100})
     # print(res.message, res.nit)
-    return(np.append(starting_nodes_angles[:first_active_joint], res.x))
+    if first_active_joint == 0:
+        return(res.x)
+    else:
+        return(np.append(starting_nodes_angles[:first_active_joint], res.x))
 
 
 def inverse_kinematic_trajectory(targets_x, targets_y, targets_z, transformation_lambda, starting_nodes_angles, fk_method="default", bounds=None, **kwargs):

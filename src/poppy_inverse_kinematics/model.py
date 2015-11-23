@@ -55,9 +55,9 @@ class Model():
 
         # Choose computation method
         if self.computation_method == "default":
-            return ik.inverse_kinematic(target, self.transformation_lambda, initial_position, fk_method=self.computation_method, model_type=self.config.model_type, representation=self.config.representation, robot_parameters=self.config.parameters, bounds=self.config.bounds)
+            return ik.inverse_kinematic(target, self.transformation_lambda, initial_position, fk_method=self.computation_method, model_type=self.config.model_type, representation=self.config.representation, robot_parameters=self.config.parameters, bounds=self.config.bounds, first_active_joint=self.config.first_active_joint)
         else:
-            return ik.inverse_kinematic(target, self.transformation_lambda, initial_position, fk_method=self.computation_method, bounds=self.config.bounds)
+            return ik.inverse_kinematic(target, self.transformation_lambda, initial_position, fk_method=self.computation_method, bounds=self.config.bounds, first_active_joint=self.config.first_active_joint)
 
     def goto_target(self):
         """Déplace le robot vers la target donnée"""
