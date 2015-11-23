@@ -92,7 +92,7 @@ class Model():
             # If there is an attached robot, read the joint values from the robot
             for index, joint in enumerate(self.config.parameters):
                 if joint["name"] != "last_joint":
-                    angle = robot_utils.convert_angle_from_pypot(getattr(self.pypot_object, joint["name"]).goal_position, joint)
+                    angle = robot_utils.convert_angle_from_pypot(getattr(self.pypot_object, joint["name"]).present_position, joint)
                 else:
                     angle = 0
                 self.current_joints[index] = angle
