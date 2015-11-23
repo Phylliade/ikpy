@@ -12,6 +12,8 @@ profile = False
 # Count elapsed time if True
 bench = True
 
+nb_iterations = 100
+
 
 def setup():
     robot = model_creature.creature("torso_right_arm")
@@ -20,7 +22,7 @@ def setup():
 
 
 def bench_ik(robot):
-    return timeit.timeit(lambda: robot.inverse_kinematic(), number=100)
+    return timeit.timeit(lambda: robot.inverse_kinematic(), number=nb_iterations)
 
 
 def profile_ik(robot):
@@ -33,6 +35,6 @@ if __name__ == "__main__":
     # profile_robot()
     robot = setup()
     if bench:
-        print(bench_ik(robot))
+        print("Done %s iterations, in %s seconds" % (nb_iterations, bench_ik(robot)))
     if profile:
         profile_ik(robot)
