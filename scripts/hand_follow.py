@@ -7,6 +7,7 @@ import time
 activate_follow = True
 interface_type = "vrep"
 plot = True
+waiting_time = 5
 
 # Create creatures
 right_arm = model_creature.creature("torso_right_arm")
@@ -34,21 +35,21 @@ left_arm.goto_target()
 
 # The left arm is now compliant, so it can be moved
 left_arm.set_compliance(compliance=True)
-print("Left arm is now compliant, you can move it in the next 20 seconds.")
-
-# Wait a little
-time.sleep(20)
 
 # Choose right arm target
 if activate_follow:
-    left_arm.sync_current_joints()
-    target_right = left_arm.forward_kinematic() + np.array([0.3, 0, 0])
-    right_arm.target = target_right
-    right_arm.goto_target()
+    try:
+        while True:
+            print("Waiting %s seconds" % waiting_time)
+            time.sleep(waiting_time)
+            left_arm.sync_current_joints()
+            target_right = left_arm.forward_kinematic() + np.array([0.3, 0, 0])
+            right_arm.target = target_right
+            right_arm.goto_target()
+    except KeyboardInterrupt:
+        # Plot result
+        if plot:
+            torso.plot_meta_model()
 
-# Plot result
-if plot:
-    torso.plot_meta_model()
-
-if interface_type == "robot":
-    torso.pypot_object.close()
+        if interface_type == "robot":
+            torso.pypot_object.close()
