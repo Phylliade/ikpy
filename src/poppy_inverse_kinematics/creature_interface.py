@@ -16,15 +16,23 @@ class CreatureInterface():
             if interface_type == "vrep":
                 vrep_scene = wd + '/../resources/poppy_ergo.ttt'
 
-        if interface_type == "vrep":
-            # Import pypot only if necessary
-            import pypot.vrep
+        if interface_type is not None:
             # Create pypot object
             with open(pypot_config_file, "r+") as f:
                 config_data = f.read()
-
             pypot_config = dict(json.loads(config_data))
-            self.pypot_object = pypot.vrep.from_vrep(pypot_config, scene=vrep_scene)
+
+            if interface_type == "vrep":
+                # VREP interface
+                # Import pypot only if necessary
+                import pypot.vrep
+                self.pypot_object = pypot.vrep.from_vrep(pypot_config, scene=vrep_scene)
+
+            elif interface_type == "robot":
+                # Standard PyPot interface
+                import pypot.robot
+                self.pypot_object = pypot.robot.from_config(pypot_config)
+
         else:
             # Default case : no object
             self.pypot_object = None
