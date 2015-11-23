@@ -22,7 +22,7 @@ class TestFK(unittest.TestCase):
     def test_fk_creature_pypot(self):
         creature_pypot = creature.creature(creature_type=creature_type, interface_type="vrep")
         creature_pypot.goal_joints = self.test_pos
-        creature_pypot.pypot_sync_goal_joints(set_current=True)
+        creature_pypot.goto_joints()
         creature_pypot.plot_model()
 
 if __name__ == '__main__':

@@ -61,25 +61,22 @@ class Model():
         else:
             return ik.inverse_kinematic(target, self.transformation_lambda, initial_position, fk_method=self.computation_method, bounds=self.config.bounds)
 
-    def set_current_joints(self, q):
-        """Set the position of the current joints"""
-        self.current_joints = q
-
     def goto_target(self):
         """Déplace le robot vers la target donnée"""
+
+        # Compute goal joints
         self.goal_joints = self.inverse_kinematic()
 
-        if self.pypot_object is not None:
-            # Si un robot pypot est attaché au modèle, on demande au robot d'aller vers les angles voulus
-            self.pypot_sync_goal_joints()
+        # Go to goal joints
+        self.goto_joints()
 
-            # On actualise la position des joints
-            # self.pypot_sync_current_joints()
+    def goto_joints(self):
+        """Move the robot according to the goal joints"""
+        self.sync_goal_joints()
 
-        # On place le modèle directement dans la position voulue
-        self.current_joints = self.goal_joints
+        self.sync_current_joints()
 
-    def pypot_sync_goal_joints(self, set_current=False):
+    def sync_goal_joints(self):
         """Synchronize goal_joints value with goto_position value of Pypot object"""
         if self.pypot_object is not None:
             for index, joint in enumerate(self.config.parameters):
@@ -104,14 +101,14 @@ class Model():
                     # Use the name of the joint to map to the motor name
                     getattr(self.pypot_object, joint[3]).goal_position = angle
 
-            # On place le modèle directement dans la position voulue
-            self.current_joints = self.goal_joints
-
-    def pypot_sync_current_joints(self):
+    def sync_current_joints(self, pypot_sync=False):
         """Synchronise les valeurs de current_joints"""
-        if self.pypot_object is not None:
+        if self.pypot_object is not None and pypot_sync:
             for i, m in enumerate(self.pypot_object.motors):
                 self.current_joints[i] = m.present_position * (np.pi / 2) / 180
+        else:
+            # On place le modèle directement dans la position voulue
+            self.current_joints = self.goal_joints
 
     def plot_model(self, q=None, ax=None, show=True):
         """Affiche le modèle du robot"""
