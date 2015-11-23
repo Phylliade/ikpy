@@ -6,7 +6,6 @@ import numpy as np
 from . import forward_kinematics as fk
 from . import inverse_kinematic as ik
 from . import robot_utils
-import matplotlib.pyplot
 
 
 class Model():
@@ -129,6 +128,7 @@ class Model():
     def animate_model(self, targets_x, targets_y, targets_z):
         """Animate the model moving along the trajectory"""
         from . import plot_utils as pl
+        import matplotlib.pyplot
         fig = matplotlib.pyplot.figure()
         ax = fig.add_subplot(111, projection='3d')
 

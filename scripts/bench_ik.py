@@ -8,7 +8,7 @@ import timeit
 # Target
 target = [1, 1, 1]
 # Profile if True
-profile = False
+profile = True
 # Count elapsed time if True
 bench = True
 
