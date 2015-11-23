@@ -96,7 +96,7 @@
         -155,
         120
       ],
-      "orientation": "indirect"
+      "orientation": "direct"
     },
     "r_elbow_y": {
       "offset": -90.0,
@@ -123,8 +123,8 @@
       "type": "MX-28",
       "id": 33,
       "angle_limit": [
-        0,
-        0
+        -80,
+        80
       ],
       "orientation": "direct"
     },
@@ -133,8 +133,8 @@
       "type": "MX-28",
       "id": 34,
       "angle_limit": [
-        0,
-        0
+        -46,
+        23
       ],
       "orientation": "indirect"
     },
@@ -143,8 +143,8 @@
       "type": "MX-28",
       "id": 35,
       "angle_limit": [
-        0,
-        0
+        -40,
+        40
       ],
       "orientation": "indirect"
     },

@@ -13,14 +13,14 @@ torso.add_model(right_arm)
 torso.add_model(left_arm)
 
 # Set right arm position
-target_right = np.array([0, -1, 1])
+# target_right = np.array([-0.27, -0.2, 0.1])
+target_right = np.array([-0.1, -0.4, 0.1])
 right_arm.target = target_right
 right_arm.goto_target()
 
 # Choose left arm target
 if activate_follow:
-    print(right_arm.forward_kinematic())
-    target_left = right_arm.forward_kinematic() + np.array([0, 0.03, 0])
+    target_left = right_arm.forward_kinematic() + np.array([0.3, 0, 0])
     left_arm.target = target_left
     left_arm.goto_target()
 

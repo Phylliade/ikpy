@@ -23,11 +23,19 @@ class model_config():
                         orientation = "indirect"
                     else:
                         orientation = "direct"
-                    new_bounds = [robot_utils.convert_angle_from_pypot(angle, orientation, offset) for angle in self.motor_parameters[joint[3]]["angle_limit"]]
-                    self.bounds.append((min(new_bounds), max(new_bounds)))
+
+                    # Compute bounds with the right convention
+                    new_bounds = tuple([robot_utils.convert_angle_limit(angle, orientation, offset, joint_name=joint[3]) for angle in self.motor_parameters[joint[3]]["angle_limit"]])
+                    # Swap tuple if indirect
+                    if orientation == "indirect":
+                        new_bounds = (new_bounds[0], new_bounds[1])
+                    if joint[3].startswith("l_") and not joint[3].startswith("l_shoulder_y"):
+                        new_bounds = (new_bounds[0], new_bounds[1])
                 else:
                     # If it is the last joint, there is no dof
-                    self.bounds.append((None, None))
+                    new_bounds = (None, None)
+
+                self.bounds.append(new_bounds)
         else:
             self.motor_parameters = None
             self.motor_bounds = None

@@ -79,7 +79,7 @@ class Model():
         # On place le modèle directement dans la position voulue
         self.current_joints = self.goal_joints
 
-    def pypot_sync_goal_joints(self):
+    def pypot_sync_goal_joints(self, set_current=False):
         """Synchronize goal_joints value with goto_position value of Pypot object"""
         if self.pypot_object is not None:
             for index, joint in enumerate(self.config.parameters):
@@ -98,11 +98,14 @@ class Model():
                         offset = 0
                         orientation = "direct"
 
-                    angle = robot_utils.convert_angle_to_pypot(self.goal_joints[index], orientation, offset)
-                    # print(joint[3], self.goal_joints[index] * 180 / (np.pi / 2), angle, offset)
+                    angle = robot_utils.convert_angle_to_pypot(self.goal_joints[index], orientation, offset, joint_name=joint[3])
+                    print(joint[3], self.goal_joints[index] * 180 / np.pi, angle)
 
                     # Use the name of the joint to map to the motor name
                     getattr(self.pypot_object, joint[3]).goal_position = angle
+
+            # On place le modèle directement dans la position voulue
+            self.current_joints = self.goal_joints
 
     def pypot_sync_current_joints(self):
         """Synchronise les valeurs de current_joints"""

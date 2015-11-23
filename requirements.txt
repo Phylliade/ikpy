@@ -2,4 +2,3 @@ numpy
 scipy
 sympy
 matplotlib
-./
