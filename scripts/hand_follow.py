@@ -17,9 +17,12 @@ torso.add_model(left_arm)
 
 # Init pypot robot
 if interface_type == "robot":
+    print("Initializing robot")
     for m in torso.pypot_object.motors:
         m.compliant = False
         m.goal_position = 0
+
+    print("Waiting 10 seconds")
     time.sleep(10)
 
 
@@ -31,9 +34,10 @@ left_arm.goto_target()
 
 # The left arm is now compliant, so it can be moved
 left_arm.set_compliance(compliance=True)
+print("Left arm is now compliant, you can move it in the next 20 seconds.")
 
 # Wait a little
-time.sleep(5)
+time.sleep(20)
 
 # Choose right arm target
 if activate_follow:

@@ -81,7 +81,7 @@ class Model():
                 if joint["name"] != "last_joint":
                     # If the joint is not the last (virtual) joint :
                     angle = robot_utils.convert_angle_to_pypot(self.goal_joints[index], joint)
-                    print(joint["name"], self.goal_joints[index] * 180 / np.pi, angle)
+                    # print(joint["name"], self.goal_joints[index] * 180 / np.pi, angle)
 
                     # Use the name of the joint to map to the motor name
                     getattr(self.pypot_object, joint["name"]).goal_position = angle
