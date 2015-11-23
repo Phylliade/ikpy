@@ -17,18 +17,21 @@ class creature(model.Model, creature_interface.CreatureInterface):
             base_link = ["base_link"]
             last_link_vector = [0, 0.05, 0]
             motor_config_file = wd + '/../resources/poppy_ergo.json'
+            first_active_joint = 0
         elif creature_type == "torso_left_arm":
             urdf_file = resource_file + "/Poppy_Torso.URDF"
             base_link = ["base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x", "chest", "l_shoulder_y"]
             last_link_vector = [0, 0.25, 0]
             motor_config_file = wd + '/../resources/poppy_torso.json'
+            first_active_joint = 3
         elif creature_type == "torso_right_arm":
             urdf_file = resource_file + "/Poppy_Torso.URDF"
             base_link = ["base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x", "chest", "r_shoulder_y"]
             last_link_vector = [0, 0.25, 0]
             motor_config_file = wd + '/../resources/poppy_torso.json'
+            first_active_joint = 3
 
-        params = model_config.from_urdf_file(urdf_file, base_link, last_link_vector, motor_config_file=motor_config_file)
+        params = model_config.from_urdf_file(urdf_file, base_link, last_link_vector, motor_config_file=motor_config_file, first_active_joint=first_active_joint)
         model.Model.__init__(self, params, computation_method="hybrid", simplify=False)
 
         # Add PyPot object

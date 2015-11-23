@@ -15,18 +15,24 @@ def get_distance_to_target(robot_parameters, nodes_angles, target, end_point=Non
     # return sum([(end_point_i - target_i) ** 2 for (end_point_i, target_i) in zip(end_point, target)])
 
 
-def inverse_kinematic(target, transformation_lambda, starting_nodes_angles, fk_method="default", bounds=None, **kwargs):
+def inverse_kinematic(target, transformation_lambda, starting_nodes_angles, fk_method="default", bounds=None, first_active_joint=0, **kwargs):
     """Calcule les angles pour atteindre la target"""
     print("Sarting optimisation with bounds : ", bounds)
 
     # Utilisation d'une optimisation L-BFGS-B
     def optimize_fun(x):
-        y = np.append(starting_nodes_angles[:3], x)
+        y = np.append(starting_nodes_angles[:first_active_joint], x)
         return np.linalg.norm(forward_kinematics.get_end_effector(y, method=fk_method, transformation_lambda=transformation_lambda, **kwargs) - target)
 
-    res = scipy.optimize.minimize(optimize_fun, starting_nodes_angles[3:], method='L-BFGS-B', bounds=bounds[3:], options={"maxiter": 100})
+    # Manage bounds
+    if bounds is not None:
+        real_bounds = bounds[first_active_joint:]
+    else:
+        real_bounds = None
+
+    res = scipy.optimize.minimize(optimize_fun, starting_nodes_angles[first_active_joint:], method='L-BFGS-B', bounds=real_bounds, options={"maxiter": 100})
     print(res.message, res.nit)
-    return(np.append(starting_nodes_angles[:3], res.x))
+    return(np.append(starting_nodes_angles[:first_active_joint], res.x))
 
 
 def inverse_kinematic_trajectory(targets_x, targets_y, targets_z, transformation_lambda, starting_nodes_angles, fk_method="default", bounds=None, **kwargs):

@@ -5,12 +5,13 @@ import numpy as np
 
 class model_config():
     """Configuration of a model"""
-    def __init__(self, joints, representation="euler", model_type="custom", name="robot", motor_config_file=None):
+    def __init__(self, joints, representation="euler", model_type="custom", name="robot", motor_config_file=None, first_active_joint=0):
         self.parameters = joints
         self.joints_number = len(joints)
         self.representation = representation
         self.model_type = model_type
         self.name = name
+        self.first_active_joint = first_active_joint
         # motor_config is the path of the pypot-style json robot file
         if motor_config_file is not None:
             self.motor_parameters = robot_utils.get_motor_parameters(json_file=motor_config_file)
@@ -33,12 +34,12 @@ class model_config():
                 self.bounds.append(new_bounds)
         else:
             self.motor_parameters = None
-            self.motor_bounds = None
+            self.bounds = None
 
     def __repr__(self):
         return("Configuration of robot : {0}".format(self.name))
 
 
-def from_urdf_file(urdf_file, base_elements=["base_link"], last_link_vector=None, base_elements_type="joint", motor_config_file=None):
+def from_urdf_file(urdf_file, base_elements=["base_link"], last_link_vector=None, base_elements_type="joint", motor_config_file=None, first_active_joint=0):
     urdf_params = robot_utils.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_elements_type=base_elements_type)
-    return model_config(urdf_params, representation="rpy", model_type="URDF", motor_config_file=motor_config_file)
+    return model_config(urdf_params, representation="rpy", model_type="URDF", motor_config_file=motor_config_file, first_active_joint=first_active_joint)
