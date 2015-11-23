@@ -17,7 +17,7 @@ def get_distance_to_target(robot_parameters, nodes_angles, target, end_point=Non
 
 def inverse_kinematic(target, transformation_lambda, starting_nodes_angles, fk_method="default", bounds=None, first_active_joint=0, **kwargs):
     """Calcule les angles pour atteindre la target"""
-    print("Sarting optimisation with bounds : ", bounds)
+    # print("Sarting optimisation with bounds : ", bounds)
 
     # Utilisation d'une optimisation L-BFGS-B
     def optimize_fun(x):
@@ -31,7 +31,7 @@ def inverse_kinematic(target, transformation_lambda, starting_nodes_angles, fk_m
         real_bounds = None
 
     res = scipy.optimize.minimize(optimize_fun, starting_nodes_angles[first_active_joint:], method='L-BFGS-B', bounds=real_bounds, options={"maxiter": 100})
-    print(res.message, res.nit)
+    # print(res.message, res.nit)
     return(np.append(starting_nodes_angles[:first_active_joint], res.x))
 
 
