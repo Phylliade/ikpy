@@ -9,7 +9,7 @@ class model_config():
         self.parameters = joints
         # Joints names
         self.joint_names = []
-        for joint in self.config.parameters:
+        for joint in self.parameters:
             self.joints_names.append(joint["name"])
         self.joints_number = len(joints)
         self.representation = representation
