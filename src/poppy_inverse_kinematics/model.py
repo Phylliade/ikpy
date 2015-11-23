@@ -155,5 +155,5 @@ class Model():
         if self.pypot_object is not None:
             for motor in self.pypot_object.motors:
                 # For every joint of the model, set the PyPot compliance
-                if motor.name in self.config.joint_names:
+                if motor.name in self.config.joint_names[self.config.first_active_joint:]:
                     motor.compliant = compliance
