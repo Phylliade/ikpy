@@ -165,6 +165,23 @@ def convert_angle_to_pypot(angle, orientation, offset, **kwargs):
     return angle_pypot
 
 
+def convert_angle_from_pypot(angle, orientation, offset, **kwargs):
+    """Converts an angle to a PyPot-compatible format"""
+
+    angle_internal = angle + offset
+
+    if orientation == "indirect":
+        angle_internal = -1 * angle_internal
+
+    # UGLY
+    if kwargs["joint_name"].startswith("l_shoulder_x"):
+        angle_internal = -1 * angle_internal
+
+    angle_internal = (angle_internal * 180 / (np.pi))
+
+    return angle_internal
+
+
 def convert_angle_limit(angle, orientation, offset, **kwargs):
     """Converts the limit angle of the PyPot JSON file to the internal format"""
     angle_pypot = angle

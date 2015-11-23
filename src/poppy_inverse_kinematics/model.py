@@ -100,10 +100,16 @@ class Model():
                     getattr(self.pypot_object, joint["name"]).goal_position = angle
 
     def sync_current_joints(self, pypot_sync=False):
-        """Synchronise les valeurs de current_joints"""
+        """Get current joints value from robot"""
         if self.pypot_object is not None and pypot_sync:
-            for i, m in enumerate(self.pypot_object.motors):
-                self.current_joints[i] = m.present_position * (np.pi / 2) / 180
+            # If there is an attached robot, read the joint values from the robot
+            for index, joint in enumerate(self.config.parameters):
+                if joint["name"] != "last_joint":
+                    angle = robot_utils.convert_angle_from_pypot(getattr(self.pypot_object, joint["name"]).goal_position)
+                else:
+                    angle = 0
+                self.current_joints[index] = angle
+
         else:
             # On place le modèle directement dans la position voulue
             self.current_joints = self.goal_joints
