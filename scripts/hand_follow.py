@@ -5,8 +5,8 @@ import time
 
 # parameters
 activate_follow = True
-interface_type = "robot"
-plot = False
+interface_type = "vrep"
+plot = True
 
 # Create creatures
 right_arm = model_creature.creature("torso_right_arm")

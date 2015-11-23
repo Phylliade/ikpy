@@ -21,10 +21,7 @@ class model_config():
             for joint in self.parameters:
                 if joint["name"] != "last_joint":
                     offset = self.motor_parameters[joint["name"]]["offset"]
-                    if self.motor_parameters[joint["name"]]["orientation"] == "indirect":
-                        orientation = "indirect"
-                    else:
-                        orientation = "direct"
+                    orientation = self.motor_parameters[joint["name"]]["orientation"]
 
                     joint["orientation-convention"] = orientation
                     joint["offset"] = offset

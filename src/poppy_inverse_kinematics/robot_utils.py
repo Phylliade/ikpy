@@ -151,9 +151,11 @@ def get_motor_parameters(json_file):
 
 def convert_angle_to_pypot(angle, joint, **kwargs):
     """Converts an angle to a PyPot-compatible format"""
+    print(joint)
     angle_deg = (angle * 180 / (np.pi))
 
-    if joint["orientation"] == "indirect":
+    if joint["orientation-convention"] == "indirect":
+        print("indirect")
         angle_deg = -1 * angle_deg
 
     # UGLY
@@ -167,10 +169,9 @@ def convert_angle_to_pypot(angle, joint, **kwargs):
 
 def convert_angle_from_pypot(angle, joint, **kwargs):
     """Converts an angle to a PyPot-compatible format"""
-
     angle_internal = angle + joint["offset"]
 
-    if joint["orientation"] == "indirect":
+    if joint["orientation-convention"] == "indirect":
         angle_internal = -1 * angle_internal
 
     # UGLY
