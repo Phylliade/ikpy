@@ -11,7 +11,8 @@ setup(name='poppy-inverse-kinematics',
       package_dir={'': 'src'},
       package_data={'poppy_inverse_kinematics.resources': ['*']},
       setup_requires=['numpy'],
-      install_requires=['numpy', 'scipy', 'sympy', 'matplotlib'],
+      install_requires=['numpy', 'scipy', 'sympy'],
+      extras_require={'Plotting': ['matplotlib']},
       classifiers=["Programming Language :: Python :: 2", "Programming Language :: Python :: 3", "Topic :: Scientific/Engineering"],
       keywords='robotics inverse-kinematics'
       )
