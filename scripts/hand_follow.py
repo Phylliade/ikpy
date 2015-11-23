@@ -43,7 +43,7 @@ time.sleep(20)
 if activate_follow:
     left_arm.sync_current_joints()
     target_right = left_arm.forward_kinematic() + np.array([0.3, 0, 0])
-    right_arm.target = target_left
+    right_arm.target = target_right
     right_arm.goto_target()
 
 # Plot result
