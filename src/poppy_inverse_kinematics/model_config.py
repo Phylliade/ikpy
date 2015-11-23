@@ -15,6 +15,7 @@ class model_config():
         # motor_config is the path of the pypot-style json robot file
         if motor_config_file is not None:
             self.motor_parameters = robot_utils.get_motor_parameters(json_file=motor_config_file)
+
             # Generate bounds
             self.bounds = []
             for joint in self.parameters:
@@ -25,9 +26,14 @@ class model_config():
                     else:
                         orientation = "direct"
 
+                    joint["orientation-convention"] = orientation
+                    joint["offset"] = offset
+
                     # Compute bounds with the right convention
-                    new_bounds = tuple([robot_utils.convert_angle_limit(angle, orientation, offset, joint_name=joint["name"]) for angle in self.motor_parameters[joint["name"]]["angle_limit"]])
+                    new_bounds = tuple([robot_utils.convert_angle_limit(angle, joint) for angle in self.motor_parameters[joint["name"]]["angle_limit"]])
                 else:
+                    joint["orientation-convention"] = "direct"
+                    joint["offset"] = 0
                     # If it is the last joint, there is no dof
                     new_bounds = (None, None)
 

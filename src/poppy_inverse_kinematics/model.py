@@ -80,20 +80,7 @@ class Model():
             for index, joint in enumerate(self.config.parameters):
                 if joint["name"] != "last_joint":
                     # If the joint is not the last (virtual) joint :
-                    # Add offset
-                    offset = self.config.motor_parameters[joint["name"]]["offset"]
-
-                    if self.config.motor_parameters is not None:
-                        # Manage orientation
-                        if self.config.motor_parameters[joint["name"]]["orientation"] == "indirect":
-                            orientation = "indirect"
-                        else:
-                            orientation = "direct"
-                    else:
-                        offset = 0
-                        orientation = "direct"
-
-                    angle = robot_utils.convert_angle_to_pypot(self.goal_joints[index], orientation, offset, joint_name=joint["name"])
+                    angle = robot_utils.convert_angle_to_pypot(self.goal_joints[index], joint)
                     print(joint["name"], self.goal_joints[index] * 180 / np.pi, angle)
 
                     # Use the name of the joint to map to the motor name
@@ -105,7 +92,7 @@ class Model():
             # If there is an attached robot, read the joint values from the robot
             for index, joint in enumerate(self.config.parameters):
                 if joint["name"] != "last_joint":
-                    angle = robot_utils.convert_angle_from_pypot(getattr(self.pypot_object, joint["name"]).goal_position)
+                    angle = robot_utils.convert_angle_from_pypot(getattr(self.pypot_object, joint["name"]).goal_position, joint)
                 else:
                     angle = 0
                 self.current_joints[index] = angle

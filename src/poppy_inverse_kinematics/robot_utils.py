@@ -149,32 +149,32 @@ def get_motor_parameters(json_file):
     return motor_config
 
 
-def convert_angle_to_pypot(angle, orientation, offset, **kwargs):
+def convert_angle_to_pypot(angle, joint, **kwargs):
     """Converts an angle to a PyPot-compatible format"""
     angle_deg = (angle * 180 / (np.pi))
 
-    if orientation == "indirect":
+    if joint["orientation"] == "indirect":
         angle_deg = -1 * angle_deg
 
     # UGLY
-    if kwargs["joint_name"].startswith("l_shoulder_x"):
+    if joint["name"].startswith("l_shoulder_x"):
         angle_deg = -1 * angle_deg
 
-    angle_pypot = angle_deg - offset
+    angle_pypot = angle_deg - joint["offset"]
 
     return angle_pypot
 
 
-def convert_angle_from_pypot(angle, orientation, offset, **kwargs):
+def convert_angle_from_pypot(angle, joint, **kwargs):
     """Converts an angle to a PyPot-compatible format"""
 
-    angle_internal = angle + offset
+    angle_internal = angle + joint["offset"]
 
-    if orientation == "indirect":
+    if joint["orientation"] == "indirect":
         angle_internal = -1 * angle_internal
 
     # UGLY
-    if kwargs["joint_name"].startswith("l_shoulder_x"):
+    if joint["name"].startswith("l_shoulder_x"):
         angle_internal = -1 * angle_internal
 
     angle_internal = (angle_internal * 180 / (np.pi))
@@ -182,12 +182,12 @@ def convert_angle_from_pypot(angle, orientation, offset, **kwargs):
     return angle_internal
 
 
-def convert_angle_limit(angle, orientation, offset, **kwargs):
+def convert_angle_limit(angle, joint, **kwargs):
     """Converts the limit angle of the PyPot JSON file to the internal format"""
     angle_pypot = angle
 
     # No need to take care of orientation
-    if orientation == "indirect":
+    if joint["orientation"] == "indirect":
         angle_pypot = 1 * angle_pypot
 
     # angle_pypot = angle_pypot + offset
