@@ -86,7 +86,7 @@ class Model():
                     # Use the name of the joint to map to the motor name
                     getattr(self.pypot_object, joint["name"]).goal_position = angle
 
-    def sync_current_joints(self, pypot_sync=False):
+    def sync_current_joints(self, pypot_sync=True):
         """Get current joints value from robot"""
         if self.pypot_object is not None and pypot_sync:
             # If there is an attached robot, read the joint values from the robot
@@ -149,3 +149,10 @@ class Model():
         joints_lengths = [np.sqrt(sum([x**2 for x in vector]))
                           for vector in translations_vectors]
         return sum(joints_lengths)
+
+    def set_compliance(self, compliance=False):
+        """Set the compliance of the underlying PyPot object of the model"""
+        if self.pypot_object is not None:
+            for joint in self.config.parameters:
+                # For every joint of the model, set the PyPot compliance
+                getattr(self.pypot_object, joint["name"]).compliance = compliance

@@ -24,16 +24,23 @@ if interface_type == "robot":
 
 
 # Set right arm position
-target_right = np.array([-0.27, -0.2, 0.5])
-# target_right = np.array([-0.1, -0.4, 0.1])
-right_arm.target = target_right
-right_arm.goto_target()
+target_left = np.array([-0.27, -0.2, 0.5])
+# target_left = np.array([-0.1, -0.4, 0.1])
+left_arm.target = target_left
+left_arm.goto_target()
 
-# Choose left arm target
+# The left arm is now compliant, so it can be moved
+left_arm.set_compliance(compliance=True)
+
+# Wait a little
+time.sleep(5)
+
+# Choose right arm target
 if activate_follow:
-    target_left = right_arm.forward_kinematic() + np.array([0.3, 0, 0])
-    left_arm.target = target_left
-    left_arm.goto_target()
+    left_arm.sync_current_joints()
+    target_right = left_arm.forward_kinematic() + np.array([0.3, 0, 0])
+    right_arm.target = target_left
+    right_arm.goto_target()
 
 # Plot result
 if plot:
