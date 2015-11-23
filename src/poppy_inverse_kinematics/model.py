@@ -80,14 +80,14 @@ class Model():
         """Synchronize goal_joints value with goto_position value of Pypot object"""
         if self.pypot_object is not None:
             for index, joint in enumerate(self.config.parameters):
-                if joint[3] != "last_joint":
+                if joint["name"] != "last_joint":
                     # If the joint is not the last (virtual) joint :
                     # Add offset
-                    offset = self.config.motor_parameters[joint[3]]["offset"]
+                    offset = self.config.motor_parameters[joint["name"]]["offset"]
 
                     if self.config.motor_parameters is not None:
                         # Manage orientation
-                        if self.config.motor_parameters[joint[3]]["orientation"] == "indirect":
+                        if self.config.motor_parameters[joint["name"]]["orientation"] == "indirect":
                             orientation = "indirect"
                         else:
                             orientation = "direct"
@@ -95,11 +95,11 @@ class Model():
                         offset = 0
                         orientation = "direct"
 
-                    angle = robot_utils.convert_angle_to_pypot(self.goal_joints[index], orientation, offset, joint_name=joint[3])
-                    print(joint[3], self.goal_joints[index] * 180 / np.pi, angle)
+                    angle = robot_utils.convert_angle_to_pypot(self.goal_joints[index], orientation, offset, joint_name=joint["name"])
+                    print(joint["name"], self.goal_joints[index] * 180 / np.pi, angle)
 
                     # Use the name of the joint to map to the motor name
-                    getattr(self.pypot_object, joint[3]).goal_position = angle
+                    getattr(self.pypot_object, joint["name"]).goal_position = angle
 
     def sync_current_joints(self, pypot_sync=False):
         """Synchronise les valeurs de current_joints"""
@@ -151,7 +151,7 @@ class Model():
 
     def get_robot_length(self):
         """Calcule la longueur du robot (tendu)"""
-        translations_vectors = [x[0] for x in self.config.parameters]
+        translations_vectors = [x["translation"] for x in self.config.parameters]
         joints_lengths = [np.sqrt(sum([x**2 for x in vector]))
                           for vector in translations_vectors]
         return sum(joints_lengths)

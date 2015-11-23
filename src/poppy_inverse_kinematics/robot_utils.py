@@ -109,12 +109,12 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
         translation = joint.find("origin").attrib["xyz"].split()
         orientation = joint.find("origin").attrib["rpy"].split()
         rotation = joint.find("axis").attrib['xyz'].split()
-        parameters.append((
-            [float(translation[0]), float(translation[1]), float(translation[2])],
-            [float(orientation[0]), float(orientation[1]), float(orientation[2])],
-            [float(rotation[0]), float(rotation[1]), float(rotation[2])],
-            joint.attrib["name"]
-        ))
+        parameters.append({
+            "translation": [float(translation[0]), float(translation[1]), float(translation[2])],
+            "orientation": [float(orientation[0]), float(orientation[1]), float(orientation[2])],
+            "rotation": [float(rotation[0]), float(rotation[1]), float(rotation[2])],
+            "name": joint.attrib["name"]
+        })
 
     # Descriptive chain of the robot
     chain = []
@@ -123,12 +123,12 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
 
     # Add last_link_vector to parameters
     if last_link_vector is not None:
-        parameters.append((
-            last_link_vector,
-            [0, 0, 0],
-            [0, 0, 0],
-            "last_joint"
-        ))
+        parameters.append({
+            "translation": last_link_vector,
+            "orientation": [0, 0, 0],
+            "rotation": [0, 0, 0],
+            "name": "last_joint"
+        })
 
     return(parameters)
 
@@ -169,12 +169,8 @@ def convert_angle_limit(angle, orientation, offset, **kwargs):
     """Converts the limit angle of the PyPot JSON file to the internal format"""
     angle_pypot = angle
 
+    # No need to take care of orientation
     if orientation == "indirect":
-        angle_pypot = 1 * angle_pypot
-
-    # UGLY
-    if kwargs["joint_name"].startswith("l_") and not kwargs["joint_name"].startswith("l_shoulder_y"):
-        print("ugly", kwargs["joint_name"])
         angle_pypot = 1 * angle_pypot
 
     # angle_pypot = angle_pypot + offset

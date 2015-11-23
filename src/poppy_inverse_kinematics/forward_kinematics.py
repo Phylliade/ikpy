@@ -188,7 +188,7 @@ def get_nodes(robot_parameters, nodes_angles, representation="euler", model_type
 
     elif model_type == "URDF":
         full_list = [
-            (trans, orientation, rotation, t) for ((trans, orientation, rotation, name), t) in zip(robot_parameters, nodes_angles)
+            (params["translation"], params["orientation"], params["rotation"], t) for (params, t) in zip(robot_parameters, nodes_angles)
         ]
 
     #  Initialisations
@@ -262,7 +262,9 @@ def compute_transformation_symbolic(robot_parameters, representation="euler", mo
         if model_type == "custom":
             (translation_vector, rot) = params
         elif model_type == "URDF":
-            (translation_vector, orientation, rot, name) = params
+            translation_vector = params["translation"]
+            orientation = params["orientation"]
+            rot = params["rotation"]
 
         # Angle symbolique qui paramètre la rotation du joint en cours
         psi = sympy.symbols("psi_" + str(index))
@@ -309,7 +311,9 @@ def compute_transformation_hybrid(robot_parameters, representation="euler", mode
         if model_type == "custom":
             (translation_vector, rot) = params
         elif model_type == "URDF":
-            (translation_vector, orientation, rot, name) = params
+            translation_vector = params["translation"]
+            orientation = params["orientation"]
+            rot = params["rotation"]
 
         # Angle symbolique qui paramètre la rotation du joint en cours
         psi = sympy.symbols("psi_" + str(index))

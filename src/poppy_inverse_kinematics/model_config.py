@@ -17,20 +17,15 @@ class model_config():
             # Generate bounds
             self.bounds = []
             for joint in self.parameters:
-                if joint[3] != "last_joint":
-                    offset = self.motor_parameters[joint[3]]["offset"]
-                    if self.motor_parameters[joint[3]]["orientation"] == "indirect":
+                if joint["name"] != "last_joint":
+                    offset = self.motor_parameters[joint["name"]]["offset"]
+                    if self.motor_parameters[joint["name"]]["orientation"] == "indirect":
                         orientation = "indirect"
                     else:
                         orientation = "direct"
 
                     # Compute bounds with the right convention
-                    new_bounds = tuple([robot_utils.convert_angle_limit(angle, orientation, offset, joint_name=joint[3]) for angle in self.motor_parameters[joint[3]]["angle_limit"]])
-                    # Swap tuple if indirect
-                    if orientation == "indirect":
-                        new_bounds = (new_bounds[0], new_bounds[1])
-                    if joint[3].startswith("l_") and not joint[3].startswith("l_shoulder_y"):
-                        new_bounds = (new_bounds[0], new_bounds[1])
+                    new_bounds = tuple([robot_utils.convert_angle_limit(angle, orientation, offset, joint_name=joint["name"]) for angle in self.motor_parameters[joint["name"]]["angle_limit"]])
                 else:
                     # If it is the last joint, there is no dof
                     new_bounds = (None, None)
