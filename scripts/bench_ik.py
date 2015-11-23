@@ -1,24 +1,20 @@
-import poppy_inverse_kinematics.robot_utils
-import poppy_inverse_kinematics.model
+import poppy_inverse_kinematics.creature as model_creature
+import numpy as np
 import cProfile
 import pstats
 import timeit
-import scripts_config
 
 # Parameters
 # Target
 target = [1, 1, 1]
 # Profile if True
-profile = True
+profile = False
 # Count elapsed time if True
 bench = True
-# Computation method
-computation_method = "hybrid"
 
 
 def setup():
-    urdf_params = poppy_inverse_kinematics.robot_utils.get_urdf_parameters(scripts_config.urdf_file)
-    robot = poppy_inverse_kinematics.model.Model(urdf_params, representation=scripts_config.representation, model_type=scripts_config.model_type, computation_method=computation_method)
+    robot = model_creature.creature("torso_right_arm")
     robot.target = target
     return robot
 
@@ -36,7 +32,7 @@ def profile_ik(robot):
 if __name__ == "__main__":
     # profile_robot()
     robot = setup()
-    if profile:
-        print(bench_ik(robot))
     if bench:
+        print(bench_ik(robot))
+    if profile:
         profile_ik(robot)
