@@ -7,9 +7,6 @@ wd = os.getcwd()
 class CreatureInterface():
     """Class implementing the PyPot interface for creature and meta_creature"""
     def __init__(self, interface_type="vrep", creature_type="torso"):
-        if interface_type is not None:
-            # Import pypot only if necessary
-            import pypot.vrep
         if creature_type == "torso" or creature_type == "torso_right_arm" or creature_type == "torso_left_arm":
             pypot_config_file = wd + '/../resources/poppy_torso.json'
             if interface_type == "vrep":
@@ -20,6 +17,8 @@ class CreatureInterface():
                 vrep_scene = wd + '/../resources/poppy_ergo.ttt'
 
         if interface_type == "vrep":
+            # Import pypot only if necessary
+            import pypot.vrep
             # Create pypot object
             with open(pypot_config_file, "r+") as f:
                 config_data = f.read()

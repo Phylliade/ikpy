@@ -5,7 +5,6 @@
 import numpy as np
 from . import forward_kinematics as fk
 from . import inverse_kinematic as ik
-from . import plot_utils as pl
 from . import robot_utils
 import matplotlib.pyplot
 
@@ -111,7 +110,8 @@ class Model():
             self.current_joints = self.goal_joints
 
     def plot_model(self, q=None, ax=None, show=True):
-        """Affiche le modèle du robot"""
+        """Plot the model"""
+        from . import plot_utils as pl
         if q is None:
             q = self.current_joints
         if ax is None:
@@ -128,6 +128,7 @@ class Model():
 
     def animate_model(self, targets_x, targets_y, targets_z):
         """Animate the model moving along the trajectory"""
+        from . import plot_utils as pl
         fig = matplotlib.pyplot.figure()
         ax = fig.add_subplot(111, projection='3d')
 

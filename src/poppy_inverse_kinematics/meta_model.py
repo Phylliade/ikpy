@@ -1,5 +1,4 @@
 # coding= utf8
-from . import plot_utils
 
 
 class MetaModel():
@@ -15,6 +14,7 @@ class MetaModel():
 
     def plot_meta_model(self):
         """Plot the meta model"""
+        from . import plot_utils
         ax = plot_utils.init_3d_figure()
 
         for model in self.models:
