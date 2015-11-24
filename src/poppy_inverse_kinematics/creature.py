@@ -21,13 +21,13 @@ class creature(model.Model, creature_interface.CreatureInterface):
         elif creature_type == "torso_left_arm":
             urdf_file = resource_file + "/Poppy_Torso.URDF"
             base_link = ["base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x", "chest", "l_shoulder_y"]
-            last_link_vector = [0, 0.25, 0]
+            last_link_vector = [0, 0.18, 0]
             motor_config_file = wd + '/../resources/poppy_torso.json'
             first_active_joint = 3
         elif creature_type == "torso_right_arm":
             urdf_file = resource_file + "/Poppy_Torso.URDF"
             base_link = ["base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x", "chest", "r_shoulder_y"]
-            last_link_vector = [0, 0.25, 0]
+            last_link_vector = [0, 0.18, 0]
             motor_config_file = wd + '/../resources/poppy_torso.json'
             first_active_joint = 3
 
