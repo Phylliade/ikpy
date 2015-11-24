@@ -20,12 +20,12 @@ class Model(model_interface.ModelInterface):
    :type simplify: bool
     """
 
-    def __init__(self, configuration, pypot_object=None, computation_method="default", simplify=False, interface_type="vrep"):
+    def __init__(self, configuration, pypot_object=None, computation_method="default", simplify=False, interface_type="vrep", move_duration=None):
         # Configuration 2D
         self.config = configuration
         self.arm_length = self.get_robot_length()
         self.computation_method = computation_method
-        model_interface.ModelInterface.__init__(self, pypot_object=pypot_object, interface_type=interface_type)
+        model_interface.ModelInterface.__init__(self, pypot_object=pypot_object, interface_type=interface_type, move_duration=move_duration)
         self.simplify = simplify
         self.transformation_lambda = fk.compute_transformation(self.config.parameters, method=self.computation_method, representation=self.config.representation, model_type=self.config.model_type, simplify=self.simplify)
         # initialize starting configuration
@@ -85,7 +85,11 @@ class Model(model_interface.ModelInterface):
                     # print(joint["name"], self.goal_joints[index] * 180 / np.pi, angle)
 
                     # Use the name of the joint to map to the motor name
-                    getattr(self.pypot_object, joint["name"]).goto_position(angle, 0.1)
+                    if self.move_duration is not None and self.move_duration != 0:
+                        # Set move_duration to 0 to have instant moves
+                        getattr(self.pypot_object, joint["name"]).goto_position(angle, self.move_duration)
+                    else:
+                        getattr(self.pypot_object, joint["name"]).goal_position = angle
 
     def sync_current_joints(self, pypot_sync=True):
         """Get current joints value from robot"""

@@ -1,15 +1,18 @@
 # coding= utf8
+from . import model_interface
 
 
-class MetaModel():
+class MetaModel(model_interface.ModelInterface):
     """MetaModel class"""
-    def __init__(self, models=[], pypot_object=None):
+    def __init__(self, models=[], pypot_object=None, interface_type=None, move_duration=None):
         self.models = models
-        self.pypot_object = pypot_object
+        model_interface.ModelInterface.__init__(self, pypot_object=pypot_object, interface_type=interface_type, move_duration=move_duration)
 
     def add_model(self, model):
         """Add a model to the meta model"""
         model.pypot_object = self.pypot_object
+        model.interface_type = self.interface_type
+        model.move_duration = self.move_duration
         self.models.append(model)
 
     def plot_meta_model(self):

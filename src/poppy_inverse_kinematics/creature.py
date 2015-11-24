@@ -10,7 +10,7 @@ wd = os.getcwd()
 
 class creature(model.Model, creature_interface.CreatureInterface):
     """The creature class"""
-    def __init__(self, creature_type, interface_type=None):
+    def __init__(self, creature_type, interface_type=None, move_duration=None):
 
         if creature_type == "ergo":
             urdf_file = resource_file + "/poppy_ergo.URDF"
@@ -32,7 +32,7 @@ class creature(model.Model, creature_interface.CreatureInterface):
             first_active_joint = 3
 
         params = model_config.from_urdf_file(urdf_file, base_link, last_link_vector, motor_config_file=motor_config_file, first_active_joint=first_active_joint)
-        model.Model.__init__(self, params, computation_method="hybrid", simplify=False, interface_type=interface_type)
+        model.Model.__init__(self, params, computation_method="hybrid", simplify=False, interface_type=interface_type, move_duration=move_duration)
 
         # Add PyPot object
-        creature_interface.CreatureInterface.__init__(self, interface_type=interface_type, creature_type=creature_type)
+        creature_interface.CreatureInterface.__init__(self, interface_type=interface_type, creature_type=creature_type, move_duration=move_duration)
