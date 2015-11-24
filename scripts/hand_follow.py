@@ -8,6 +8,7 @@ activate_follow = True
 waiting_time = 5
 exp_type = "simulation"
 target_delta = np.array([-0.3, 0, 0])
+move_duration = 100
 
 if exp_type == "simulation":
     manual_move = False
@@ -36,7 +37,7 @@ def follow_hand(left_arm, right_arm):
 # Create creatures
 right_arm = model_creature.creature("torso_right_arm")
 left_arm = model_creature.creature("torso_left_arm")
-torso = meta_creature.MetaCreature(interface_type=interface_type, creature_type="torso")
+torso = meta_creature.MetaCreature(interface_type=interface_type, creature_type="torso", move_duration=move_duration)
 torso.add_model(right_arm)
 torso.add_model(left_arm)
 
