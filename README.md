@@ -1,6 +1,8 @@
 # Poppy Inverse Kinematics #
 ![Travis-CI](https://travis-ci.org/Phylliade/poppy-inverse-kinematics.svg?branch=master)
-[![PyPI](https://img.shields.io/pypi/dd/poppy_inverse_kinematics.svg)]()
+[![PyPI](https://img.shields.io/pypi/v/poppy_inverse_kinematics.svg)](https://pypi.python.org/pypi/poppy_inverse_kinematics/)
+[![PyPI](https://img.shields.io/pypi/pyversions/poppy_inverse_kinematics/.svg)](https://pypi.python.org/pypi/poppy_inverse_kinematics/)
+[![PyPI](https://img.shields.io/pypi/dm/poppy_inverse_kinematics.svg)](https://pypi.python.org/pypi/poppy_inverse_kinematics/)
 [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/Phylliade/poppy-inverse-kinematics)
 # Installation
 You have two options :
