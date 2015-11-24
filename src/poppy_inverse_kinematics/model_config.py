@@ -1,6 +1,5 @@
 # coding= utf8
 from . import robot_utils
-import numpy as np
 
 
 class model_config():

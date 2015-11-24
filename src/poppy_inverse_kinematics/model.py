@@ -6,9 +6,10 @@ import numpy as np
 from . import forward_kinematics as fk
 from . import inverse_kinematic as ik
 from . import robot_utils
+from . import model_interface
 
 
-class Model():
+class Model(model_interface.ModelInterface):
     """Base model class
 
    :param configuration: The configuration of the robot
@@ -19,12 +20,12 @@ class Model():
    :type simplify: bool
     """
 
-    def __init__(self, configuration, pypot_object=None, computation_method="default", simplify=False):
+    def __init__(self, configuration, pypot_object=None, computation_method="default", simplify=False, interface_type="vrep"):
         # Configuration 2D
         self.config = configuration
         self.arm_length = self.get_robot_length()
         self.computation_method = computation_method
-        self.pypot_object = pypot_object
+        model_interface.ModelInterface.__init__(self, pypot_object=pypot_object, interface_type=interface_type)
         self.simplify = simplify
         self.transformation_lambda = fk.compute_transformation(self.config.parameters, method=self.computation_method, representation=self.config.representation, model_type=self.config.model_type, simplify=self.simplify)
         # initialize starting configuration
@@ -84,11 +85,11 @@ class Model():
                     # print(joint["name"], self.goal_joints[index] * 180 / np.pi, angle)
 
                     # Use the name of the joint to map to the motor name
-                    getattr(self.pypot_object, joint["name"]).goal_position = angle
+                    getattr(self.pypot_object, joint["name"]).goto_position(angle, 2)
 
-    def sync_current_joints(self, pypot_sync=True):
+    def sync_current_joints(self, pypot_sync=False):
         """Get current joints value from robot"""
-        if self.pypot_object is not None and pypot_sync:
+        if (self.pypot_object is not None and pypot_sync) and self.interface_type != "vrep":
             # If there is an attached robot, read the joint values from the robot
             for index, joint in enumerate(self.config.parameters):
                 if joint["name"] != "last_joint":
