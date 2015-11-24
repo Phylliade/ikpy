@@ -5,10 +5,10 @@ import time
 
 # parameters
 activate_follow = True
-waiting_time = 5
+waiting_time = 0.1
 exp_type = "simulation"
 target_delta = np.array([-0.3, 0, 0])
-move_duration = 100
+move_duration = 2
 
 if exp_type == "simulation":
     manual_move = False

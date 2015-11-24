@@ -79,17 +79,21 @@ class Model(model_interface.ModelInterface):
         """Synchronize goal_joints value with goto_position value of Pypot object"""
         if self.pypot_object is not None:
             for index, joint in enumerate(self.config.parameters):
-                if joint["name"] != "last_joint":
-                    # If the joint is not the last (virtual) joint :
-                    angle = robot_utils.convert_angle_to_pypot(self.goal_joints[index], joint)
-                    # print(joint["name"], self.goal_joints[index] * 180 / np.pi, angle)
+                # Only move active joints
+                print(self.config.first_active_joint, index)
+                if index >= self.config.first_active_joint:
+                    print("ok")
+                    if joint["name"] != "last_joint":
+                        # If the joint is not the last (virtual) joint :
+                        angle = robot_utils.convert_angle_to_pypot(self.goal_joints[index], joint)
+                        # print(joint["name"], self.goal_joints[index] * 180 / np.pi, angle)
 
-                    # Use the name of the joint to map to the motor name
-                    if self.move_duration is not None and self.move_duration != 0:
-                        # Set move_duration to 0 to have instant moves
-                        getattr(self.pypot_object, joint["name"]).goto_position(angle, self.move_duration)
-                    else:
-                        getattr(self.pypot_object, joint["name"]).goal_position = angle
+                        # Use the name of the joint to map to the motor name
+                        if self.move_duration is not None and self.move_duration != 0:
+                            # Set move_duration to 0 to have instant moves
+                            getattr(self.pypot_object, joint["name"]).goto_position(angle, self.move_duration)
+                        else:
+                            getattr(self.pypot_object, joint["name"]).goal_position = angle
 
     def sync_current_joints(self, pypot_sync=True):
         """Get current joints value from robot"""
