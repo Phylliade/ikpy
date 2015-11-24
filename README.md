@@ -9,14 +9,14 @@ You have two options :
 
 
 1. From PyPI (recommended) : Simply run :
-  ```
-  pip install poppy-inverse-kinematics
-  ```
+   ```
+   pip install poppy-inverse-kinematics
+   ```
 2. From source : First download and extract the archive, the run :
-  ```
-  pip install ./
-  ```    
-  NB : You must have the proper rights to execute this command
+   ```
+   pip install ./
+   ```    
+   NB : You must have the proper rights to execute this command
 
 # API Documentation
 An exhaustive documentation of the API can be found [here](http://poppy-inverse-kinematics.readthedocs.org).
