@@ -1,7 +1,7 @@
 # Poppy Inverse Kinematics #
 ![Travis-CI](https://travis-ci.org/Phylliade/poppy-inverse-kinematics.svg?branch=master)
+[![PyPI](https://img.shields.io/pypi/dd/poppy_inverse_kinematics.svg)]()
 [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/Phylliade/poppy-inverse-kinematics)
-
 # Installation
 You have two options :
 
