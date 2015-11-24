@@ -85,7 +85,7 @@ class Model(model_interface.ModelInterface):
                     # print(joint["name"], self.goal_joints[index] * 180 / np.pi, angle)
 
                     # Use the name of the joint to map to the motor name
-                    getattr(self.pypot_object, joint["name"]).goto_position(angle, 2)
+                    getattr(self.pypot_object, joint["name"]).goto_position(angle, 0.1)
 
     def sync_current_joints(self, pypot_sync=True):
         """Get current joints value from robot"""

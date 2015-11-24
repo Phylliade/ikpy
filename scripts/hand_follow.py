@@ -45,7 +45,7 @@ if interface_type == "robot":
     print("Initializing robot")
     for m in torso.pypot_object.motors:
         m.compliant = False
-        m.goal_position = 0
+        m.goto_position(0, 2)
 
     print("Waiting 10 seconds")
     time.sleep(10)
