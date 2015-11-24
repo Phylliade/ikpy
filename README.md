@@ -9,14 +9,14 @@ You have two options :
 
 
 1. From PyPI (recommended) : Simply run :
-```
-pip install poppy-inverse-kinematics
-```
+  ```
+  pip install poppy-inverse-kinematics
+  ```
 2. From source : First download and extract the archive, the run :
-```
-pip install ./
-```    
-NB : You must have the proper rights to execute this command
+  ```
+  pip install ./
+  ```    
+  NB : You must have the proper rights to execute this command
 
 # API Documentation
 An exhaustive documentation of the API can be found [here](http://poppy-inverse-kinematics.readthedocs.org).
@@ -26,4 +26,6 @@ An exhaustive documentation of the API can be found [here](http://poppy-inverse-
 The library can work with both versions of Python (2.7 and 3.x).
 It requires numpy and scipy.
 
-Sympy is optional and used for fast hybrid computation methods.
+Sympy is not mandatory, but highly recommended for fast hybrid computations, that's why it is installed by default.
+
+Matplotlib is optional : it is used to plot your models.
