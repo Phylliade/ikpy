@@ -87,9 +87,9 @@ class Model(model_interface.ModelInterface):
                     # Use the name of the joint to map to the motor name
                     getattr(self.pypot_object, joint["name"]).goto_position(angle, 2)
 
-    def sync_current_joints(self, pypot_sync=False):
+    def sync_current_joints(self, pypot_sync=True):
         """Get current joints value from robot"""
-        if (self.pypot_object is not None and pypot_sync) and self.interface_type != "vrep":
+        if self.pypot_object is not None and pypot_sync and self.interface_type != "vrep":
             # If there is an attached robot, read the joint values from the robot
             for index, joint in enumerate(self.config.parameters):
                 if joint["name"] != "last_joint":
