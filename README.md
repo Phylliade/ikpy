@@ -9,10 +9,12 @@ You have two options :
 
 
 1. From PyPI (recommended) : Simply run :
+
    ```
    pip install poppy-inverse-kinematics
    ```
 2. From source : First download and extract the archive, the run :
+
    ```
    pip install ./
    ```    
