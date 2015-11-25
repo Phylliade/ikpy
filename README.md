@@ -13,18 +13,21 @@ You have two options :
 
 1. From PyPI (recommended) : Simply run :
 
-   ```
+   ```bash
    pip install poppy-inverse-kinematics
    ```
 2. From source : First download and extract the archive, then run :
 
-   ```
+   ```bash
    pip install ./
    ```    
    NB : You must have the proper rights to execute this command
 
+# Tutorials
+You can find tutorials in the IPython [notebooks](https://github.com/Phylliade/poppy-inverse-kinematics/tree/master/notebooks).
+
 # API Documentation
-An exhaustive documentation of the API can be found [here](http://poppy-inverse-kinematics.readthedocs.org).
+An extensive documentation of the API can be found [here](http://poppy-inverse-kinematics.readthedocs.org).
 
 
 # Dependencies and compatibility
