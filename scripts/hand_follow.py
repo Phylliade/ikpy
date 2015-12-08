@@ -2,7 +2,7 @@ import poppy_inverse_kinematics.creature as model_creature
 import numpy as np
 import poppy_inverse_kinematics.meta_creature as meta_creature
 import time
-from hand_follow_config import activate_follow, waiting_time, exp_type, target_delta, move_duration, max_iter
+from config.hand_follow_config import activate_follow, waiting_time, exp_type, target_delta, move_duration, max_iter
 
 if exp_type == "simulation":
     manual_move = False
