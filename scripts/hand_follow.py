@@ -2,13 +2,7 @@ import poppy_inverse_kinematics.creature as model_creature
 import numpy as np
 import poppy_inverse_kinematics.meta_creature as meta_creature
 import time
-
-# parameters
-activate_follow = True
-waiting_time = 0.1
-exp_type = "simulation"
-target_delta = np.array([-0.3, 0, 0])
-move_duration = 2
+from config.hand_follow_config import activate_follow, waiting_time, exp_type, target_delta, move_duration, max_iter
 
 if exp_type == "simulation":
     manual_move = False
@@ -35,7 +29,7 @@ def follow_hand(left_arm, right_arm):
     right_arm.goto_target()
 
 # Create creatures
-right_arm = model_creature.creature("torso_right_arm")
+right_arm = model_creature.creature("torso_right_arm", max_ik_iterations=max_iter)
 left_arm = model_creature.creature("torso_left_arm")
 torso = meta_creature.MetaCreature(interface_type=interface_type, creature_type="torso", move_duration=move_duration)
 torso.add_model(right_arm)
