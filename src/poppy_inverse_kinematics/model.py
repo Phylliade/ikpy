@@ -20,7 +20,7 @@ class Model(model_interface.ModelInterface):
    :type simplify: bool
     """
 
-    def __init__(self, configuration, pypot_object=None, computation_method="default", simplify=False, interface_type="vrep", move_duration=None):
+    def __init__(self, configuration, pypot_object=None, computation_method="default", simplify=False, interface_type="vrep", move_duration=None, ik_regularization_parameter=None):
         # Configuration 2D
         self.config = configuration
         self.arm_length = self.get_robot_length()
@@ -32,6 +32,7 @@ class Model(model_interface.ModelInterface):
         self.current_joints = np.zeros(self.config.joints_number)
         self.current_pose = self.forward_kinematic(self.current_joints)
         self.target = self.current_pose
+        self.ik_regularization_parameter = ik_regularization_parameter
 
     def forward_kinematic(self, q=None):
         """Renvoie la position du end effector en fonction de la configuration des joints"""
@@ -45,20 +46,24 @@ class Model(model_interface.ModelInterface):
             X = fk.get_end_effector(nodes_angles=q, method=self.computation_method, transformation_lambda=self.transformation_lambda)
         return X
 
-    def inverse_kinematic(self, target=None, initial_position=None):
+    def inverse_kinematic(self, target=None, initial_position=None, regularization_parameter=None):
         """Computes the IK for given target"""
         # If absolute_target is not given, use self.target
         if target is None:
             target = self.target
+
+        # If regularization_parameter is not given, use the object attribute
+        if regularization_parameter is None:
+            regularization_parameter = self.ik_regularization_parameter
 
         if initial_position is None:
             initial_position = self.current_joints
 
         # Choose computation method
         if self.computation_method == "default":
-            return ik.inverse_kinematic(target, self.transformation_lambda, initial_position, fk_method=self.computation_method, model_type=self.config.model_type, representation=self.config.representation, robot_parameters=self.config.parameters, bounds=self.config.bounds, first_active_joint=self.config.first_active_joint)
+            return ik.inverse_kinematic(target, self.transformation_lambda, initial_position, fk_method=self.computation_method, model_type=self.config.model_type, representation=self.config.representation, regularization_parameter=regularization_parameter, robot_parameters=self.config.parameters, bounds=self.config.bounds, first_active_joint=self.config.first_active_joint)
         else:
-            return ik.inverse_kinematic(target, self.transformation_lambda, initial_position, fk_method=self.computation_method, bounds=self.config.bounds, first_active_joint=self.config.first_active_joint)
+            return ik.inverse_kinematic(target, self.transformation_lambda, initial_position, fk_method=self.computation_method, bounds=self.config.bounds, first_active_joint=self.config.first_active_joint, regularization_parameter=regularization_parameter)
 
     def goto_target(self):
         """Déplace le robot vers la target donnée"""

@@ -20,6 +20,7 @@ class TestModel(unittest.TestCase):
     def test_ik(self):
         for robot in self.robots:
             robot.goto_target()
+            robot.plot_model()
             np.testing.assert_almost_equal(robot.forward_kinematic(), robot.target, decimal=3)
 
 

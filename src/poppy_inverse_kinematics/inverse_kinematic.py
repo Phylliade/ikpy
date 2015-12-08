@@ -15,14 +15,24 @@ def get_distance_to_target(robot_parameters, nodes_angles, target, end_point=Non
     # return sum([(end_point_i - target_i) ** 2 for (end_point_i, target_i) in zip(end_point, target)])
 
 
-def inverse_kinematic(target, transformation_lambda, starting_nodes_angles, fk_method="default", bounds=None, first_active_joint=0, **kwargs):
+def inverse_kinematic(target, transformation_lambda, starting_nodes_angles, fk_method="default", bounds=None, first_active_joint=0, regularization_parameter=None, **kwargs):
     """Calcule les angles pour atteindre la target"""
     # print("Sarting optimisation with bounds : ", bounds)
 
-    # Utilisation d'une optimisation L-BFGS-B
-    def optimize_fun(x):
+    # Compute squared distance to target
+    def optimize_target(x):
         y = np.append(starting_nodes_angles[:first_active_joint], x)
-        return np.linalg.norm(forward_kinematics.get_end_effector(y, method=fk_method, transformation_lambda=transformation_lambda, **kwargs) - target)
+        squared_distance = np.linalg.norm(forward_kinematics.get_end_effector(y, method=fk_method, transformation_lambda=transformation_lambda, **kwargs) - target)
+        return squared_distance
+
+    # If a regularization is selected
+    if regularization_parameter is not None:
+        def optimize_total(x):
+            regularization = np.linalg.norm(x - starting_nodes_angles[first_active_joint:])
+            return optimize_target(x) + regularization_parameter * regularization
+    else:
+        def optimize_total(x):
+            return optimize_target(x)
 
     # Manage bounds
     if bounds is not None:
@@ -30,7 +40,8 @@ def inverse_kinematic(target, transformation_lambda, starting_nodes_angles, fk_m
     else:
         real_bounds = None
 
-    res = scipy.optimize.minimize(optimize_fun, starting_nodes_angles[first_active_joint:], method='L-BFGS-B', bounds=real_bounds, options={"maxiter": 100})
+    # Utilisation d'une optimisation L-BFGS-B
+    res = scipy.optimize.minimize(optimize_total, starting_nodes_angles[first_active_joint:], method='L-BFGS-B', bounds=real_bounds, options={"maxiter": 100})
     # print(res.message, res.nit)
     if first_active_joint == 0:
         return(res.x)
