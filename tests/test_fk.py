@@ -13,7 +13,7 @@ class TestFK(unittest.TestCase):
         one_move[5] = np.pi / 4
         one_move[6] = -np.pi / 2
         one_move[4] = -np.pi / 2
-        self.test_pos = one_move
+        self.test_pos = all_zeros
 
     def test_fk_creature(self):
 

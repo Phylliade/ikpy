@@ -18,6 +18,12 @@ class creature(model.Model, creature_interface.CreatureInterface):
             last_link_vector = [0, 0.05, 0]
             motor_config_file = wd + '/../resources/poppy_ergo.json'
             first_active_joint = 0
+        elif creature_type == "ergo_jr":
+            urdf_file = resource_file + "/poppy_ergo_jr.URDF"
+            base_link = ["base_link"]
+            last_link_vector = [0, 0, -0.03]
+            motor_config_file = wd + '/../resources/poppy_ergo_jr.json'
+            first_active_joint = 0
         elif creature_type == "torso_left_arm":
             urdf_file = resource_file + "/Poppy_Torso.URDF"
             base_link = ["base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x", "chest", "l_shoulder_y"]
