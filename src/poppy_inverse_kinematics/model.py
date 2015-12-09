@@ -90,9 +90,7 @@ class Model(model_interface.ModelInterface):
         if self.pypot_object is not None:
             for index, joint in enumerate(self.config.parameters):
                 # Only move active joints
-                print(self.config.first_active_joint, index)
                 if index >= self.config.first_active_joint:
-                    print("ok")
                     if joint["name"] != "last_joint":
                         # If the joint is not the last (virtual) joint :
                         angle = robot_utils.convert_angle_to_pypot(self.goal_joints[index], joint)

@@ -36,6 +36,8 @@ class creature(model.Model, creature_interface.CreatureInterface):
             last_link_vector = [0, 0.18, 0]
             motor_config_file = wd + '/../resources/poppy_torso.json'
             first_active_joint = 3
+        else:
+            raise ValueError('Unknown creature')
 
         params = model_config.from_urdf_file(urdf_file, base_link, last_link_vector, motor_config_file=motor_config_file, first_active_joint=first_active_joint)
         model.Model.__init__(self, params, computation_method="hybrid", simplify=False, interface_type=interface_type, move_duration=move_duration, ik_regularization_parameter=ik_regularization_parameter, max_ik_iterations=max_ik_iterations)
