@@ -12,6 +12,14 @@ Subpackages
 Submodules
 ----------
 
+poppy_inverse_kinematics.link module
+----------------------------------------
+
+.. automodule:: poppy_inverse_kinematics.link
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 poppy_inverse_kinematics.creature module
 ----------------------------------------
 

@@ -1,8 +1,9 @@
 # coding= utf8
 """
-.. module:: robot_utils
+.. module:: URDF_utils
 """
 
+from . import link as lib_link
 from . import forward_kinematics
 import xml.etree.ElementTree as ET
 import json
@@ -57,15 +58,23 @@ def find_next_link(root, current_joint, next_links):
         # If a next link is provided, use it
         next_link_name = next_links.pop(0)
 
-    for link in root.iter("link"):
-        if link.attrib["name"] == next_link_name:
-            next_link = link
+    for urdf_link in root.iter("link"):
+        if urdf_link.attrib["name"] == next_link_name:
+            next_link = urdf_link
             has_next = True
     return(has_next, next_link)
 
 
 def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector=None, base_elements_type="joint"):
-    """Returns translated parameters from the given URDF file"""
+    """Returns translated parameters from the given URDF file
+
+   :param urdf_file: The path of the URDF file
+   :type urdf_file: string
+   :param base_elements: List of the links beginning the chain
+   :type base_elements: list of strings
+   :param last_link_vector: Optional : The translation vector of the tip.
+   :type last_link_vector: numpy.array
+    """
     tree = ET.parse(urdf_file)
     root = tree.getroot()
 
@@ -109,26 +118,21 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
         translation = joint.find("origin").attrib["xyz"].split()
         orientation = joint.find("origin").attrib["rpy"].split()
         rotation = joint.find("axis").attrib['xyz'].split()
-        parameters.append({
-            "translation": [float(translation[0]), float(translation[1]), float(translation[2])],
-            "orientation": [float(orientation[0]), float(orientation[1]), float(orientation[2])],
-            "rotation": [float(rotation[0]), float(rotation[1]), float(rotation[2])],
-            "name": joint.attrib["name"]
-        })
-
-    # Descriptive chain of the robot
-    chain = []
-    for link in links:
-        chain.append(link.attrib["name"])
+        parameters.append(lib_link.URDFLink(
+            translation_vector=[float(translation[0]), float(translation[1]), float(translation[2])],
+            orientation=[float(orientation[0]), float(orientation[1]), float(orientation[2])],
+            rotation=[float(rotation[0]), float(rotation[1]), float(rotation[2])],
+            name=joint.attrib["name"]
+        ))
 
     # Add last_link_vector to parameters
     if last_link_vector is not None:
-        parameters.append({
-            "translation": last_link_vector,
-            "orientation": [0, 0, 0],
-            "rotation": [0, 0, 0],
-            "name": "last_joint"
-        })
+        parameters.append(lib_link.URDFLink(
+            translation=last_link_vector,
+            orientation=[0, 0, 0],
+            rotation=[0, 0, 0],
+            name="last_joint"
+        ))
 
     return(parameters)
 
