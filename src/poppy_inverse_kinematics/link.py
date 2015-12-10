@@ -1,4 +1,5 @@
 # coding= utf8
+import numpy as np
 
 
 class Link(object):
@@ -11,11 +12,12 @@ class Link(object):
     :param use_symbolic_matrix: wether the transformation matrix is stored as Numpy array or as a Sympy symbolic matrix.
     :type use_symbolic_matrix: bool
     """
+
     def __init__(self, name, bounds=None, use_symbolic_matrix=True):
         self.use_symbolic_matrix = use_symbolic_matrix
 
-        def get_transformartion_matrix(theta):
-            pass
+    def get_transformartion_matrix(theta):
+        raise NotImplementedError
 
 
 class URDFLink(Link):
@@ -41,6 +43,7 @@ class URDFLink(Link):
 
    URDFlink()
     """
+
     def __init__(self, name, translation_vector, orientation, rotation, bounds=None, angle_representation="rpy", use_symbolic_matrix=True):
         Link.__init__(self, name, use_symbolic_matrix)
 
@@ -52,10 +55,25 @@ class DHLink(Link):
    :type name: string
    :param bounds: Optional : The bounds of the link. Defaults to None
    :type bounds: tuple
+   :param float d: offset along previous z to the common normal
+   :param float a: offset along previous   to the common normal
    :param use_symbolic_matrix: wether the transformation matrix is stored as Numpy array or as a Sympy symbolic matrix.
    :type use_symbolic_matrix: bool
    :returns: The link object
    :rtype: DHLink
     """
-    def __init__(self, name, bounds=None, use_symbolic_matrix=True):
+
+    def __init__(self, name, d=0, a=0, bounds=None, use_symbolic_matrix=True):
         Link.__init__(self, use_symbolic_matrix)
+
+    def get_transformation_matrix(self, theta, a):
+        """ Computes the homogeneous transformation matrix for this link. """
+        ct = np.cos(theta + self.theta)
+        st = np.sin(theta + self.theta)
+        ca = np.cos(self.alpha)
+        sa = np.sin(self.alpha)
+
+        return np.matrix(((ct, -st * ca, st * sa, a * ct),
+                          (st, ct * ca, -ct * sa, a * st),
+                          (0, sa, ca, self.d),
+                          (0, 0, 0, 1)))
