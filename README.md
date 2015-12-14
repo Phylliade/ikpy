@@ -1,4 +1,4 @@
-# Poppy Inverse Kinematics #
+# IKPy #
 ![Travis-CI](https://travis-ci.org/Phylliade/poppy-inverse-kinematics.svg?branch=master)
 [![PyPI](https://img.shields.io/pypi/v/poppy_inverse_kinematics.svg)](https://pypi.python.org/pypi/poppy_inverse_kinematics/)
 [![Documentation Status](https://readthedocs.org/projects/poppy-inverse-kinematics/badge/?version=latest)](http://poppy-inverse-kinematics.readthedocs.org/en/latest/?badge=latest)
@@ -25,7 +25,7 @@ You have two options :
    NB : You must have the proper rights to execute this command
 
 # Tutorials
-You can find tutorials in the IPython [notebooks](https://github.com/Phylliade/poppy-inverse-kinematics/tree/master/notebooks).
+You can find tutorials in the IPython [notebooks](https://github.com/Phylliade/ikpy/tree/master/notebooks).
 
 # API Documentation
 An extensive documentation of the API can be found [here](http://poppy-inverse-kinematics.readthedocs.org).
