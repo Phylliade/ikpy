@@ -6,7 +6,12 @@ from . import plot_utils
 
 
 class Chain(object):
-    def __init__(self, links, profile=''"", ik_solver=None, **kwargs):
+    """The base Chain class
+
+    :param list links: List of the links of the chain
+    :param list active_links: The list of the positions of the active links
+    """
+    def __init__(self, links, active_links=0, profile=''"", ik_solver=None, **kwargs):
         self.links = links
 
     def forward_kinematics(self, joints):
@@ -15,10 +20,24 @@ class Chain(object):
         :param list joints: The list of the positions of each joint
         :returns: The transformation matrix
         """
-        pass
+        if self.computation_method == "default":
+            # Special args for the default method
+            X = fk.get_end_effector(nodes_angles=joints, method=self.computation_method, transformation_lambda=self.transformation_lambda, representation=self.config.representation, model_type=self.config.model_type, robot_parameters=self.config.parameters)
+        else:
+            X = fk.get_end_effector(nodes_angles=joints, method=self.computation_method, transformation_lambda=self.transformation_lambda)
+        return X
 
-    def inverse_kinematics(self, end_effector, ik_solver=None, **kwargs):
-        return ik_solver(end_effector, **kwargs)
+    def inverse_kinematic(self, target=None, initial_position=None, regularization_parameter=None, max_iterations=None):
+        """Computes the inverse kinematic on the specified target
+
+        :param numpy.array target: The target of the inverse kinematic
+        :param numpy.array initial_position: the initial position of each joint of the chain
+        """
+        # Choose computation method
+        if self.computation_method == "default":
+            return ik.inverse_kinematic(target, self.transformation_lambda, initial_position, fk_method=self.computation_method, model_type=self.config.model_type, representation=self.config.representation, regularization_parameter=regularization_parameter, max_iter=max_iterations, robot_parameters=self.config.parameters, bounds=self.config.bounds, first_active_joint=self.config.first_active_joint)
+        else:
+            return ik.inverse_kinematic(target, self.transformation_lambda, initial_position, fk_method=self.computation_method, bounds=self.config.bounds, first_active_joint=self.config.first_active_joint, regularization_parameter=regularization_parameter, max_iter=max_iterations)
 
     def plot(self, joints, ax, target=None, show=False):
         """Plots the Chain using Matplotlib

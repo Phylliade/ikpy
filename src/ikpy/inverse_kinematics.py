@@ -15,7 +15,7 @@ def get_distance_to_target(robot_parameters, nodes_angles, target, end_point=Non
     # return sum([(end_point_i - target_i) ** 2 for (end_point_i, target_i) in zip(end_point, target)])
 
 
-def inverse_kinematic(target, transformation_lambda, starting_nodes_angles, fk_method="default", bounds=None, first_active_joint=0, regularization_parameter=None, max_iter=None, **kwargs):
+def inverse_kinematic_optimization(target, transformation_lambda, starting_nodes_angles, fk_method="default", bounds=None, first_active_joint=0, regularization_parameter=None, max_iter=None, **kwargs):
     """Calcule les angles pour atteindre la target"""
     # print("Sarting optimisation with bounds : ", bounds)
 
