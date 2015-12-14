@@ -1,7 +1,7 @@
 # coding= utf8
 import matplotlib.pyplot
 from . import forward_kinematics
-from . import inverse_kinematic
+from . import inverse_kinematics
 import matplotlib.animation
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -77,7 +77,7 @@ def animate_trajectory(robot_parameters, representation, model_type, starting_no
     plot_basis(robot_parameters, ax)
 
     # Liste des angles qui satisfont
-    IK_angles = inverse_kinematic.inverse_kinematic_trajectory(robot_parameters, starting_nodes_angles, targets_x, targets_y, targets_z, bounds)
+    IK_angles = inverse_kinematics.inverse_kinematic_trajectory(robot_parameters, starting_nodes_angles, targets_x, targets_y, targets_z, bounds)
     return matplotlib.animation.FuncAnimation(figure, update_line, len(IK_angles), fargs=(robot_parameters, IK_angles, line, representation, model_type), interval=50)
 
 

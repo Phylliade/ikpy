@@ -1,11 +1,12 @@
-Welcome to poppy-inverse-kinematics's documentation!
+Welcome to IKPy's documentation!
 ====================================================
 
 Here you can find a documentation of the Inverse Kinematics API.
 
 .. toctree::
-   :maxdepth: 4
-
+   :maxdepth: 2
+   
+   ikpy
 
 
 
