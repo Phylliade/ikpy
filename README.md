@@ -1,10 +1,10 @@
 # IKPy #
-![Travis-CI](https://travis-ci.org/Phylliade/poppy-inverse-kinematics.svg?branch=master)
-[![PyPI](https://img.shields.io/pypi/v/poppy_inverse_kinematics.svg)](https://pypi.python.org/pypi/poppy_inverse_kinematics/)
-[![Documentation Status](https://readthedocs.org/projects/poppy-inverse-kinematics/badge/?version=latest)](http://poppy-inverse-kinematics.readthedocs.org/en/latest/?badge=latest)
-[![PyPI](https://img.shields.io/pypi/pyversions/poppy_inverse_kinematics/.svg)](https://pypi.python.org/pypi/poppy_inverse_kinematics/)
-[![PyPI](https://img.shields.io/pypi/dm/poppy_inverse_kinematics.svg)](https://pypi.python.org/pypi/poppy_inverse_kinematics/)
-[![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/Phylliade/poppy-inverse-kinematics)
+![Travis-CI](https://travis-ci.org/Phylliade/ikpy.svg?branch=master)
+[![PyPI](https://img.shields.io/pypi/v/ikpy.svg)](https://pypi.python.org/pypi/ikpy/)
+[![Documentation Status](https://readthedocs.org/projects/ikpy/badge/?version=latest)](http://ikpy.readthedocs.org/en/latest/?badge=latest)
+[![PyPI](https://img.shields.io/pypi/pyversions/ikpy/.svg)](https://pypi.python.org/pypi/ikpy/)
+[![PyPI](https://img.shields.io/pypi/dm/ikpy.svg)](https://pypi.python.org/pypi/ikpy/)
+[![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/Phylliade/ikpy)
 
 ![demo](two_arms.png)
 
@@ -15,7 +15,7 @@ You have two options :
 1. From PyPI (recommended) : Simply run :
 
    ```bash
-   pip install poppy-inverse-kinematics
+   pip install ikpy
    ```
 2. From source : First download and extract the archive, then run :
 
@@ -28,7 +28,7 @@ You have two options :
 You can find tutorials in the IPython [notebooks](https://github.com/Phylliade/ikpy/tree/master/notebooks).
 
 # API Documentation
-An extensive documentation of the API can be found [here](http://poppy-inverse-kinematics.readthedocs.org).
+An extensive documentation of the API can be found [here](http://ikpy.readthedocs.org).
 
 
 # Dependencies and compatibility
