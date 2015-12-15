@@ -39,7 +39,6 @@ def plot_chain(chain, joints, ax, target=None, show=False):
         axes.append(axe)
 
     # Plot the chain
-    print(nodes)
     ax.plot([x[0] for x in nodes], [x[1] for x in nodes], [x[2] for x in nodes])
     # Plot of the nodes of the chain
     ax.scatter([x[0] for x in nodes], [x[1] for x in nodes], [x[2] for x in nodes])

@@ -13,6 +13,8 @@ class TestChain(unittest.TestCase):
         joints = [0] * len(a.links)
         a.plot(joints, ax)
         b.plot(joints, ax)
+
+        a.plot(a.inverse_kinematic([0.1, -0.2, 0.1], joints), ax)
         plot_utils.show_figure()
 
 if __name__ == '__main__':

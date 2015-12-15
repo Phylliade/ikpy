@@ -95,6 +95,7 @@ def to_transformation_matrix(rotation_matrix, translation):
     matrix[-1] = translation
     return matrix
 
+
 def cartesian_to_homogeneous(cartesian_matrix, matrix_type="numpy"):
     """Converts a cartesian matrix to an homogenous matrix"""
     dimension_x, dimension_y = cartesian_matrix.shape

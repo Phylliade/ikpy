@@ -15,14 +15,17 @@ def get_distance_to_target(robot_parameters, nodes_angles, target, end_point=Non
     # return sum([(end_point_i - target_i) ** 2 for (end_point_i, target_i) in zip(end_point, target)])
 
 
-def inverse_kinematic_optimization(target, transformation_lambda, starting_nodes_angles, fk_method="default", bounds=None, first_active_joint=0, regularization_parameter=None, max_iter=None, **kwargs):
-    """Calcule les angles pour atteindre la target"""
+def inverse_kinematic_optimization(chain, target, starting_nodes_angles, bounds=None, first_active_joint=0, regularization_parameter=None, max_iter=None, **kwargs):
+    """Computes the inverse kinematic on the specified target with an optimization method"""
     # print("Sarting optimisation with bounds : ", bounds)
+
+    if starting_nodes_angles is None:
+        raise ValueError("starting_nodes_angles must be specified")
 
     # Compute squared distance to target
     def optimize_target(x):
         y = np.append(starting_nodes_angles[:first_active_joint], x)
-        squared_distance = np.linalg.norm(forward_kinematics.get_end_effector(y, method=fk_method, transformation_lambda=transformation_lambda, **kwargs) - target)
+        squared_distance = np.linalg.norm(chain.forward_kinematics(y)[:3, -1] - target)
         return squared_distance
 
     # If a regularization is selected
@@ -34,10 +37,15 @@ def inverse_kinematic_optimization(target, transformation_lambda, starting_nodes
         def optimize_total(x):
             return optimize_target(x)
 
-    # Manage bounds
-    if bounds is not None:
-        real_bounds = bounds[first_active_joint:]
-    else:
+    real_bounds = []
+    bounds_present = False
+    # Coompute bounds
+    for link in chain.links:
+        if link.bounds is not None:
+            real_bounds.append(link.bounds[first_active_joint:])
+            bounds_present = True
+
+    if not bounds_present:
         real_bounds = None
 
     options = {}

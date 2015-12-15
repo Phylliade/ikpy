@@ -48,7 +48,7 @@ class URDFLink(Link):
     """
 
     def __init__(self, name, translation_vector, orientation, rotation, bounds=None, angle_representation="rpy", use_symbolic_matrix=True):
-        Link.__init__(self, name, use_symbolic_matrix)
+        Link.__init__(self, name=name, bounds=bounds)
         self.use_symbolic_matrix = use_symbolic_matrix
         self.translation_vector = translation_vector
         self.orientation = orientation
