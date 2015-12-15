@@ -3,6 +3,7 @@ from . import URDF_utils
 from . import forward_kinematics as fk
 from . import inverse_kinematics as ik
 from . import plot_utils
+import numpy as np
 
 
 class Chain(object):
@@ -13,19 +14,32 @@ class Chain(object):
     """
     def __init__(self, links, active_links=0, profile=''"", ik_solver=None, **kwargs):
         self.links = links
+        self.length = self.get_robot_length()
 
-    def forward_kinematics(self, joints):
+    def forward_kinematics(self, joints, full_kinematics=False):
         """Returns the transformation matrix of the forward kinematics
 
         :param list joints: The list of the positions of each joint
+        :param bool full_kinematics: Return the transorfmation matrixes of each joint
         :returns: The transformation matrix
         """
-        if self.computation_method == "default":
-            # Special args for the default method
-            X = fk.get_end_effector(nodes_angles=joints, method=self.computation_method, transformation_lambda=self.transformation_lambda, representation=self.config.representation, model_type=self.config.model_type, robot_parameters=self.config.parameters)
+        frame_matrix = np.eye(4)
+
+        if full_kinematics:
+            frame_matrixes = [frame_matrix]
+
+        for index, (link, joint_angle) in enumerate(zip(self.links, joints)):
+            # Compute iteratively the position
+            # NB : Use asarray to avoid old sympy problems
+            frame_matrix = np.dot(frame_matrix, np.asarray(link.get_transformation_matrix(joint_angle)))
+            if full_kinematics:
+                frame_matrixes.append(frame_matrix)
+
+        # Return the matrix, or matrixes
+        if full_kinematics:
+            return frame_matrixes
         else:
-            X = fk.get_end_effector(nodes_angles=joints, method=self.computation_method, transformation_lambda=self.transformation_lambda)
-        return X
+            return frame_matrix
 
     def inverse_kinematic(self, target=None, initial_position=None, regularization_parameter=None, max_iterations=None):
         """Computes the inverse kinematic on the specified target
@@ -50,8 +64,8 @@ class Chain(object):
         if ax is None:
             # If ax is not given, create one
             ax = plot_utils.init_3d_figure()
-        plot_utils.plot_robot(self.config.parameters, joints, ax, representation=self.config.representation, model_type=self.config.model_type)
-        plot_utils.plot_basis(self.config.parameters, ax, self.arm_length)
+        plot_utils.plot_chain(self, joints, ax)
+        plot_utils.plot_basis(ax, self.length)
 
         # Plot the goal position
         if target is not None:
@@ -70,9 +84,15 @@ class Chain(object):
        :param last_link_vector: Optional : The translation vector of the tip.
        :type last_link_vector: numpy.array
         """
-        links = URDF_utils.get_urdf_parameters(urdf_file)
+        links = URDF_utils.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_elements_type=base_elements_type)
         return cls(links)
 
+    def get_robot_length(self):
+        """Computes the total length of the extended arm"""
+        translations_vectors = [link.translation_vector for link in self.links]
+        joints_lengths = [np.sqrt(sum([x**2 for x in vector]))
+                          for vector in translations_vectors]
+        return sum(joints_lengths)
 
 def pinv():
     pass

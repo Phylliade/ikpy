@@ -2,15 +2,13 @@
 import matplotlib.pyplot
 from . import forward_kinematics
 from . import inverse_kinematics
+from . import geometry_utils
 import matplotlib.animation
 from mpl_toolkits.mplot3d import Axes3D
 
 
-def plot_basis(robot_parameters, ax, arm_length=None):
+def plot_basis(ax, arm_length=1):
     """Plot le repère adapté à la taille du robot"""
-    # Calcul de la taille du bras tendu
-    if arm_length is None:
-        arm_length = forward_kinematics.get_robot_length(robot_parameters)
 
     ax.set_xlim3d([-1.0, 1.0])
     ax.set_xlabel('X')
@@ -26,6 +24,31 @@ def plot_basis(robot_parameters, ax, arm_length=None):
     ax.plot([0, arm_length * 1.5], [0, 0], [0, 0])
     ax.plot([0, 0], [0, arm_length * 1.5], [0, 0])
     ax.plot([0, 0], [0, 0], [0, arm_length * 1.5])
+
+
+def plot_chain(chain, joints, ax, target=None, show=False):
+    """Plots the chain"""
+    # LIst of nodes and orientations
+    nodes = []
+    axes = []
+
+    # Get the nodes and the orientation from the tranformation matrix
+    for matrix in chain.forward_kinematics(joints, full_kinematics=True):
+        (axe, node) = geometry_utils.from_transformation_matrix(matrix)
+        nodes.append(node)
+        axes.append(axe)
+
+    # Plot the chain
+    print(nodes)
+    ax.plot([x[0] for x in nodes], [x[1] for x in nodes], [x[2] for x in nodes])
+    # Plot of the nodes of the chain
+    ax.scatter([x[0] for x in nodes], [x[1] for x in nodes], [x[2] for x in nodes])
+
+    # Plot  rotation axes
+    for index, axe in enumerate(axes):
+        pass
+        # ax.plot([nodes[index][0], axe[0] + nodes[index][0]], [nodes[index][1],
+        #        axe[1] + nodes[index][1]], [nodes[index][2], axe[2] + nodes[index][2]])
 
 
 def plot_robot(robot_parameters, nodes_angles, ax, representation, model_type):

@@ -44,6 +44,20 @@ def get_robot_length(robot_parameters):
     return sum(joints_lengths)
 
 
+def from_transformation_matrix(transformation_matrix):
+    """Converts a transformation matrix to a tuple (rotation_matrix, translation_vector)"""
+    return (transformation_matrix[:-1, :-1], transformation_matrix[:, :-1])
+
+
+def to_transformation_matrix(rotation_matrix, translation):
+    """Converts a tuple (rotation_matrix, translation_vector)  to a transformation matrix"""
+    matrix = np.eye(4)
+
+    matrix[:-1, :-1] = rotation_matrix
+    matrix[-1] = translation
+    return matrix
+
+
 def cartesian_to_homogeneous(cartesian_matrix, matrix_type="numpy"):
     """Converts a cartesian matrix to an homogenous matrix"""
     dimension_x, dimension_y = cartesian_matrix.shape

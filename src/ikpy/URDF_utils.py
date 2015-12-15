@@ -128,7 +128,7 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
     # Add last_link_vector to parameters
     if last_link_vector is not None:
         parameters.append(lib_link.URDFLink(
-            translation=last_link_vector,
+            translation_vector=last_link_vector,
             orientation=[0, 0, 0],
             rotation=[0, 0, 0],
             name="last_joint"
