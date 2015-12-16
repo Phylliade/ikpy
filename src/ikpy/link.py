@@ -77,15 +77,14 @@ class URDFLink(Link):
 
             self.symbolic_transformation_matrix = sympy.lambdify(theta, symbolic_frame_matrix, "numpy")
 
-    def __repr__(self):
-        return("""Link {}
-        Translation : {}
-        Orientation : {}
-        Rotation : {}
-        """.format(self.name, self.translation_vector, self.orientation, self.rotation))
+    def __str__(self):
+        return("""URDF Link {} :
+    Translation : {}
+    Orientation : {}
+    Rotation : {}""".format(self.name, self.translation_vector, self.orientation, self.rotation))
 
     def _get_rotation_axis(self):
-        return (np.dot(geometry_utils.homogeneous_translation_matrix(*self.translation_vector), geometry_utils.cartesian_to_homogeneous_vectors(self.rotation * self._axis_length)))
+        return (np.dot(geometry_utils.homogeneous_translation_matrix(*self.translation_vector), np.dot(geometry_utils.cartesian_to_homogeneous(geometry_utils.rpy_matrix(*self.orientation)), geometry_utils.cartesian_to_homogeneous_vectors(self.rotation * self._axis_length))))
 
     def get_transformation_matrix(self, theta):
         if self.use_symbolic_matrix:
@@ -100,8 +99,10 @@ class URDFLink(Link):
             # Apply orientation
             frame_matrix = np.dot(frame_matrix, geometry_utils.cartesian_to_homogeneous(geometry_utils.rpy_matrix(*self.orientation)))
 
-            # Then apply rotation matrix
+            # Apply rotation matrix
             frame_matrix = np.dot(frame_matrix, geometry_utils.cartesian_to_homogeneous(geometry_utils.axis_rotation_matrix(self.rotation, theta)))
+
+        print(frame_matrix)
 
         return frame_matrix
 
