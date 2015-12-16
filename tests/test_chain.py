@@ -9,16 +9,15 @@ class TestChain(unittest.TestCase):
     def test_chain(self):
         a = chain.Chain.from_urdf_file(test_resources.resources_path + "/poppy_torso.URDF", base_elements=["base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x", "chest", "r_shoulder_y"], last_link_vector=[0, 0.18, 0])
         b = chain.Chain.from_urdf_file(test_resources.resources_path + "/poppy_torso.URDF", base_elements=["base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x", "chest", "l_shoulder_y"], last_link_vector=[0, 0.18, 0])
-        print(len(a.links))
 
         ax = plot_utils.init_3d_figure()
         joints = [0] * len(a.links)
-        joints[-3] = np.pi / 3
+        joints[-4] = 0
         a.plot(joints, ax)
         b.plot(joints, ax)
         target = [0.1, -0.2, 0.1]
 
-        a.plot(a.inverse_kinematic(target, initial_position=joints, first_active_joint=3), ax, target=target)
+        # a.plot(a.inverse_kinematic(target, initial_position=joints, first_active_joint=4), ax, target=target)
         plot_utils.show_figure()
 
 if __name__ == '__main__':

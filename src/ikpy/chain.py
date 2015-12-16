@@ -18,7 +18,7 @@ class Chain(object):
         # Avoid length of zero in a link
         for (index, link) in enumerate(self.links):
             if link._length == 0:
-                link._axis_length = self.links[index - 1]._length
+                link._axis_length = self.links[index - 1]._axis_length
 
     def forward_kinematics(self, joints, full_kinematics=False):
         """Returns the transformation matrix of the forward kinematics

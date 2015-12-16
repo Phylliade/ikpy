@@ -19,6 +19,9 @@ class Link(object):
         self.bounds = bounds
         self.name = name
 
+    def _get_rotation_axis(self):
+        return [0, 0, 0, 1]
+
     def get_transformation_matrix(self, theta):
         raise NotImplementedError
 
@@ -81,6 +84,9 @@ class URDFLink(Link):
         Rotation : {}
         """.format(self.name, self.translation_vector, self.orientation, self.rotation))
 
+    def _get_rotation_axis(self):
+        return (np.dot(geometry_utils.homogeneous_translation_matrix(*self.translation_vector), geometry_utils.cartesian_to_homogeneous_vectors(self.rotation * self._axis_length)))
+
     def get_transformation_matrix(self, theta):
         if self.use_symbolic_matrix:
             frame_matrix = self.symbolic_transformation_matrix(theta)
@@ -91,13 +97,11 @@ class URDFLink(Link):
             # First, apply translation matrix
             frame_matrix = np.dot(frame_matrix, geometry_utils.homogeneous_translation_matrix(*self.translation_vector))
 
-            self._rotation_axis = (np.dot(frame_matrix, geometry_utils.cartesian_to_homogeneous_vectors(self.rotation * self._axis_length)))
+            # Apply orientation
+            frame_matrix = np.dot(frame_matrix, geometry_utils.cartesian_to_homogeneous(geometry_utils.rpy_matrix(*self.orientation)))
 
             # Then apply rotation matrix
             frame_matrix = np.dot(frame_matrix, geometry_utils.cartesian_to_homogeneous(geometry_utils.axis_rotation_matrix(self.rotation, theta)))
-
-            # Finally, apply orientation
-            frame_matrix = np.dot(frame_matrix, geometry_utils.cartesian_to_homogeneous(geometry_utils.rpy_matrix(*self.orientation)))
 
         return frame_matrix
 
@@ -137,8 +141,10 @@ class OriginLink(Link):
     """The link at the origin of the robot"""
     def __init__(self):
         Link.__init__(self, name="Base link")
-        self._rotation_axis = [0, 0, 0, 1]
         self._length = 1
+
+    def _get_rotation_axis(self):
+        return [0, 0, 0, 1]
 
     def get_transformation_matrix(self, theta):
         return np.eye(4)

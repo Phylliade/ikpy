@@ -37,20 +37,14 @@ def inverse_kinematic_optimization(chain, target, starting_nodes_angles, bounds=
         def optimize_total(x):
             return optimize_target(x)
 
-    real_bounds = []
-    # Coompute bounds
-    for link in chain.links:
-            real_bounds.append(link.bounds)
-
-    print(real_bounds)
-
+    # Compute bounds
+    real_bounds = [link.bounds for link in chain.links]
     real_bounds = real_bounds[first_active_joint:]
 
     options = {}
     # Manage iterations maximum
     if max_iter is not None:
         options["maxiter"] = max_iter
-        print(options)
 
     # Utilisation d'une optimisation L-BFGS-B
     res = scipy.optimize.minimize(optimize_total, starting_nodes_angles[first_active_joint:], method='L-BFGS-B', bounds=real_bounds, options=options)
