@@ -46,13 +46,14 @@ class Chain(object):
         else:
             return frame_matrix
 
-    def inverse_kinematic(self, target, initial_position, **kwargs):
+    def inverse_kinematic(self, target, initial_position, first_active_joint=0, **kwargs):
         """Computes the inverse kinematic on the specified target
 
         :param numpy.array target: The target of the inverse kinematic
         :param numpy.array initial_position: the initial position of each joint of the chain
+        :param int first_active_joint: The first active joint
         """
-        return ik.inverse_kinematic_optimization(self, target, starting_nodes_angles=initial_position, **kwargs)
+        return ik.inverse_kinematic_optimization(self, target, starting_nodes_angles=initial_position, first_active_joint=first_active_joint, **kwargs)
 
     def plot(self, joints, ax, target=None, show=False):
         """Plots the Chain using Matplotlib

@@ -15,7 +15,7 @@ class Link(object):
     :type use_symbolic_matrix: bool
     """
 
-    def __init__(self, name, bounds=None):
+    def __init__(self, name, bounds=(None, None)):
         self.bounds = bounds
         self.name = name
 
@@ -47,7 +47,7 @@ class URDFLink(Link):
     URDFlink()
     """
 
-    def __init__(self, name, translation_vector, orientation, rotation, bounds=None, angle_representation="rpy", use_symbolic_matrix=False):
+    def __init__(self, name, translation_vector, orientation, rotation, bounds=(None, None), angle_representation="rpy", use_symbolic_matrix=False):
         Link.__init__(self, name=name, bounds=bounds)
         self.use_symbolic_matrix = use_symbolic_matrix
         self.translation_vector = np.array(translation_vector)
@@ -91,10 +91,10 @@ class URDFLink(Link):
             # First, apply translation matrix
             frame_matrix = np.dot(frame_matrix, geometry_utils.homogeneous_translation_matrix(*self.translation_vector))
 
+            self._rotation_axis = (np.dot(frame_matrix, geometry_utils.cartesian_to_homogeneous_vectors(self.rotation * self._axis_length)))
+
             # Then apply rotation matrix
             frame_matrix = np.dot(frame_matrix, geometry_utils.cartesian_to_homogeneous(geometry_utils.axis_rotation_matrix(self.rotation, theta)))
-
-            self._rotation_axis = (np.dot(frame_matrix, geometry_utils.cartesian_to_homogeneous_vectors(self.rotation * self._axis_length)))
 
             # Finally, apply orientation
             frame_matrix = np.dot(frame_matrix, geometry_utils.cartesian_to_homogeneous(geometry_utils.rpy_matrix(*self.orientation)))

@@ -15,10 +15,10 @@ class TestChain(unittest.TestCase):
         joints = [0] * len(a.links)
         joints[-3] = np.pi / 3
         a.plot(joints, ax)
-        # b.plot(joints, ax)
+        b.plot(joints, ax)
         target = [0.1, -0.2, 0.1]
 
-        # a.plot(a.inverse_kinematic(target, joints), ax, target=target)
+        a.plot(a.inverse_kinematic(target, initial_position=joints, first_active_joint=3), ax, target=target)
         plot_utils.show_figure()
 
 if __name__ == '__main__':

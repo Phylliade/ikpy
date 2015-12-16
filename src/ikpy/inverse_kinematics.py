@@ -40,10 +40,11 @@ def inverse_kinematic_optimization(chain, target, starting_nodes_angles, bounds=
     real_bounds = []
     # Coompute bounds
     for link in chain.links:
-        if link.bounds is not None:
-            real_bounds.append(link.bounds[first_active_joint:])
-        else:
-            real_bounds.append((None, None))
+            real_bounds.append(link.bounds)
+
+    print(real_bounds)
+
+    real_bounds = real_bounds[first_active_joint:]
 
     options = {}
     # Manage iterations maximum
