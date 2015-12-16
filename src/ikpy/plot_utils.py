@@ -39,12 +39,13 @@ def plot_chain(chain, joints, ax, target=None, show=False):
     for (index, link) in enumerate(chain.links):
         (rotation, node) = geometry_utils.from_transformation_matrix(transformation_matrixes[index])
         nodes.append(node)
+        print(link)
         if index == 0:
             axes.append(link._rotation_axis)
         else:
             axes.append(geometry_utils.homogeneous_to_cartesian_vectors(np.dot(transformation_matrixes[index - 1], link._rotation_axis)))
 
-    print(len(nodes))
+    print(nodes)
     # Plot the chain
     ax.plot([x[0] for x in nodes], [x[1] for x in nodes], [x[2] for x in nodes])
     # Plot of the nodes of the chain
@@ -52,7 +53,6 @@ def plot_chain(chain, joints, ax, target=None, show=False):
 
     # Plot  rotation axes
     for index, axe in enumerate(axes):
-        print(axe)
         ax.plot([nodes[index][0], axe[0]], [nodes[index][1], axe[1]], [nodes[index][2], axe[2]])
 
 

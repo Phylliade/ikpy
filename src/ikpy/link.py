@@ -55,6 +55,9 @@ class URDFLink(Link):
         self.rotation = np.array(rotation)
 
         self._length = np.linalg.norm(translation_vector)
+        # Avoid length at 0
+        if self._length == 0:
+            self._length = 1
 
         if use_symbolic_matrix:
             # Angle symbolique qui paramètre la rotation du joint en cours
@@ -73,6 +76,13 @@ class URDFLink(Link):
 
             self.symbolic_transformation_matrix = sympy.lambdify(theta, symbolic_frame_matrix, "numpy")
 
+    def __repr__(self):
+        return("""Link {}
+        Translation : {}
+        Orientation : {}
+        Rotation : {}
+        """.format(self.name, self.translation_vector, self.orientation, self.rotation))
+
     def get_transformation_matrix(self, theta):
         if self.use_symbolic_matrix:
             frame_matrix = self.symbolic_transformation_matrix(theta)
@@ -83,17 +93,13 @@ class URDFLink(Link):
             # First, apply translation matrix
             frame_matrix = np.dot(frame_matrix, geometry_utils.homogeneous_translation_matrix(*self.translation_vector))
 
-
-
             # Then apply rotation matrix
             frame_matrix = np.dot(frame_matrix, geometry_utils.cartesian_to_homogeneous(geometry_utils.axis_rotation_matrix(self.rotation, theta)))
 
-            self._rotation_axis = (np.dot(frame_matrix, geometry_utils.cartesian_to_homogeneous_vectors(self.rotation)))
-
+            self._rotation_axis = (np.dot(frame_matrix, geometry_utils.cartesian_to_homogeneous_vectors(self.rotation * self._length)))
 
             # Finally, apply orientation
             frame_matrix = np.dot(frame_matrix, geometry_utils.cartesian_to_homogeneous(geometry_utils.rpy_matrix(*self.orientation)))
-
 
         return frame_matrix
 
@@ -127,3 +133,13 @@ class DHLink(Link):
                           (st, ct * ca, -ct * sa, a * st),
                           (0, sa, ca, self.d),
                           (0, 0, 0, 1)))
+
+
+class OriginLink(Link):
+    """The link at the origin of the robot"""
+    def __init__(self):
+        Link.__init__(self, name="Base link")
+        self._rotation_axis = [0, 0, 0, 1]
+
+    def get_transformation_matrix(self, theta):
+        return np.eye(4)

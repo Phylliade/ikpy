@@ -1,9 +1,9 @@
 # coding= utf8
 from . import URDF_utils
-from . import forward_kinematics as fk
 from . import inverse_kinematics as ik
 from . import plot_utils
 import numpy as np
+from . import link as link_lib
 
 
 class Chain(object):
@@ -13,7 +13,7 @@ class Chain(object):
     :param list active_links: The list of the positions of the active links
     """
     def __init__(self, links, active_links=0, profile=''"", ik_solver=None, **kwargs):
-        self.links = links
+        self.links = [link_lib.OriginLink()] + links
         self._length = sum([link._length for link in links])
 
     def forward_kinematics(self, joints, full_kinematics=False):
@@ -26,7 +26,7 @@ class Chain(object):
         frame_matrix = np.eye(4)
 
         if full_kinematics:
-            frame_matrixes = [frame_matrix]
+            frame_matrixes = []
 
         for index, (link, joint_angle) in enumerate(zip(self.links, joints)):
             # Compute iteratively the position
