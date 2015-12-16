@@ -15,6 +15,10 @@ class Chain(object):
     def __init__(self, links, active_links=0, profile=''"", ik_solver=None, **kwargs):
         self.links = [link_lib.OriginLink()] + links
         self._length = sum([link._length for link in links])
+        # Avoid length of zero in a link
+        for (index, link) in enumerate(self.links):
+            if link._length == 0:
+                link._axis_length = self.links[index - 1]._length
 
     def forward_kinematics(self, joints, full_kinematics=False):
         """Returns the transformation matrix of the forward kinematics

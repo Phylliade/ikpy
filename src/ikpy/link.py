@@ -55,9 +55,7 @@ class URDFLink(Link):
         self.rotation = np.array(rotation)
 
         self._length = np.linalg.norm(translation_vector)
-        # Avoid length at 0
-        if self._length == 0:
-            self._length = 1
+        self._axis_length = self._length
 
         if use_symbolic_matrix:
             # Angle symbolique qui paramètre la rotation du joint en cours
@@ -96,7 +94,7 @@ class URDFLink(Link):
             # Then apply rotation matrix
             frame_matrix = np.dot(frame_matrix, geometry_utils.cartesian_to_homogeneous(geometry_utils.axis_rotation_matrix(self.rotation, theta)))
 
-            self._rotation_axis = (np.dot(frame_matrix, geometry_utils.cartesian_to_homogeneous_vectors(self.rotation * self._length)))
+            self._rotation_axis = (np.dot(frame_matrix, geometry_utils.cartesian_to_homogeneous_vectors(self.rotation * self._axis_length)))
 
             # Finally, apply orientation
             frame_matrix = np.dot(frame_matrix, geometry_utils.cartesian_to_homogeneous(geometry_utils.rpy_matrix(*self.orientation)))
@@ -140,6 +138,7 @@ class OriginLink(Link):
     def __init__(self):
         Link.__init__(self, name="Base link")
         self._rotation_axis = [0, 0, 0, 1]
+        self._length = 1
 
     def get_transformation_matrix(self, theta):
         return np.eye(4)
