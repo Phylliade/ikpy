@@ -14,7 +14,7 @@ class Chain(object):
     """
     def __init__(self, links, active_links=0, profile=''"", ik_solver=None, **kwargs):
         self.links = links
-        self.length = self.get_robot_length()
+        self._length = sum([link._length for link in links])
 
     def forward_kinematics(self, joints, full_kinematics=False):
         """Returns the transformation matrix of the forward kinematics
@@ -33,6 +33,7 @@ class Chain(object):
             # NB : Use asarray to avoid old sympy problems
             frame_matrix = np.dot(frame_matrix, np.asarray(link.get_transformation_matrix(joint_angle)))
             if full_kinematics:
+                # rotation_axe = np.dot(frame_matrix, link.rotation)
                 frame_matrixes.append(frame_matrix)
 
         # Return the matrix, or matrixes
@@ -61,7 +62,7 @@ class Chain(object):
             # If ax is not given, create one
             ax = plot_utils.init_3d_figure()
         plot_utils.plot_chain(self, joints, ax)
-        plot_utils.plot_basis(ax, self.length)
+        plot_utils.plot_basis(ax, self._length)
 
         # Plot the goal position
         if target is not None:
@@ -83,12 +84,6 @@ class Chain(object):
         links = URDF_utils.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_elements_type=base_elements_type)
         return cls(links)
 
-    def get_robot_length(self):
-        """Computes the total length of the extended arm"""
-        translations_vectors = [link.translation_vector for link in self.links]
-        joints_lengths = [np.sqrt(sum([x**2 for x in vector]))
-                          for vector in translations_vectors]
-        return sum(joints_lengths)
 
 def pinv():
     pass

@@ -1,5 +1,6 @@
 # coding= utf8
 import matplotlib.pyplot
+import numpy as np
 from . import forward_kinematics
 from . import inverse_kinematics
 from . import geometry_utils
@@ -32,12 +33,18 @@ def plot_chain(chain, joints, ax, target=None, show=False):
     nodes = []
     axes = []
 
-    # Get the nodes and the orientation from the tranformation matrix
-    for matrix in chain.forward_kinematics(joints, full_kinematics=True):
-        (axe, node) = geometry_utils.from_transformation_matrix(matrix)
-        nodes.append(node)
-        axes.append(axe)
+    transformation_matrixes = chain.forward_kinematics(joints, full_kinematics=True)
 
+    # Get the nodes and the orientation from the tranformation matrix
+    for (index, link) in enumerate(chain.links):
+        (rotation, node) = geometry_utils.from_transformation_matrix(transformation_matrixes[index])
+        nodes.append(node)
+        if index == 0:
+            axes.append(link._rotation_axis)
+        else:
+            axes.append(geometry_utils.homogeneous_to_cartesian_vectors(np.dot(transformation_matrixes[index - 1], link._rotation_axis)))
+
+    print(len(nodes))
     # Plot the chain
     ax.plot([x[0] for x in nodes], [x[1] for x in nodes], [x[2] for x in nodes])
     # Plot of the nodes of the chain
@@ -45,9 +52,8 @@ def plot_chain(chain, joints, ax, target=None, show=False):
 
     # Plot  rotation axes
     for index, axe in enumerate(axes):
-        pass
-        # ax.plot([nodes[index][0], axe[0] + nodes[index][0]], [nodes[index][1],
-        #        axe[1] + nodes[index][1]], [nodes[index][2], axe[2] + nodes[index][2]])
+        print(axe)
+        ax.plot([nodes[index][0], axe[0]], [nodes[index][1], axe[1]], [nodes[index][2], axe[2]])
 
 
 def plot_robot(robot_parameters, nodes_angles, ax, representation, model_type):

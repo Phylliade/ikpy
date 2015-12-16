@@ -47,12 +47,14 @@ class URDFLink(Link):
     URDFlink()
     """
 
-    def __init__(self, name, translation_vector, orientation, rotation, bounds=None, angle_representation="rpy", use_symbolic_matrix=True):
+    def __init__(self, name, translation_vector, orientation, rotation, bounds=None, angle_representation="rpy", use_symbolic_matrix=False):
         Link.__init__(self, name=name, bounds=bounds)
         self.use_symbolic_matrix = use_symbolic_matrix
-        self.translation_vector = translation_vector
-        self.orientation = orientation
-        self.rotation = rotation
+        self.translation_vector = np.array(translation_vector)
+        self.orientation = np.array(orientation)
+        self.rotation = np.array(rotation)
+
+        self._length = np.linalg.norm(translation_vector)
 
         if use_symbolic_matrix:
             # Angle symbolique qui paramètre la rotation du joint en cours
@@ -81,11 +83,17 @@ class URDFLink(Link):
             # First, apply translation matrix
             frame_matrix = np.dot(frame_matrix, geometry_utils.homogeneous_translation_matrix(*self.translation_vector))
 
+
+
             # Then apply rotation matrix
             frame_matrix = np.dot(frame_matrix, geometry_utils.cartesian_to_homogeneous(geometry_utils.axis_rotation_matrix(self.rotation, theta)))
 
+            self._rotation_axis = (np.dot(frame_matrix, geometry_utils.cartesian_to_homogeneous_vectors(self.rotation)))
+
+
             # Finally, apply orientation
             frame_matrix = np.dot(frame_matrix, geometry_utils.cartesian_to_homogeneous(geometry_utils.rpy_matrix(*self.orientation)))
+
 
         return frame_matrix
 
