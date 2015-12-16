@@ -102,8 +102,6 @@ class URDFLink(Link):
             # Apply rotation matrix
             frame_matrix = np.dot(frame_matrix, geometry_utils.cartesian_to_homogeneous(geometry_utils.axis_rotation_matrix(self.rotation, theta)))
 
-        print(frame_matrix)
-
         return frame_matrix
 
 
