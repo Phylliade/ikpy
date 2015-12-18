@@ -3,11 +3,12 @@
 .. module:: URDF_utils
 """
 
-from . import link as lib_link
 import xml.etree.ElementTree as ET
 import json
 import numpy as np
 import itertools
+
+from . import link as lib_link
 
 
 def find_next_joint(root, current_link, next_joints):
