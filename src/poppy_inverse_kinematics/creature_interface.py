@@ -19,6 +19,13 @@ class CreatureInterface():
                 self.move_duration = 2
             if interface_type == "vrep":
                 vrep_scene = wd + '/../resources/poppy_ergo.ttt'
+        elif creature_type == "ergo_jr":
+            pypot_config_file = wd + '/../resources/poppy_ergo_jr.json'
+            if move_duration is None:
+                self.move_duration = 2
+            if interface_type == "vrep":
+                vrep_scene = wd + '/../resources/poppy_ergo_jr.ttt'
+
 
         if interface_type is not None:
             # Create pypot object

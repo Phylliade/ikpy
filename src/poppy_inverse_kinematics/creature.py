@@ -18,6 +18,12 @@ class creature(model.Model, creature_interface.CreatureInterface):
             last_link_vector = [0, 0.05, 0]
             motor_config_file = wd + '/../resources/poppy_ergo.json'
             first_active_joint = 0
+        elif creature_type == "ergo_jr":
+            urdf_file = resource_file + "/poppy_ergo_jr.URDF"
+            base_link = ["base_link"]
+            last_link_vector = [0, 0, -0.03]
+            motor_config_file = wd + '/../resources/poppy_ergo_jr.json'
+            first_active_joint = 0
         elif creature_type == "torso_left_arm":
             urdf_file = resource_file + "/Poppy_Torso.URDF"
             base_link = ["base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x", "chest", "l_shoulder_y"]
@@ -30,6 +36,8 @@ class creature(model.Model, creature_interface.CreatureInterface):
             last_link_vector = [0, 0.18, 0]
             motor_config_file = wd + '/../resources/poppy_torso.json'
             first_active_joint = 3
+        else:
+            raise ValueError('Unknown creature')
 
         params = model_config.from_urdf_file(urdf_file, base_link, last_link_vector, motor_config_file=motor_config_file, first_active_joint=first_active_joint)
         model.Model.__init__(self, params, computation_method="hybrid", simplify=False, interface_type=interface_type, move_duration=move_duration, ik_regularization_parameter=ik_regularization_parameter, max_ik_iterations=max_ik_iterations)

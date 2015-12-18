@@ -1,0 +1,361 @@
+<robot
+  name="PoppyErgoJr">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="-0.00273845833301537 0.00821639745723966 -0.0338977122062889"
+        rpy="0 0 0" />
+      <mass
+        value="0.0802410895423366" />
+      <inertia
+        ixx="0.00011430194806305"
+        ixy="-1.74777682977282E-06"
+        ixz="7.8063859003738E-06"
+        iyy="0.000177560979735167"
+        iyz="6.80763560469771E-06"
+        izz="7.51325469990478E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://PoppyErgoJr/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://PoppyErgoJr/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="long_U">
+    <inertial>
+      <origin
+        xyz="-0.00243058056226709 1.14505937431452E-07 0.0129312523306501"
+        rpy="0 0 0" />
+      <mass
+        value="0.0042118228619085" />
+      <inertia
+        ixx="5.78707668456099E-07"
+        ixy="9.44283869977724E-12"
+        ixz="-1.13587476220175E-07"
+        iyy="1.25420346852677E-06"
+        iyz="4.64830147251523E-12"
+        izz="9.27174545760678E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://PoppyErgoJr/meshes/long_U.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://PoppyErgoJr/meshes/long_U.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="m1"
+    type="continuous">
+    <origin
+      xyz="0 0 0.0327993216120967"
+      rpy="-6.12303176911189E-17 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="long_U" />
+    <axis
+      xyz="0 0 -1" />
+  </joint>
+  <link
+    name="section_1">
+    <inertial>
+      <origin
+        xyz="-0.000168296047337745 0.013441283142678 -3.36410230095056E-09"
+        rpy="0 0 0" />
+      <mass
+        value="0.0201321844066136" />
+      <inertia
+        ixx="6.51960684491032E-06"
+        ixy="-5.35361387413197E-07"
+        ixz="-5.67167110473808E-13"
+        iyy="2.37206686086462E-06"
+        iyz="-1.07202400036876E-12"
+        izz="7.46616268702629E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://PoppyErgoJr/meshes/section_1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://PoppyErgoJr/meshes/section_1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="m2"
+    type="continuous">
+    <origin
+      xyz="0 0 0.0240006783879033"
+      rpy="1.5707963267949 0 0" />
+    <parent
+      link="long_U" />
+    <child
+      link="section_1" />
+    <axis
+      xyz="-1 0 0" />
+  </joint>
+  <link
+    name="section_2">
+    <inertial>
+      <origin
+        xyz="0.000407772974186014 0.00840914919415664 -1.07672250595912E-09"
+        rpy="0 0 0" />
+      <mass
+        value="0.017821725151696" />
+      <inertia
+        ixx="2.52304488643742E-06"
+        ixy="-6.63873566658207E-08"
+        ixz="-2.02107710451767E-13"
+        iyy="1.64177128414312E-06"
+        iyz="3.46919494425175E-13"
+        izz="2.86561030339994E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://PoppyErgoJr/meshes/section_2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://PoppyErgoJr/meshes/section_2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="m3"
+    type="continuous">
+    <origin
+      xyz="0 0.054 0"
+      rpy="0 0 0" />
+    <parent
+      link="section_1" />
+    <child
+      link="section_2" />
+    <axis
+      xyz="-1 0 0" />
+  </joint>
+  <link
+    name="section_3">
+    <inertial>
+      <origin
+        xyz="-0.000529269977744151 -0.0148172531686623 -0.0123545994437081"
+        rpy="0 0 0" />
+      <mass
+        value="0.0201321844066136" />
+      <inertia
+        ixx="5.58716321477767E-06"
+        ixy="3.84615911021611E-09"
+        ixz="3.80051502924447E-07"
+        iyy="6.00831891375732E-06"
+        iyz="9.50610838817802E-08"
+        izz="2.36437426368354E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://PoppyErgoJr/meshes/section_3.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://PoppyErgoJr/meshes/section_3.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="m4"
+    type="continuous">
+    <origin
+      xyz="0 0.0298217741221248 0"
+      rpy="3.14159265358979 0 0" />
+    <parent
+      link="section_2" />
+    <child
+      link="section_3" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="section_4">
+    <inertial>
+      <origin
+        xyz="-0.000168296047337745 0.013441283142678 -3.36410227452788E-09"
+        rpy="0 0 0" />
+      <mass
+        value="0.0201321844066137" />
+      <inertia
+        ixx="6.51960684491033E-06"
+        ixy="-5.3536138741319E-07"
+        ixz="-5.67167109549002E-13"
+        iyy="2.37206686086462E-06"
+        iyz="-1.07202399874137E-12"
+        izz="7.46616268702631E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://PoppyErgoJr/meshes/section_4.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://PoppyErgoJr/meshes/section_4.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="m5"
+    type="continuous">
+    <origin
+      xyz="0 -0.0151782258778753 -0.048"
+      rpy="-1.5707963267949 0 0" />
+    <parent
+      link="section_3" />
+    <child
+      link="section_4" />
+    <axis
+      xyz="-1 0 0" />
+  </joint>
+  <link
+    name="tip">
+    <inertial>
+      <origin
+        xyz="1.30842922607677E-09 0.000440812249500631 -0.00687616557228032"
+        rpy="0 0 0" />
+      <mass
+        value="0.0164859649700598" />
+      <inertia
+        ixx="2.21073012081829E-06"
+        ixy="2.00704445336612E-13"
+        ixz="2.61313974888777E-13"
+        iyy="1.95245657563094E-06"
+        iyz="5.52468772381494E-08"
+        izz="1.46932588043522E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://PoppyErgoJr/meshes/tip.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://PoppyErgoJr/meshes/tip.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="m6"
+    type="continuous">
+    <origin
+      xyz="0 0.054 0"
+      rpy="1.5707963267949 1.5707963267949 0" />
+    <parent
+      link="section_4" />
+    <child
+      link="tip" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+</robot>
