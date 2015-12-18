@@ -1,13 +1,17 @@
 Welcome to IKPy's documentation!
 ====================================================
 
-Here you can find a documentation of the Inverse Kinematics API.
+Here you can find the documentation of the Inverse Kinematics API.
+
+If you search getting started guides and tutorials, go to the Github repository_.
+
+.. _repository: https://github.com/Phylliade/ikpy
+
 
 .. toctree::
    :maxdepth: 2
-   
-   ikpy
 
+   ikpy
 
 
 Indices and tables

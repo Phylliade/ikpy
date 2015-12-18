@@ -1,43 +1,11 @@
 :mod:`ikpy` package
 ================================
 
-:mod:`ikpy.chain` module
-----------------------------------------
+.. toctree::
+   :maxdepth: 2
 
-.. automodule:: ikpy.chain
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ikpy.link` module
-----------------------------------------
-
-.. automodule:: ikpy.link
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-:mod:`ikpy.URDF_utils` module
-----------------------------------------
-
-.. automodule:: ikpy.URDF_utils
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    
-:mod:`ikpy.forward_kinematics` module
-----------------------------------------
-
-.. automodule:: ikpy.forward_kinematics
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    
-:mod:`ikpy.inverse_kinematics` module
-----------------------------------------
-
-.. automodule:: ikpy.inverse_kinematics
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   chain
+   link
+   inverse_kinematics
+   geometry_utils
+   URDF_utils
