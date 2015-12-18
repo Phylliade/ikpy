@@ -3,6 +3,9 @@ build/*
 __pycache__
 dist/*
 doc/_build
-src/poppy_inverse_kinematics.egg-info/
 notebooks/.ipynb_*
 */output/*
+.jekyll-metadata
+.sass-cache/
+src/*.egg-info/
+
