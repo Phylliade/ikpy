@@ -23,7 +23,7 @@ class Chain(object):
     def forward_kinematics(self, joints, full_kinematics=False):
         """Returns the transformation matrix of the forward kinematics
 
-        :param list joints: The list of the positions of each joint
+        :param list joints: The list of the positions of each joint. Note : Inactive joints must be in the list.
         :param bool full_kinematics: Return the transorfmation matrixes of each joint
         :returns: The transformation matrix
         """
@@ -49,9 +49,10 @@ class Chain(object):
     def inverse_kinematic(self, target, initial_position, first_active_joint=0, **kwargs):
         """Computes the inverse kinematic on the specified target
 
-        :param numpy.array target: The target of the inverse kinematic
+        :param numpy.array target: The target of the inverse kinematic, in meters
         :param numpy.array initial_position: the initial position of each joint of the chain
-        :param int first_active_joint: The first active joint
+        :param int first_active_joint: The first active joint$
+        :returns: The list of the positions of each joint according to the target. Note : Inactive joints are in the list.
         """
         return ik.inverse_kinematic_optimization(self, target, starting_nodes_angles=initial_position, first_active_joint=first_active_joint, **kwargs)
 

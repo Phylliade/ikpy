@@ -20,6 +20,7 @@ class Link(object):
         self.name = name
 
     def _get_rotation_axis(self):
+        # Defaults to None
         return [0, 0, 0, 1]
 
     def get_transformation_matrix(self, theta):
