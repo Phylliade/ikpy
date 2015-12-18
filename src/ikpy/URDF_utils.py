@@ -4,19 +4,9 @@
 """
 
 from . import link as lib_link
-from . import forward_kinematics
 import xml.etree.ElementTree as ET
 import json
 import numpy as np
-
-
-def robot_from_urdf_parameters(urdf_params):
-    """Converts URDF-formated parameters to compatible parameters"""
-    robot_params = []
-    for (rot, trans) in urdf_params:
-        euler_angles = forward_kinematics.euler_from_unit_vector(*rot)
-        robot_params.append((euler_angles[0], euler_angles[1], trans))
-    return robot_params
 
 
 def find_next_joint(root, current_link, next_joints):
@@ -128,7 +118,7 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
     # Add last_link_vector to parameters
     if last_link_vector is not None:
         parameters.append(lib_link.URDFLink(
-            translation=last_link_vector,
+            translation_vector=last_link_vector,
             orientation=[0, 0, 0],
             rotation=[0, 0, 0],
             name="last_joint"

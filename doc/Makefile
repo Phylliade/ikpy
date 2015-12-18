@@ -87,9 +87,9 @@ qthelp:
 	@echo
 	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
 	      ".qhcp project file in $(BUILDDIR)/qthelp, like this:"
-	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/poppy-inverse-kinematics.qhcp"
+	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/ikpy.qhcp"
 	@echo "To view the help file:"
-	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/poppy-inverse-kinematics.qhc"
+	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/ikpy.qhc"
 
 applehelp:
 	$(SPHINXBUILD) -b applehelp $(ALLSPHINXOPTS) $(BUILDDIR)/applehelp
@@ -104,8 +104,8 @@ devhelp:
 	@echo
 	@echo "Build finished."
 	@echo "To view the help file:"
-	@echo "# mkdir -p $$HOME/.local/share/devhelp/poppy-inverse-kinematics"
-	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/poppy-inverse-kinematics"
+	@echo "# mkdir -p $$HOME/.local/share/devhelp/ikpy"
+	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/ikpy"
 	@echo "# devhelp"
 
 epub:

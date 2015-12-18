@@ -1,7 +1,5 @@
-poppy_inverse_kinematics
+ikpy
 ========================
 
 .. toctree::
    :maxdepth: 2
-
-   poppy_inverse_kinematics

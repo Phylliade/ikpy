@@ -1,0 +1,1 @@
+resources_path = "../resources"
