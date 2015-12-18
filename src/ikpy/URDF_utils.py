@@ -7,6 +7,7 @@ from . import link as lib_link
 import xml.etree.ElementTree as ET
 import json
 import numpy as np
+import itertools
 
 
 def find_next_joint(root, current_link, next_joints):
@@ -53,6 +54,24 @@ def find_next_link(root, current_joint, next_links):
             next_link = urdf_link
             has_next = True
     return(has_next, next_link)
+
+
+def find_parent_link(root, joint_name):
+    return next(joint.find("parent").attrib["link"]
+                for joint in root.iter("joint")
+                if joint.attrib["name"] == joint_name)
+
+
+def get_chain_from_joints(urdf_file, joints):
+    tree = ET.parse(urdf_file)
+    root = tree.getroot()
+
+    links = [find_parent_link(root, j) for j in joints]
+
+    iters = [iter(links), iter(joints)]
+    chain = list(it.next() for it in itertools.cycle(iters))
+
+    return chain
 
 
 def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector=None, base_elements_type="joint"):
