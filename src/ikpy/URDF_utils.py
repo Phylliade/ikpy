@@ -1,6 +1,7 @@
 # coding= utf8
 """
 .. module:: URDF_utils
+This module contains helper functions used to parse URDF.
 """
 
 from . import link as lib_link
@@ -127,7 +128,7 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
     return(parameters)
 
 
-def get_motor_parameters(json_file):
+def _get_motor_parameters(json_file):
     """Returns a dictionnary with joints as keys, and a description (dict) of each joint as value"""
     with open(json_file) as motor_fd:
         global_config = json.load(motor_fd)
@@ -143,7 +144,7 @@ def get_motor_parameters(json_file):
     return motor_config
 
 
-def convert_angle_to_pypot(angle, joint, **kwargs):
+def _convert_angle_to_pypot(angle, joint, **kwargs):
     """Converts an angle to a PyPot-compatible format"""
     angle_deg = (angle * 180 / (np.pi))
 
@@ -159,7 +160,7 @@ def convert_angle_to_pypot(angle, joint, **kwargs):
     return angle_pypot
 
 
-def convert_angle_from_pypot(angle, joint, **kwargs):
+def _convert_angle_from_pypot(angle, joint, **kwargs):
     """Converts an angle to a PyPot-compatible format"""
     angle_internal = angle + joint["offset"]
 
@@ -175,7 +176,7 @@ def convert_angle_from_pypot(angle, joint, **kwargs):
     return angle_internal
 
 
-def convert_angle_limit(angle, joint, **kwargs):
+def _convert_angle_limit(angle, joint, **kwargs):
     """Converts the limit angle of the PyPot JSON file to the internal format"""
     angle_pypot = angle
 

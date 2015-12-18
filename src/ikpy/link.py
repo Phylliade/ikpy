@@ -1,4 +1,8 @@
 # coding= utf8
+"""
+.. module:: link
+This module implements the Link class.
+"""
 import numpy as np
 import sympy
 from . import geometry_utils

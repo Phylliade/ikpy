@@ -1,4 +1,9 @@
 # coding= utf8
+"""
+.. module:: chain
+This module implements the Chain class.
+"""
+
 from . import URDF_utils
 from . import inverse_kinematics as ik
 from . import plot_utils
@@ -87,6 +92,7 @@ class Chain(object):
        :type base_elements: list of strings
        :param last_link_vector: Optional : The translation vector of the tip.
        :type last_link_vector: numpy.array
+       :param list active_links: The active links
         """
         links = URDF_utils.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_elements_type=base_elements_type)
         return cls(links, active_links=active_links)

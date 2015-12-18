@@ -1,4 +1,8 @@
 # coding= utf8
+"""
+.. module:: geometry_utils
+This module contains helper functions used to compute 3D geometric transformations.
+"""
 import numpy as np
 import sympy
 
