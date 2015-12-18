@@ -8,6 +8,17 @@
 
 ![demo](two_arms.png)
 
+# Features
+With IKPy, you can :
+
+* Compute the **Inverse Kinematics** of every existing robot.
+* Define your kinematic chain using **arbitrary representations** : DH (Denavit–Hartenberg), URDF standard, custom...
+* Automaticly import a kinematic chain from a **URDF file**.
+* **Plot** your kinematic chain.
+* Define your own Inverse Kinematics methods
+
+Moreover, IKPy is a **pure-Python library** : the install is a matter of seconds, and no compiling is required.
+
 # Installation
 You have two options :
 
@@ -24,7 +35,12 @@ You have two options :
    ```    
    NB : You must have the proper rights to execute this command
 
-# Tutorials
+# Getting started
+Go [here](https://github.com/Phylliade/ikpy/tree/master/src/poppy_inverse_kinematics/README.md)!
+
+# Guides and Tutorials
+Go the the [src](https://github.com/Phylliade/ikpy/tree/master/src/poppy_inverse_kinematics) folder and read the .md files. It should introduce you to the basics concepts of IKPy.
+
 You can find tutorials in the IPython [notebooks](https://github.com/Phylliade/ikpy/tree/master/notebooks).
 
 # API Documentation

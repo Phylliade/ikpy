@@ -12,7 +12,7 @@ class Chain(object):
     :param list links: List of the links of the chain
     :param list active_links: The list of the positions of the active links
     """
-    def __init__(self, links, active_links=0, profile=''"", ik_solver=None, **kwargs):
+    def __init__(self, links, active_links=0, profile=''"", **kwargs):
         self.links = [link_lib.OriginLink()] + links
         self._length = sum([link._length for link in links])
         # Avoid length of zero in a link
