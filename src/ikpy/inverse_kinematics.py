@@ -3,23 +3,29 @@ import scipy.optimize
 import numpy as np
 
 
-def inverse_kinematic_optimization(chain, target, starting_nodes_angles, bounds=None, first_active_joint=0, regularization_parameter=None, max_iter=None, **kwargs):
-    """Computes the inverse kinematic on the specified target with an optimization method"""
-    # print("Sarting optimisation with bounds : ", bounds)
+def inverse_kinematic_optimization(chain, target, starting_nodes_angles, regularization_parameter=None, max_iter=None):
+    """Computes the inverse kinematic on the specified target with an optimization method
+
+    :param ikpy.chain.Chain chain: The chain used for the Inverse kinematics.
+    :param numpy.array target: The desired target.
+    :param numpy.array starting_nodes_angles: The initial pose of your chain.
+    :param float regularization_parameter: The coefficient of the regularization.
+    :param int max_iter: Maximum number of iterations for the optimisation algorithm.
+    """
 
     if starting_nodes_angles is None:
         raise ValueError("starting_nodes_angles must be specified")
 
     # Compute squared distance to target
     def optimize_target(x):
-        y = np.append(starting_nodes_angles[:first_active_joint], x)
+        y = np.append(starting_nodes_angles[:chain.first_active_joint], x)
         squared_distance = np.linalg.norm(chain.forward_kinematics(y)[:3, -1] - target)
         return squared_distance
 
     # If a regularization is selected
     if regularization_parameter is not None:
         def optimize_total(x):
-            regularization = np.linalg.norm(x - starting_nodes_angles[first_active_joint:])
+            regularization = np.linalg.norm(x - starting_nodes_angles[chain.first_active_joint:])
             return optimize_target(x) + regularization_parameter * regularization
     else:
         def optimize_total(x):
@@ -27,7 +33,7 @@ def inverse_kinematic_optimization(chain, target, starting_nodes_angles, bounds=
 
     # Compute bounds
     real_bounds = [link.bounds for link in chain.links]
-    real_bounds = real_bounds[first_active_joint:]
+    real_bounds = real_bounds[chain.first_active_joint:]
 
     options = {}
     # Manage iterations maximum
@@ -35,10 +41,10 @@ def inverse_kinematic_optimization(chain, target, starting_nodes_angles, bounds=
         options["maxiter"] = max_iter
 
     # Utilisation d'une optimisation L-BFGS-B
-    res = scipy.optimize.minimize(optimize_total, starting_nodes_angles[first_active_joint:], method='L-BFGS-B', bounds=real_bounds, options=options)
+    res = scipy.optimize.minimize(optimize_total, starting_nodes_angles[chain.first_active_joint:], method='L-BFGS-B', bounds=real_bounds, options=options)
 
     print("Inverse kinematic optimisation OK, done in {} iterations".format(res.nit))
-    if first_active_joint == 0:
+    if chain.first_active_joint == 0:
         return(res.x)
     else:
-        return(np.append(starting_nodes_angles[:first_active_joint], res.x))
+        return(np.append(starting_nodes_angles[:chain.first_active_joint], res.x))

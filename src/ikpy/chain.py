@@ -19,6 +19,8 @@ class Chain(object):
         for (index, link) in enumerate(self.links):
             if link._length == 0:
                 link._axis_length = self.links[index - 1]._axis_length
+        # Temporary
+        self.first_active_joint = active_links
 
     def forward_kinematics(self, joints, full_kinematics=False):
         """Returns the transformation matrix of the forward kinematics
@@ -46,15 +48,14 @@ class Chain(object):
         else:
             return frame_matrix
 
-    def inverse_kinematic(self, target, initial_position, first_active_joint=0, **kwargs):
+    def inverse_kinematic(self, target, initial_position, **kwargs):
         """Computes the inverse kinematic on the specified target
 
         :param numpy.array target: The target of the inverse kinematic, in meters
         :param numpy.array initial_position: the initial position of each joint of the chain
-        :param int first_active_joint: The first active joint$
         :returns: The list of the positions of each joint according to the target. Note : Inactive joints are in the list.
         """
-        return ik.inverse_kinematic_optimization(self, target, starting_nodes_angles=initial_position, first_active_joint=first_active_joint, **kwargs)
+        return ik.inverse_kinematic_optimization(self, target, starting_nodes_angles=initial_position, **kwargs)
 
     def plot(self, joints, ax, target=None, show=False):
         """Plots the Chain using Matplotlib
@@ -77,7 +78,7 @@ class Chain(object):
             plot_utils.show_figure()
 
     @classmethod
-    def from_urdf_file(cls, urdf_file, base_elements=["base_link"], last_link_vector=None, base_elements_type="joint"):
+    def from_urdf_file(cls, urdf_file, base_elements=["base_link"], last_link_vector=None, base_elements_type="joint", active_links=0):
         """Creates a chain from an URDF file
 
        :param urdf_file: The path of the URDF file
@@ -88,7 +89,7 @@ class Chain(object):
        :type last_link_vector: numpy.array
         """
         links = URDF_utils.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_elements_type=base_elements_type)
-        return cls(links)
+        return cls(links, active_links=active_links)
 
 
 def pinv():
