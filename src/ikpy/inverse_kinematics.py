@@ -3,7 +3,7 @@ import scipy.optimize
 import numpy as np
 
 
-def inverse_kinematic_optimization(chain, target, starting_nodes_angles, regularization_parameter=None, max_iter=None):
+def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, regularization_parameter=None, max_iter=None):
     """Computes the inverse kinematic on the specified target with an optimization method
 
     :param ikpy.chain.Chain chain: The chain used for the Inverse kinematics.
@@ -12,6 +12,8 @@ def inverse_kinematic_optimization(chain, target, starting_nodes_angles, regular
     :param float regularization_parameter: The coefficient of the regularization.
     :param int max_iter: Maximum number of iterations for the optimisation algorithm.
     """
+    # Only get the position
+    target = target_frame[:3, 3]
 
     if starting_nodes_angles is None:
         raise ValueError("starting_nodes_angles must be specified")

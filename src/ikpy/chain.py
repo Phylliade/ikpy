@@ -56,10 +56,15 @@ class Chain(object):
     def inverse_kinematic(self, target, initial_position, **kwargs):
         """Computes the inverse kinematic on the specified target
 
-        :param numpy.array target: The target of the inverse kinematic, in meters
+        :param numpy.array target: The frame target of the inverse kinematic, in meters. It must be 4x4 transformation matrix
         :param numpy.array initial_position: the initial position of each joint of the chain
         :returns: The list of the positions of each joint according to the target. Note : Inactive joints are in the list.
         """
+        # Checks on input
+        target = np.array(target)
+        if target.shape != (4, 4):
+            raise ValueError("Your target must be a 4x4 transformation matrix")
+
         return ik.inverse_kinematic_optimization(self, target, starting_nodes_angles=initial_position, **kwargs)
 
     def plot(self, joints, ax, target=None, show=False):

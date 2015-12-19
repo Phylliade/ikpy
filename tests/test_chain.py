@@ -2,6 +2,7 @@ import unittest
 from ikpy import chain
 import test_resources
 from ikpy import plot_utils
+import numpy as np
 
 plot = False
 
@@ -20,7 +21,9 @@ class TestChain(unittest.TestCase):
             b.plot(joints, ax)
 
         target = [0.1, -0.2, 0.1]
-        ik = a.inverse_kinematic(target, initial_position=joints)
+        frame_target = np.eye(4)
+        frame_target[:3, 3] = target
+        ik = a.inverse_kinematic(frame_target, initial_position=joints)
 
         if plot:
             a.plot(ik, ax, target=target)
