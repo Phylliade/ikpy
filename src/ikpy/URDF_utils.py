@@ -12,20 +12,21 @@ import itertools
 from . import link as lib_link
 
 
-def find_next_joint(root, current_link, next_joints):
-    """Find the next joint in the URDF tree"""
+def find_next_joint(root, current_link, next_joint_name):
+    """Find the next joint in the URDF tree
+
+    :param xml.etree.ElementTree current_link: The current URDF link
+    :param string next_joint_name: Optional : The name of the next joint
+    """
     # Trouver le joint attaché
     has_next = False
     next_joint = None
+    search_by_name = True
 
-    if next_joints == []:
-        # If no next joints, find it automaticly
+    if next_joint_name is None:
+        # If no next joint is provided, find it automaticly
         search_by_name = False
         current_link_name = current_link.attrib["name"]
-    else:
-        # If a next joint is provided, use it
-        next_joint_name = next_joints.pop(0)
-        search_by_name = True
 
     for joint in root.iter("joint"):
         if(search_by_name):
@@ -40,16 +41,18 @@ def find_next_joint(root, current_link, next_joints):
     return(has_next, next_joint)
 
 
-def find_next_link(root, current_joint, next_links):
-    """Find the next link in the URDF tree"""
+def find_next_link(root, current_joint, next_link_name):
+    """Find the next link in the URDF tree
+
+    :param xml.etree.ElementTree current_joint: The current URDF joint
+    :param string next_link_name: Optional : The name of the next link
+    """
     has_next = False
     next_link = None
     # If no next link, find it automaticly
-    if next_links == []:
+    if next_link_name is None:
+        # If the name of the next link is not provided, find it
         next_link_name = current_joint.find("child").attrib["link"]
-    else:
-        # If a next link is provided, use it
-        next_link_name = next_links.pop(0)
 
     for urdf_link in root.iter("link"):
         if urdf_link.attrib["name"] == next_link_name:
@@ -107,24 +110,28 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
 
     # Parcours récursif de la structure du bras
     while(has_next):
+        if base_elements != []:
+            next_element = base_elements.pop(0)
+        else:
+            next_element = None
+
         if node_type == "link":
             # Current element is a link, find child joint
-            (has_next, current_joint) = find_next_joint(
-                root, current_link, base_joints)
+            (has_next, current_joint) = find_next_joint(root, current_link, next_element)
             node_type = "joint"
             if(has_next):
                 joints.append(current_joint)
 
         elif node_type == "joint":
             # Current element is a joint, find child link
-            (has_next, current_link) = find_next_link(
-                root, current_joint, base_links)
+            (has_next, current_link) = find_next_link(root, current_joint, next_element)
             node_type = "link"
             if(has_next):
                 links.append(current_link)
 
     parameters = []
 
+    # Save the joints in the good format
     for joint in joints:
         translation = joint.find("origin").attrib["xyz"].split()
         orientation = joint.find("origin").attrib["rpy"].split()
