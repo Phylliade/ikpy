@@ -53,7 +53,7 @@ class Chain(object):
         else:
             return frame_matrix
 
-    def inverse_kinematic(self, target, initial_position, **kwargs):
+    def inverse_kinematics(self, target, initial_position, **kwargs):
         """Computes the inverse kinematic on the specified target
 
         :param numpy.array target: The frame target of the inverse kinematic, in meters. It must be 4x4 transformation matrix
