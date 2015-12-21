@@ -1,16 +1,16 @@
 import unittest
 import numpy as np
-import resources_tests
+import params
 from ikpy import chain
 from ikpy import plot_utils
+import sys
 
-
-plot = False
+plot = params.interactive
 
 
 class TestPoppyRobot(unittest.TestCase):
     def test_ergo(self):
-        a = chain.Chain.from_urdf_file(resources_tests.resources_path + "/poppy_ergo.URDF")
+        a = chain.Chain.from_urdf_file(params.resources_path + "/poppy_ergo.URDF")
         target = [0.1, -0.2, 0.1]
         frame_target = np.eye(4)
         frame_target[:3, 3] = target
@@ -26,4 +26,4 @@ class TestPoppyRobot(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main(verbosity=2)
+    unittest.main(verbosity=2, argv=[sys.argv[0]])

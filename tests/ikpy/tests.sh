@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python test_chain.py
+python test_chain.py --no-interactive

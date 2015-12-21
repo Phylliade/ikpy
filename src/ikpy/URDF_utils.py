@@ -47,7 +47,6 @@ def find_next_link(root, current_joint, next_link_name):
     :param xml.etree.ElementTree current_joint: The current URDF joint
     :param string next_link_name: Optional : The name of the next link
     """
-    print(current_joint)
     has_next = False
     next_link = None
     # If no next link, find it automaticly
