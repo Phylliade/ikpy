@@ -1,10 +1,11 @@
 import unittest
-from ikpy import chain
-import test_resources
-from ikpy import plot_utils
 import numpy as np
+from ikpy import chain
+from ikpy import plot_utils
+import test_resources
 
-plot = False
+
+plot = True
 
 
 class TestChain(unittest.TestCase):
@@ -23,7 +24,7 @@ class TestChain(unittest.TestCase):
         target = [0.1, -0.2, 0.1]
         frame_target = np.eye(4)
         frame_target[:3, 3] = target
-        ik = a.inverse_kinematic(frame_target, initial_position=joints)
+        ik = a.inverse_kinematics(frame_target, initial_position=joints)
 
         if plot:
             a.plot(ik, ax, target=target)
