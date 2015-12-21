@@ -62,4 +62,4 @@ Matplotlib is optional : it is used to plot (in 3D) your models.
 # Contributing
 IKPy is designed to be easily customisable : you can add your own IK methods or FK representations.
 
-Contributations are welcome : if you have a hyperpower IK method, don't hesitate to propose for adding in the lib!
+Contributations are welcome : if you have an awesome patented (but also open-source!) IK method, don't hesitate to propose for adding in the lib!
