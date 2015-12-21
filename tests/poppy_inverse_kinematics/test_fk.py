@@ -3,6 +3,7 @@ import poppy_inverse_kinematics.creature as creature
 import numpy as np
 
 creature_type = "torso_left_arm"
+activate_vrep = False
 
 
 class TestFK(unittest.TestCase):
@@ -16,14 +17,15 @@ class TestFK(unittest.TestCase):
         self.test_pos = all_zeros
 
     def test_fk_creature(self):
-
-        np.testing.assert_almost_equal(self.creature.forward_kinematic(), [-0.3535, 0.0415, 0.004], decimal=3)
+        self.creature.goal_joints = self.test_pos
+        self.creature.plot_model()
 
     def test_fk_creature_pypot(self):
-        creature_pypot = creature.creature(creature_type=creature_type, interface_type="vrep")
-        creature_pypot.goal_joints = self.test_pos
-        creature_pypot.goto_joints()
-        creature_pypot.plot_model()
+        if activate_vrep:
+            creature_pypot = creature.creature(creature_type=creature_type, interface_type="vrep")
+            creature_pypot.goal_joints = self.test_pos
+            creature_pypot.goto_joints()
+            creature_pypot.plot_model()
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

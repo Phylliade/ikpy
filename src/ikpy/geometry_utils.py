@@ -1,4 +1,8 @@
 # coding= utf8
+"""
+.. module:: geometry_utils
+This module contains helper functions used to compute 3D geometric transformations.
+"""
 import numpy as np
 import sympy
 
@@ -84,15 +88,19 @@ def homogeneous_translation_matrix(trans_x, trans_y, trans_z):
 
 
 def from_transformation_matrix(transformation_matrix):
-    """Converts a transformation matrix to a tuple (rotation_matrix, translation_vector)"""
-    return (transformation_matrix[:-1, :-1], transformation_matrix[:, -1])
+    """Converts a transformation matrix to a tuple (translation_vector, rotation_matrix)"""
+    return (transformation_matrix[:, -1], transformation_matrix[:-1, :-1])
 
 
-def to_transformation_matrix(rotation_matrix, translation):
-    """Converts a tuple (rotation_matrix, translation_vector)  to a transformation matrix"""
+def to_transformation_matrix(translation, orientation_matrix=np.zeros((3, 3))):
+    """Converts a tuple (translation_vector, orientation_matrix)  to a transformation matrix
+
+    :param np.array translation: The translation of your frame presented as a 3D vector.
+    :param np.array orientation_matrix: Optional : The orientation of your frame, presented as a 3x3 matrix.
+    """
     matrix = np.eye(4)
 
-    matrix[:-1, :-1] = rotation_matrix
+    matrix[:-1, :-1] = orientation_matrix
     matrix[-1] = translation
     return matrix
 

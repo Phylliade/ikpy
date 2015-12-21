@@ -12,4 +12,4 @@ before_install:
 install:
   - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy sympy matplotlib
   - pip install .
-script: cd tests && ./tests.sh
+script: cd tests/ikpy && ./tests.sh

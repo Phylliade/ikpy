@@ -1,4 +1,9 @@
 # coding= utf8
+"""
+.. module:: chain
+This module implements the Chain class.
+"""
+
 from . import URDF_utils
 from . import inverse_kinematics as ik
 from . import plot_utils
@@ -19,6 +24,8 @@ class Chain(object):
         for (index, link) in enumerate(self.links):
             if link._length == 0:
                 link._axis_length = self.links[index - 1]._axis_length
+        # Temporary
+        self.first_active_joint = active_links
 
     def forward_kinematics(self, joints, full_kinematics=False):
         """Returns the transformation matrix of the forward kinematics
@@ -46,15 +53,22 @@ class Chain(object):
         else:
             return frame_matrix
 
-    def inverse_kinematic(self, target, initial_position, first_active_joint=0, **kwargs):
+    def inverse_kinematics(self, target, initial_position=None, **kwargs):
         """Computes the inverse kinematic on the specified target
 
-        :param numpy.array target: The target of the inverse kinematic, in meters
-        :param numpy.array initial_position: the initial position of each joint of the chain
-        :param int first_active_joint: The first active joint$
+        :param numpy.array target: The frame target of the inverse kinematic, in meters. It must be 4x4 transformation matrix
+        :param numpy.array initial_position: Optional : the initial position of each joint of the chain. Defaults to 0 for each joint
         :returns: The list of the positions of each joint according to the target. Note : Inactive joints are in the list.
         """
-        return ik.inverse_kinematic_optimization(self, target, starting_nodes_angles=initial_position, first_active_joint=first_active_joint, **kwargs)
+        # Checks on input
+        target = np.array(target)
+        if target.shape != (4, 4):
+            raise ValueError("Your target must be a 4x4 transformation matrix")
+
+        if initial_position is None:
+            initial_position = [0] * len(self.links)
+
+        return ik.inverse_kinematic_optimization(self, target, starting_nodes_angles=initial_position, **kwargs)
 
     def plot(self, joints, ax, target=None, show=False):
         """Plots the Chain using Matplotlib
@@ -77,7 +91,7 @@ class Chain(object):
             plot_utils.show_figure()
 
     @classmethod
-    def from_urdf_file(cls, urdf_file, base_elements=["base_link"], last_link_vector=None, base_elements_type="joint"):
+    def from_urdf_file(cls, urdf_file, base_elements=["base_link"], last_link_vector=None, base_elements_type="joint", active_links=0):
         """Creates a chain from an URDF file
 
        :param urdf_file: The path of the URDF file
@@ -86,9 +100,10 @@ class Chain(object):
        :type base_elements: list of strings
        :param last_link_vector: Optional : The translation vector of the tip.
        :type last_link_vector: numpy.array
+       :param list active_links: The active links
         """
         links = URDF_utils.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_elements_type=base_elements_type)
-        return cls(links)
+        return cls(links, active_links=active_links)
 
 
 def pinv():
