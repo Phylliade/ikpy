@@ -5,7 +5,7 @@ from ikpy import chain
 from ikpy import plot_utils
 
 
-plot = True
+plot = False
 
 
 class TestPoppyRobot(unittest.TestCase):

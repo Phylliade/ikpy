@@ -5,7 +5,7 @@ from ikpy import plot_utils
 import resources_tests
 
 
-plot = True
+plot = False
 
 
 class TestChain(unittest.TestCase):
