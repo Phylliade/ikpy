@@ -18,7 +18,9 @@ my_chain = Chain.from_urdf_file("poppy_ergo.URDF")
 # Getting the position of your chain (aka Forward Kinematics, aka FK)
 Just call the `forward_kinematics` method of your chain using  the positions of each joint.
 ```
-my_chain.forward_kinematics([  0.00000000e+00,  -7.85169183e-01, -9.71977343e-01, 8.39302626e-01,   7.03536053e-05,   7.31439909e-01,  0.00000000e+00])
+my_chain.forward_kinematics([  0.00000000e+00,  -7.83311388e-01,  -1.13929769e+00,
+         8.39373996e-01,   6.05357632e-05,   7.31474063e-01,
+         0.00000000e+00)
 ```
 
 Would return :

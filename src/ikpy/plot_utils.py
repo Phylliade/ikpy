@@ -35,7 +35,7 @@ def plot_chain(chain, joints, ax, target=None, show=False):
 
     # Get the nodes and the orientation from the tranformation matrix
     for (index, link) in enumerate(chain.links):
-        (rotation, node) = geometry_utils.from_transformation_matrix(transformation_matrixes[index])
+        (node, rotation) = geometry_utils.from_transformation_matrix(transformation_matrixes[index])
         nodes.append(node)
         rotation_axis = link._get_rotation_axis()
         if index == 0:

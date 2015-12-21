@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 from ikpy import chain
 from ikpy import plot_utils
-import test_resources
+import resources_tests
 
 
 plot = True
@@ -10,8 +10,8 @@ plot = True
 
 class TestChain(unittest.TestCase):
     def test_chain(self):
-        a = chain.Chain.from_urdf_file(test_resources.resources_path + "/poppy_torso.URDF", base_elements=["base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x", "chest", "r_shoulder_y"], last_link_vector=[0, 0.18, 0], active_links=4)
-        b = chain.Chain.from_urdf_file(test_resources.resources_path + "/poppy_torso.URDF", base_elements=["base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x", "chest", "l_shoulder_y"], last_link_vector=[0, 0.18, 0], active_links=4)
+        a = chain.Chain.from_urdf_file(resources_tests.resources_path + "/poppy_torso.URDF", base_elements=["base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x", "chest", "r_shoulder_y"], last_link_vector=[0, 0.18, 0], active_links=4)
+        b = chain.Chain.from_urdf_file(resources_tests.resources_path + "/poppy_torso.URDF", base_elements=["base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x", "chest", "l_shoulder_y"], last_link_vector=[0, 0.18, 0], active_links=4)
 
         joints = [0] * len(a.links)
         joints[-4] = 0
