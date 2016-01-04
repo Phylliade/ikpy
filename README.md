@@ -42,9 +42,7 @@ Follow this IPython [notebook](https://github.com/Phylliade/ikpy/tree/master/not
 Finished the quick start guide? Go [here](https://github.com/Phylliade/ikpy/tree/master/tutorials/ikpy/getting_started.md)!
 
 # Guides and Tutorials
-Go the the [src](https://github.com/Phylliade/ikpy/tree/master/src/ikpy) folder and read the .md files. It should introduce you to the basics concepts of IKPy.
-
-You can find tutorials in the IPython [notebooks](https://github.com/Phylliade/ikpy/tree/master/notebooks/ikpy).
+Go the the [tutorials](https://github.com/Phylliade/ikpy/tree/master/tutorials/ikpy) folder and read the .md files. It should introduce you to the basics concepts of IKPy.
 
 # API Documentation
 An extensive documentation of the API can be found [here](http://ikpy.readthedocs.org).

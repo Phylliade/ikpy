@@ -80,3 +80,5 @@ my_chain.plot(my_chain.inverse_kinematics([
 ```
 
 The `show` argument is just a shortcut that will call `matplotlib.pyplot.show()` for you if set to `True`. It is set to `False` by default.
+
+To use advanced plotting functions, such as displaying multiple chains on the same figure, follow [this guide](https://github.com/Phylliade/ikpy/blob/master/tutorials/ikpy/plotting.md).

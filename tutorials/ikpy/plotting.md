@@ -16,6 +16,7 @@ You only have to pass the same matplotlib axes object, say `ax`, to the plot `me
 left_arm.plot(joints, ax)
 right_arm.plot(joints, ax)
 
+# Display you axes object
 matplotlib.pyplot.show()
 ```
 
