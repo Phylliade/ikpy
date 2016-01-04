@@ -26,6 +26,7 @@ class Chain(object):
                 link._axis_length = self.links[index - 1]._axis_length
         # Temporary
         self.first_active_joint = active_links
+        self.joints_mask = [True] * len(links)
 
     def forward_kinematics(self, joints, full_kinematics=False):
         """Returns the transformation matrix of the forward kinematics
@@ -105,6 +106,18 @@ class Chain(object):
         links = URDF_utils.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_element_type=base_element_type)
         return cls(links, active_links=active_links)
 
+    def active_to_full_joints(self, active_joints, initial_position):
+        full_joints = initial_position
+        reduced_index = 0
+        for index, active in enumerate(self.joints_mask):
+            if active:
+                full_joints[index] = active_joints[reduced_index]
+                reduced_index += 1
+        return full_joints
 
-def pinv():
-    pass
+    def active_from_full_joints(self, joints):
+        active_joints = []
+        for active, joint in zip(self.joints_mask, joints):
+            if active:
+                active_joints.append(joint)
+        return np.array(active_joints)
