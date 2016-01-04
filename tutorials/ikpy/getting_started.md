@@ -15,6 +15,8 @@ One great feature of IKPy is that you can create your chains from a URDF file. I
 my_chain = Chain.from_urdf_file("poppy_ergo.URDF")
 ```
 
+To discover more advanced features of URDF parsing, go to the dedicated [page](https://github.com/Phylliade/ikpy/blob/master/tutorials/ikpy/URDF.md).
+
 # Getting the position of your chain (aka Forward Kinematics, aka FK)
 Just call the `forward_kinematics` method of your chain using  the positions of each joint.
 ```
