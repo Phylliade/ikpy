@@ -17,16 +17,21 @@ class Chain(object):
     :param list links: List of the links of the chain
     :param list active_links: The list of the positions of the active links
     """
-    def __init__(self, links, active_links=0, profile=''"", **kwargs):
+    def __init__(self, links, active_links_mask=None, profile=''"", **kwargs):
         self.links = [link_lib.OriginLink()] + links
         self._length = sum([link._length for link in links])
         # Avoid length of zero in a link
         for (index, link) in enumerate(self.links):
             if link._length == 0:
                 link._axis_length = self.links[index - 1]._axis_length
-        # Temporary
-        self.first_active_joint = active_links
-        self.joints_mask = [True] * len(links)
+
+        # If the active_links_mask is not given, set it to True for every link
+        if active_links_mask is not None:
+            if len(active_links_mask) != len(self.links):
+                raise ValueError("Your active links mask length of {} is different from the number of your links, which is {}".format(len(active_links_mask), len(self.links)))
+            self.active_links_mask = active_links_mask
+        else:
+            self.active_links_mask = [True] * len(links)
 
     def forward_kinematics(self, joints, full_kinematics=False):
         """Returns the transformation matrix of the forward kinematics
@@ -92,7 +97,7 @@ class Chain(object):
             plot_utils.show_figure()
 
     @classmethod
-    def from_urdf_file(cls, urdf_file, base_elements=["base_link"], last_link_vector=None, base_element_type="link", active_links=0):
+    def from_urdf_file(cls, urdf_file, base_elements=["base_link"], last_link_vector=None, base_element_type="link", active_links_mask=None):
         """Creates a chain from an URDF file
 
        :param urdf_file: The path of the URDF file
@@ -104,20 +109,24 @@ class Chain(object):
        :param list active_links: The active links
         """
         links = URDF_utils.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_element_type=base_element_type)
-        return cls(links, active_links=active_links)
+        return cls(links, active_links_mask=active_links_mask)
 
-    def active_to_full_joints(self, active_joints, initial_position):
-        full_joints = initial_position
+    def active_to_full(self, active_joints, initial_position):
+        full_links = initial_position
         reduced_index = 0
-        for index, active in enumerate(self.joints_mask):
+        for index, active in enumerate(self.active_links_mask):
             if active:
-                full_joints[index] = active_joints[reduced_index]
+                full_links[index] = active_joints[reduced_index]
                 reduced_index += 1
-        return full_joints
+        return full_links
 
-    def active_from_full_joints(self, joints):
-        active_joints = []
-        for active, joint in zip(self.joints_mask, joints):
+    def active_from_full(self, joints):
+        active_links = []
+        for active, joint in zip(self.active_links_mask, joints):
             if active:
-                active_joints.append(joint)
-        return np.array(active_joints)
+                active_links.append(joint)
+        return np.array(active_links)
+
+    @classmethod
+    def append(cls, chain1, chain2):
+        return cls(links=chain1.links + chain2.links, active_links_mask=chain1.active_links_mask + chain2.active_links_mask)
