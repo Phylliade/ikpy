@@ -76,5 +76,7 @@ my_chain.plot(my_chain.inverse_kinematics([
     [0, 1, 0, 2],
     [0, 0, 1, 2],
     [0, 0, 0, 1]
-    ]))
+    ]), show=True)
 ```
+
+The `show` argument is just a shortcut that will call `matplotlib.pyplot.show()` for you if set to `True`. It is set to `False` by default.
