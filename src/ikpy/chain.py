@@ -91,7 +91,7 @@ class Chain(object):
             plot_utils.show_figure()
 
     @classmethod
-    def from_urdf_file(cls, urdf_file, base_elements=["base_link"], last_link_vector=None, base_elements_type="joint", active_links=0):
+    def from_urdf_file(cls, urdf_file, base_elements=["base_link"], last_link_vector=None, base_element_type="link", active_links=0):
         """Creates a chain from an URDF file
 
        :param urdf_file: The path of the URDF file
@@ -102,7 +102,7 @@ class Chain(object):
        :type last_link_vector: numpy.array
        :param list active_links: The active links
         """
-        links = URDF_utils.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_elements_type=base_elements_type)
+        links = URDF_utils.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_element_type=base_element_type)
         return cls(links, active_links=active_links)
 
 
