@@ -74,11 +74,11 @@ class URDFLink(Link):
             # Apply translation matrix
             symbolic_frame_matrix = symbolic_frame_matrix * sympy.Matrix(geometry_utils.homogeneous_translation_matrix(*translation_vector))
 
-            # Apply rotation matrix
-            symbolic_frame_matrix = symbolic_frame_matrix * geometry_utils.cartesian_to_homogeneous(geometry_utils.symbolic_axis_rotation_matrix(rotation, theta), matrix_type="sympy")
-
             # Apply orientation matrix
             symbolic_frame_matrix = symbolic_frame_matrix * geometry_utils.cartesian_to_homogeneous(geometry_utils.rpy_matrix(*orientation))
+
+            # Apply rotation matrix
+            symbolic_frame_matrix = symbolic_frame_matrix * geometry_utils.cartesian_to_homogeneous(geometry_utils.symbolic_axis_rotation_matrix(rotation, theta), matrix_type="sympy")
 
             self.symbolic_transformation_matrix = sympy.lambdify(theta, symbolic_frame_matrix, "numpy")
 

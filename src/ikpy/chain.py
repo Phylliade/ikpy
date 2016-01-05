@@ -45,6 +45,9 @@ class Chain(object):
         if full_kinematics:
             frame_matrixes = []
 
+        if len(self.links) != len(joints):
+            raise ValueError("Your joints vector length is {} but you have {} links".format(len(joints), len(self.links)))
+
         for index, (link, joint_angle) in enumerate(zip(self.links, joints)):
             # Compute iteratively the position
             # NB : Use asarray to avoid old sympy problems

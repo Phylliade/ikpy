@@ -8,7 +8,6 @@ import xml.etree.ElementTree as ET
 import json
 import numpy as np
 import itertools
-import 2to3
 
 from . import link as lib_link
 
@@ -75,7 +74,7 @@ def get_chain_from_joints(urdf_file, joints):
     links = [find_parent_link(root, j) for j in joints]
 
     iters = [iter(links), iter(joints)]
-    chain = list(it.next() for it in itertools.cycle(iters))
+    chain = list(it.__next__() for it in itertools.cycle(iters))
 
     return chain
 
