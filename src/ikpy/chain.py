@@ -17,15 +17,21 @@ class Chain(object):
     :param list links: List of the links of the chain
     :param list active_links: The list of the positions of the active links
     """
-    def __init__(self, links, active_links=0, profile=''"", **kwargs):
-        self.links = [link_lib.OriginLink()] + links
+    def __init__(self, links, active_links_mask=None, profile=''"", **kwargs):
+        self.links = links
         self._length = sum([link._length for link in links])
         # Avoid length of zero in a link
         for (index, link) in enumerate(self.links):
             if link._length == 0:
                 link._axis_length = self.links[index - 1]._axis_length
-        # Temporary
-        self.first_active_joint = active_links
+
+        # If the active_links_mask is not given, set it to True for every link
+        if active_links_mask is not None:
+            if len(active_links_mask) != len(self.links):
+                raise ValueError("Your active links mask length of {} is different from the number of your links, which is {}".format(len(active_links_mask), len(self.links)))
+            self.active_links_mask = np.array(active_links_mask)
+        else:
+            self.active_links_mask = np.array([True] * len(links))
 
     def forward_kinematics(self, joints, full_kinematics=False):
         """Returns the transformation matrix of the forward kinematics
@@ -38,6 +44,9 @@ class Chain(object):
 
         if full_kinematics:
             frame_matrixes = []
+
+        if len(self.links) != len(joints):
+            raise ValueError("Your joints vector length is {} but you have {} links".format(len(joints), len(self.links)))
 
         for index, (link, joint_angle) in enumerate(zip(self.links, joints)):
             # Compute iteratively the position
@@ -91,7 +100,7 @@ class Chain(object):
             plot_utils.show_figure()
 
     @classmethod
-    def from_urdf_file(cls, urdf_file, base_elements=["base_link"], last_link_vector=None, base_elements_type="joint", active_links=0):
+    def from_urdf_file(cls, urdf_file, base_elements=["base_link"], last_link_vector=None, base_element_type="link", active_links_mask=None):
         """Creates a chain from an URDF file
 
        :param urdf_file: The path of the URDF file
@@ -102,9 +111,18 @@ class Chain(object):
        :type last_link_vector: numpy.array
        :param list active_links: The active links
         """
-        links = URDF_utils.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_elements_type=base_elements_type)
-        return cls(links, active_links=active_links)
+        links = URDF_utils.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_element_type=base_element_type)
+        # Add an origin link at the beginning
+        return cls([link_lib.OriginLink()] + links, active_links_mask=active_links_mask)
 
+    def active_to_full(self, active_joints, initial_position):
+        full_joints = np.array(initial_position, copy=True, dtype=np.float)
+        np.place(full_joints, self.active_links_mask, active_joints)
+        return full_joints
 
-def pinv():
-    pass
+    def active_from_full(self, joints):
+        return np.compress(self.active_links_mask, joints, axis=0)
+
+    @classmethod
+    def concat(cls, chain1, chain2):
+        return cls(links=chain1.links + chain2.links, active_links_mask=chain1.active_links_mask + chain2.active_links_mask)

@@ -74,12 +74,12 @@ def get_chain_from_joints(urdf_file, joints):
     links = [find_parent_link(root, j) for j in joints]
 
     iters = [iter(links), iter(joints)]
-    chain = list(it.next() for it in itertools.cycle(iters))
+    chain = list(it.__next__() for it in itertools.cycle(iters))
 
     return chain
 
 
-def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector=None, base_elements_type="joint"):
+def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector=None, base_element_type="link"):
     """Returns translated parameters from the given URDF file
 
    :param urdf_file: The path of the URDF file
@@ -92,23 +92,20 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
     tree = ET.parse(urdf_file)
     root = tree.getroot()
 
-    base_joints = []
-    base_links = []
-    for index, element in enumerate(base_elements):
-        if index % 2 == 0:
-            base_links.append(element)
-        else:
-            base_joints.append(element)
-
     joints = []
     links = []
     has_next = True
     current_joint = None
     current_link = None
 
-    node_type = "joint"
+    if base_element_type == "link":
+        # The first element is a link, so its (virtual) parent should be a joint
+        node_type = "joint"
+    elif base_element_type == "joint":
+        # The same as before, but swap link and joint
+        node_type = "link"
 
-    # Parcours récursif de la structure du bras
+    # Parcours récursif de la structure de la chain
     while(has_next):
         if base_elements != []:
             next_element = base_elements.pop(0)
