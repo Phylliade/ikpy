@@ -18,7 +18,7 @@ class Chain(object):
     :param list active_links: The list of the positions of the active links
     """
     def __init__(self, links, active_links_mask=None, profile=''"", **kwargs):
-        self.links = [link_lib.OriginLink()] + links
+        self.links = links
         self._length = sum([link._length for link in links])
         # Avoid length of zero in a link
         for (index, link) in enumerate(self.links):
@@ -29,9 +29,9 @@ class Chain(object):
         if active_links_mask is not None:
             if len(active_links_mask) != len(self.links):
                 raise ValueError("Your active links mask length of {} is different from the number of your links, which is {}".format(len(active_links_mask), len(self.links)))
-            self.active_links_mask = active_links_mask
+            self.active_links_mask = np.array(active_links_mask)
         else:
-            self.active_links_mask = [True] * len(links)
+            self.active_links_mask = np.array([True] * len(links))
 
     def forward_kinematics(self, joints, full_kinematics=False):
         """Returns the transformation matrix of the forward kinematics
@@ -109,24 +109,17 @@ class Chain(object):
        :param list active_links: The active links
         """
         links = URDF_utils.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_element_type=base_element_type)
-        return cls(links, active_links_mask=active_links_mask)
+        # Add an origin link at the beginning
+        return cls([link_lib.OriginLink()] + links, active_links_mask=active_links_mask)
 
     def active_to_full(self, active_joints, initial_position):
-        full_links = initial_position
-        reduced_index = 0
-        for index, active in enumerate(self.active_links_mask):
-            if active:
-                full_links[index] = active_joints[reduced_index]
-                reduced_index += 1
-        return full_links
+        full_joints = np.array(initial_position, copy=True, dtype=np.float)
+        np.place(full_joints, self.active_links_mask, active_joints)
+        return full_joints
 
     def active_from_full(self, joints):
-        active_links = []
-        for active, joint in zip(self.active_links_mask, joints):
-            if active:
-                active_links.append(joint)
-        return np.array(active_links)
+        return np.compress(self.active_links_mask, joints, axis=0)
 
     @classmethod
-    def append(cls, chain1, chain2):
+    def concat(cls, chain1, chain2):
         return cls(links=chain1.links + chain2.links, active_links_mask=chain1.active_links_mask + chain2.active_links_mask)
