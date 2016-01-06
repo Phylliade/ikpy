@@ -1,6 +1,6 @@
 # URDF parsing and importing #
 
-URDF parsing is done via the class method `from_urdf_file`.
+URDF parsing is done via the class method `from_urdf_file` of the `Chain` class.
 
 There are multiple things to consider to parse a URDF file :
 
@@ -9,8 +9,17 @@ An URDF robot is made of links and joints : each joint represents a motor, and i
 
 Be careful, the `links` of IKPy (and of the matlab toolbox) are more related to the URDF `joints`!
 
+On the picture below, here we have a robot arm in the URDF style :
+![](https://github.com/Phylliade/ikpy/blob/master/tutorials/ikpy/urdf-convention.png)
+
+In the URDF style, the robot generally begins and ends with a "URDF Link", which don't exist in our IKPy representation.
+
+That's why IKPy automatically adds two links (this time IKPy Links), at the beginning and the end of our robot :
+![](https://github.com/Phylliade/ikpy/blob/master/tutorials/ikpy/ikpy-convention.png)
+
 # Giving the base elements
-Given the fact that a chain is linear, and If your robot is not a linear chain, for example an humanoid, then you must specify the elements that constitute your chain inthe URDF file
+If your robot is not a linear chain (for example a humanoid), you must extract your chain in your URDF file.
+To achieve this, the import function uses the parameter `base_elements`.
 
 
 

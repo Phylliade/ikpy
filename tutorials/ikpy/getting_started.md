@@ -1,4 +1,4 @@
-# Basic concepts #
+# Getting started #
 
 This tutorial will introduce you to the basic concepts of IKPy.
 You can test a live version in the corresponding [IPython Notebook](https://github.com/Phylliade/ikpy/blob/master/notebooks/Quickstart.ipynb)
