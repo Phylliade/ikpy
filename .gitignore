@@ -3,9 +3,8 @@ build/*
 __pycache__
 dist/*
 doc/_build
-notebooks/.ipynb_*
+notebooks/*/.ipynb_*
 */output/*
 .jekyll-metadata
 .sass-cache/
 src/*.egg-info/
-
