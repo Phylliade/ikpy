@@ -31,7 +31,7 @@ Chain([originlink, link1, link2, endlink])
 ```
 
 ## From an URDF file
-Jump to the dedicated [page](https://github.com/Phylliade/ikpy/blob/master/tutorials/ikpy/URDF.md)!
+Jump to the dedicated [page](https://github.com/Phylliade/ikpy/wiki/URDF)!
 
 # The mask of active links
 Sometimes, you will want some links to appear in your chain, but not to be managed by inverse kinematics.

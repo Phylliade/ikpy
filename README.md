@@ -38,11 +38,9 @@ You have two options :
 # Quickstart
 Follow this IPython [notebook](https://github.com/Phylliade/ikpy/tree/master/notebooks/ikpy/Quickstart.ipynb).
 
-# First concepts
-Finished the quick start guide? Go [here](https://github.com/Phylliade/ikpy/tree/master/tutorials/ikpy/getting_started.md)!
 
 # Guides and Tutorials
-Go the the [tutorials](https://github.com/Phylliade/ikpy/tree/master/tutorials/ikpy) folder and read the .md files. It should introduce you to the basics concepts of IKPy.
+Go the the [wiki](https://github.com/Phylliade/ikpy/wiki) . It should introduce you to the basics concepts of IKPy.
 
 # API Documentation
 An extensive documentation of the API can be found [here](http://ikpy.readthedocs.org).
