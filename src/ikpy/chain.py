@@ -30,6 +30,8 @@ class Chain(object):
             if len(active_links_mask) != len(self.links):
                 raise ValueError("Your active links mask length of {} is different from the number of your links, which is {}".format(len(active_links_mask), len(self.links)))
             self.active_links_mask = np.array(active_links_mask)
+            # Always set the last link to True
+            self.active_links_mask[-1] = False
         else:
             self.active_links_mask = np.array([True] * len(links))
 
