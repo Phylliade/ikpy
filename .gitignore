@@ -8,3 +8,4 @@ notebooks/*/.ipynb_*
 .jekyll-metadata
 .sass-cache/
 src/*.egg-info/
+*.odg
