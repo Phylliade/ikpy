@@ -1,6 +1,7 @@
 # coding= utf8
 import scipy.optimize
 import numpy as np
+from . import logs
 
 
 def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, regularization_parameter=None, max_iter=None):
@@ -47,7 +48,7 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
     # Utilisation d'une optimisation L-BFGS-B
     res = scipy.optimize.minimize(optimize_total, chain.active_from_full(starting_nodes_angles), method='L-BFGS-B', bounds=real_bounds, options=options)
 
-    print("Inverse kinematic optimisation OK, done in {} iterations".format(res.nit))
+    logs.manager.info("Inverse kinematic optimisation OK, done in {} iterations".format(res.nit))
 
     return(chain.active_to_full(res.x, starting_nodes_angles))
     # return(np.append(starting_nodes_angles[:chain.first_active_joint], res.x))

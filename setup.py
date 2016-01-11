@@ -3,7 +3,7 @@ import sys
 from setuptools import setup
 
 setup(name='ikpy',
-      version='1.9.99-2',
+      version='1.9.99-3',
       author="Pierre Manceron",
       description="An inverse kinematics library aiming performance and modularity",
       url="https://github.com/Phylliade/ikpy",
