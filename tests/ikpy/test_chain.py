@@ -15,6 +15,9 @@ class TestChain(unittest.TestCase):
         self.chain1 = chain.Chain.from_urdf_file(params.resources_path + "/poppy_torso.URDF", base_elements=["base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x", "chest", "r_shoulder_y"], last_link_vector=[0, 0.18, 0], active_links_mask=[False, False, False, False, True, True, True, True, True])
         self.joints = [0] * len(self.chain1.links)
         self.joints[-4] = 0
+        self.target = [0.1, -0.2, 0.1]
+        self.frame_target = np.eye(4)
+        self.frame_target[:3, 3] = self.target
 
     def test_chain(self):
         self.chain1 = chain.Chain.from_urdf_file(params.resources_path + "/poppy_torso.URDF", base_elements=["base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x", "chest", "r_shoulder_y"], last_link_vector=[0, 0.18, 0], active_links_mask=[False, False, False, False, True, True, True, True, True])
@@ -25,16 +28,21 @@ class TestChain(unittest.TestCase):
             self.chain2.plot(self.joints, self.ax)
 
     def test_ik(self):
-        target = [0.1, -0.2, 0.1]
-        frame_target = np.eye(4)
-        frame_target[:3, 3] = target
-        ik = self.chain1.inverse_kinematics(frame_target, initial_position=self.joints)
+
+        ik = self.chain1.inverse_kinematics(self.frame_target, initial_position=self.joints)
 
         if plot:
-            self.chain1.plot(ik, self.ax, target=target)
+            self.chain1.plot(ik, self.ax, target=self.target)
             plot_utils.show_figure()
 
-        np.testing.assert_almost_equal(self.chain1.forward_kinematics(ik)[:3, 3], target, decimal=3)
+        np.testing.assert_almost_equal(self.chain1.forward_kinematics(ik)[:3, 3], self.target, decimal=3)
+
+    def test_ik_optimization(self):
+        """Tests the IK optimization-based method"""
+        args = {"max_iter": 3}
+        ik = self.chain1.inverse_kinematics(self.frame_target, initial_position=self.joints, **args)
+        # Check whether the results are almost equal
+        np.testing.assert_almost_equal(self.chain1.forward_kinematics(ik)[:3, 3], self.target, decimal=1)
 
 
 if __name__ == '__main__':
