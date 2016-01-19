@@ -2,6 +2,13 @@
 
 The whole plotting is made through the `plot` method of the chain object.
 
+For example :
+![](right_arm.png)
+Each link is displayed as a blue dot.
+For each link, the rotation axe is  the colored axe coming from the blue dot.
+The red dot is the target of the Inverse Kinematics.
+(You can see that the robot end is exactly on the target position)
+
 You can call it with no argument : it will plot your chain in a matplotlib figure.
 
 The `plot` method can handle more advanced features, such as plotting a target or plotting multiple chain in the same figure.

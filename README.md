@@ -20,7 +20,7 @@ With IKPy, you can :
 Moreover, IKPy is a **pure-Python library** : the install is a matter of seconds, and no compiling is required.
 
 # Installation
-You have two options :
+You have three options :
 
 
 1. From PyPI (recommended) : Simply run :
@@ -28,7 +28,13 @@ You have two options :
    ```bash
    pip install ikpy
    ```
-2. From source : First download and extract the archive, then run :
+
+2. If you work with Anaconda, there's also a Conda package of Pypi :
+  ```
+  conda install -c https://conda.anaconda.org/phylliade ikpy
+  ```
+
+3. From source : First download and extract the archive, then run :
 
    ```bash
    pip install ./

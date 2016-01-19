@@ -9,26 +9,41 @@ plot = params.interactive
 
 
 class TestChain(unittest.TestCase):
+    def setUp(self):
+        if plot:
+            self.ax = plot_utils.init_3d_figure()
+        self.chain1 = chain.Chain.from_urdf_file(params.resources_path + "/poppy_torso.URDF", base_elements=["base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x", "chest", "r_shoulder_y"], last_link_vector=[0, 0.18, 0], active_links_mask=[False, False, False, False, True, True, True, True, True])
+        self.joints = [0] * len(self.chain1.links)
+        self.joints[-4] = 0
+        self.target = [0.1, -0.2, 0.1]
+        self.frame_target = np.eye(4)
+        self.frame_target[:3, 3] = self.target
+
     def test_chain(self):
-        a = chain.Chain.from_urdf_file(params.resources_path + "/poppy_torso.URDF", base_elements=["base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x", "chest", "r_shoulder_y"], last_link_vector=[0, 0.18, 0], active_links_mask=[False, False, False, False, True, True, True, True, True])
-        b = chain.Chain.from_urdf_file(params.resources_path + "/poppy_torso.URDF", base_elements=["base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x", "chest", "l_shoulder_y"], last_link_vector=[0, 0.18, 0], active_links_mask=[False, False, False, False, True, True, True, True, True])
-
-        joints = [0] * len(a.links)
-        joints[-4] = 0
+        self.chain1 = chain.Chain.from_urdf_file(params.resources_path + "/poppy_torso.URDF", base_elements=["base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x", "chest", "r_shoulder_y"], last_link_vector=[0, 0.18, 0], active_links_mask=[False, False, False, False, True, True, True, True, True])
+        self.chain2 = chain.Chain.from_urdf_file(params.resources_path + "/poppy_torso.URDF", base_elements=["base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x", "chest", "l_shoulder_y"], last_link_vector=[0, 0.18, 0], active_links_mask=[False, False, False, False, True, True, True, True, True])
 
         if plot:
-            ax = plot_utils.init_3d_figure()
-            a.plot(joints, ax)
-            b.plot(joints, ax)
+            self.chain1.plot(self.joints, self.ax)
+            self.chain2.plot(self.joints, self.ax)
 
-        target = [0.1, -0.2, 0.1]
-        frame_target = np.eye(4)
-        frame_target[:3, 3] = target
-        ik = a.inverse_kinematics(frame_target, initial_position=joints)
+    def test_ik(self):
+
+        ik = self.chain1.inverse_kinematics(self.frame_target, initial_position=self.joints)
 
         if plot:
-            a.plot(ik, ax, target=target)
+            self.chain1.plot(ik, self.ax, target=self.target)
             plot_utils.show_figure()
+
+        np.testing.assert_almost_equal(self.chain1.forward_kinematics(ik)[:3, 3], self.target, decimal=3)
+
+    def test_ik_optimization(self):
+        """Tests the IK optimization-based method"""
+        args = {"max_iter": 3}
+        ik = self.chain1.inverse_kinematics(self.frame_target, initial_position=self.joints, **args)
+        # Check whether the results are almost equal
+        np.testing.assert_almost_equal(self.chain1.forward_kinematics(ik)[:3, 3], self.target, decimal=1)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2, argv=[sys.argv[0]])
