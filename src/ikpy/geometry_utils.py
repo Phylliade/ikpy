@@ -101,7 +101,7 @@ def to_transformation_matrix(translation, orientation_matrix=np.zeros((3, 3))):
     matrix = np.eye(4)
 
     matrix[:-1, :-1] = orientation_matrix
-    matrix[-1] = translation
+    matrix[:-1, -1] = translation
     return matrix
 
 
