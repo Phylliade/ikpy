@@ -25,4 +25,10 @@ To achieve this, the import function uses the parameter `base_elements`.
 
 # Using a last_link_vector
 
-# Specifying a chain mask
+
+
+# Resources
+* URDF :
+
+* [URDF creation  tutorial](http://wiki.ros.org/urdf/Tutorials/Create%20your%20own%20urdf%20file)
+  + [French version](http://wiki.ros.org/fr/urdf/Tutorials/Create%20your%20own%20urdf%20file)

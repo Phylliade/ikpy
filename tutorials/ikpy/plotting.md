@@ -44,3 +44,6 @@ ax = matplotlib.pyplot.figure().add_subplot(111, projection='3d')
 # Plotting a target with your chain
 For inverse kinematics, it can be useful to display the target of your chain along of your chain.
 To achieve this, just pass a 3D vector to the `target` parameter of the `plot` method.
+
+
+The target will appear as a red dot, slighlty bigger than the dots of the links.

@@ -15,7 +15,7 @@ class Chain(object):
     """The base Chain class
 
     :param list links: List of the links of the chain
-    :param list active_links: The list of the positions of the active links
+    :param list active_links_mask: A list of boolean indicating that whether or not the corresponding link is active
     """
     def __init__(self, links, active_links_mask=None, profile=''"", **kwargs):
         self.links = links
