@@ -57,7 +57,7 @@ An extensive documentation of the API can be found [here](http://ikpy.readthedoc
 The library can work with both versions of Python (2.7 and 3.x).
 It requires numpy and scipy.
 
-Sympy is but highly recommended, for fast hybrid computations, that's why it is installed by default.
+Sympy is highly recommended, for fast hybrid computations, that's why it is installed by default.
 
 Matplotlib is optional : it is used to plot (in 3D) your models.
 
