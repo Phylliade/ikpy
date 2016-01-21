@@ -27,6 +27,9 @@ right_arm.plot(joints, ax)
 matplotlib.pyplot.show()
 ```
 
+For example :
+![](dual-plot.png)
+
 ## Creating an `axes` object
 To create an `axes` object, you can use this snippet :
 ```
