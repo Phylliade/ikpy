@@ -50,6 +50,7 @@ Would return :
 [  0.00000000e+00,  -7.85169183e-01, -9.71977343e-01, 8.39302626e-01,   7.03536053e-05,   7.31439909e-01,  0.00000000e+00]
 ```
 
+To have more information about the Inverse Kinematics options, follow this [link](https://github.com/Phylliade/ikpy/wiki/Inverse-Kinematics).
 
 ## Using homogeneous coordinates
 If you don't know these coordinates and the 4x4 matrix seems repelling, this section is for you!

@@ -14,7 +14,7 @@ To use the link, mask, use the parameter `active_links_mask` when creating the [
 
 # Initial position
 To compute the Inverse Kinematics, the algorithm will need the initial position of the chain. You can pass it by using the `initial_position` parameter of the `inverse_kinematics` method.
-The expected datatype is exactly the same as the expected value of `joints` of the `forward_kinematics` method.s
+The expected datatype is exactly the same as the expected value of `joints` of the `forward_kinematics` method.
 
 
 This is a very important parameter, and can have huge consequences on the computations (in terms of duration and the returned solution)

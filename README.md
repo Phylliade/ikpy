@@ -47,7 +47,7 @@ Follow this IPython [notebook](https://github.com/Phylliade/ikpy/tree/master/not
 
 
 # Guides and Tutorials
-Go the the [wiki](https://github.com/Phylliade/ikpy/wiki) . It should introduce you to the basics concepts of IKPy.
+Go the the [wiki](https://github.com/Phylliade/ikpy/wiki). It should introduce you to the basics concepts of IKPy.
 
 # API Documentation
 An extensive documentation of the API can be found [here](http://ikpy.readthedocs.org).
@@ -57,12 +57,12 @@ An extensive documentation of the API can be found [here](http://ikpy.readthedoc
 The library can work with both versions of Python (2.7 and 3.x).
 It requires numpy and scipy.
 
-Sympy is not mandatory, but highly recommended, for fast hybrid computations, that's why it is installed by default.
+Sympy is but highly recommended, for fast hybrid computations, that's why it is installed by default.
 
 Matplotlib is optional : it is used to plot (in 3D) your models.
 
 
 # Contributing
-IKPy is designed to be easily customisable : you can add your own IK methods or FK representations.
+IKPy is designed to be easily customisable : you can add your own IK methods or robot representations (such as DH-Parameters) using a dedicated [developper API](https://github.com/Phylliade/ikpy/wiki/Contributing).
 
-Contributations are welcome : if you have an awesome patented (but also open-source!) IK method, don't hesitate to propose for adding in the lib!
+Contributions are welcome : if you have an awesome patented (but also open-source!) IK method, don't hesitate to propose for adding in the lib!
