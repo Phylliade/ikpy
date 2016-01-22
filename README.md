@@ -14,7 +14,7 @@ With IKPy, you can :
 * Compute the **Inverse Kinematics** of every existing robot.
 * Define your kinematic chain using **arbitrary representations** : DH (Denavit–Hartenberg), URDF standard, custom...
 * Automaticly import a kinematic chain from a **URDF file**.
-* IKPy is extremely **precise** (the only limitation is your underlying model's precision) and very **fast**.
+* IKPy is **precise** (up to 7 digits) : the only limitation is your underlying model's precision) and **fast** : up to 7 ms for a complete IK computation.
 * **Plot** your kinematic chain : no need to use a real robot (or a simulator) to test your algorithms!
 * Define your own Inverse Kinematics methods
 
