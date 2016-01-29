@@ -43,7 +43,7 @@ You have three options :
    NB : You must have the proper rights to execute this command
 
 # Quickstart
-Follow this IPython [notebook](https://github.com/Phylliade/ikpy/tree/master/notebooks/ikpy/Quickstart.ipynb).
+Follow this IPython [notebook](https://github.com/Phylliade/ikpy/blob/master/tutorials/ikpy/Quickstart.ipynb).
 
 
 # Guides and Tutorials
