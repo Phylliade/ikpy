@@ -8,6 +8,10 @@
 
 ![demo](two_arms.png)
 
+# Demo
+A live demo of what IKpy can do : 
+<iframe width="560" height="315" src="https://www.youtube.com/embed/H0ysr5qSbis" frameborder="0" allowfullscreen></iframe>
+
 # Features
 With IKPy, you can :
 
