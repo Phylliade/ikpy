@@ -24,16 +24,19 @@ def find_next_joint(root, current_link, next_joint_name):
     search_by_name = True
 
     if next_joint_name is None:
-        # If no next joint is provided, find it automaticly
+        # If no next joint is provided, find it automatically
         search_by_name = False
         current_link_name = current_link.attrib["name"]
 
     for joint in root.iter("joint"):
+        # Iterate through all joints to find the good one
         if(search_by_name):
+            # Find the joint given its name
             if joint.attrib["name"] == next_joint_name:
                 has_next = True
                 next_joint = joint
         else:
+            # Find the joint which parent is the current_link
             if joint.find("parent").attrib["link"] == current_link_name:
                 has_next = True
                 next_joint = joint
@@ -91,6 +94,9 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
     """
     tree = ET.parse(urdf_file)
     root = tree.getroot()
+    base_elements = list(base_elements)
+    if base_elements == []:
+        raise ValueError("base_elements can't be the empty list []")
 
     joints = []
     links = []
