@@ -10,7 +10,7 @@ A little demo :
 
 # Github, Getting Started and tutorials
 The main repository is hosted on [Github](https://github.com/Phylliade/ikpy).
-There, you will find [tutorials](https://github.com/Phylliade/ikpy/tree/master/tutorials/ikpy).
+There is a also a wiki, where you will find [tutorials](https://github.com/Phylliade/ikpy/wiki).
 
 # Documentation
 The doc is hosted on read-the-docs : 
