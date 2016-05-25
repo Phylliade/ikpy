@@ -7,6 +7,7 @@ Welcome the homepage of IKPy (Inverse Kinematics in Python)!
 A little demo :
 <iframe width="560" height="315" src="https://www.youtube.com/embed/H0ysr5qSbis" frameborder="0" allowfullscreen></iframe>
 
+Also, a presentation of IKPy : [Presentation](https://github.com/Phylliade/ikpy/blob/master/tutorials/ikpy/IKPy%20speech.pdf).
 
 # Github, Getting Started and tutorials
 The main repository is hosted on [Github](https://github.com/Phylliade/ikpy).
