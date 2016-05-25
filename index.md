@@ -14,4 +14,4 @@ There is a also a wiki, where you will find [tutorials](https://github.com/Phyll
 
 # Documentation
 The doc is hosted on read-the-docs : 
-[documentation](http://ikpy.readthedocs.io/en/latest/)
+[documentation](http://ikpy.readthedocs.io/en/latest/).
