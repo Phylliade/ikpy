@@ -14,4 +14,4 @@ There, you will find [tutorials](https://github.com/Phylliade/ikpy/tree/master/t
 
 # Documentation
 The doc is hosted on read-the-docs : 
-http://ikpy.readthedocs.io/en/latest/
+[](http://ikpy.readthedocs.io/en/latest/)
