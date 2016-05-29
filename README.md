@@ -73,3 +73,6 @@ Matplotlib is optional : it is used to plot (in 3D) your models.
 IKPy is designed to be easily customisable : you can add your own IK methods or robot representations (such as DH-Parameters) using a dedicated [developper API](https://github.com/Phylliade/ikpy/wiki/Contributing).
 
 Contributions are welcome : if you have an awesome patented (but also open-source!) IK method, don't hesitate to propose for adding in the lib!
+
+# Links
+* If performance is your main concern, aversive++ has an inverse kinematics [module](https://github.com/AversivePlusPlus/ik) written in C++, which works the same way IKPy does.
