@@ -1,1 +1,0 @@
-resources_path = "../../resources"
