@@ -16,8 +16,10 @@ class Chain(object):
 
     :param list links: List of the links of the chain
     :param list active_links_mask: A list of boolean indicating that whether or not the corresponding link is active
+    :param string name: The name of the Chain
     """
-    def __init__(self, links, active_links_mask=None, profile=''"", **kwargs):
+    def __init__(self, links, active_links_mask=None, name="chain", profile=''"", **kwargs):
+        self.name = name
         self.links = links
         self._length = sum([link._length for link in links])
         # Avoid length of zero in a link
@@ -34,6 +36,9 @@ class Chain(object):
             self.active_links_mask[-1] = False
         else:
             self.active_links_mask = np.array([True] * len(links))
+
+    def __repr__(self):
+        return("Kinematic chain name={} links={} active_links={}".format(self.name, self.links, self.active_links_mask))
 
     def forward_kinematics(self, joints, full_kinematics=False):
         """Returns the transformation matrix of the forward kinematics
