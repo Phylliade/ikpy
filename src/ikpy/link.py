@@ -23,6 +23,9 @@ class Link(object):
         self.bounds = bounds
         self.name = name
 
+    def __repr__(self):
+        return("Link name={}".format(self.name))
+
     def _get_rotation_axis(self):
         # Defaults to None
         return [0, 0, 0, 1]
