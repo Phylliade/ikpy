@@ -107,7 +107,7 @@ class Chain(object):
             plot_utils.show_figure()
 
     @classmethod
-    def from_urdf_file(cls, urdf_file, base_elements=["base_link"], last_link_vector=None, base_element_type="link", active_links_mask=None):
+    def from_urdf_file(cls, urdf_file, base_elements=["base_link"], last_link_vector=None, base_element_type="link", active_links_mask=None, name="chain"):
         """Creates a chain from an URDF file
 
        :param urdf_file: The path of the URDF file
@@ -117,10 +117,11 @@ class Chain(object):
        :param last_link_vector: Optional : The translation vector of the tip.
        :type last_link_vector: numpy.array
        :param list active_links: The active links
+       :param string Name: The name of the Chain
         """
         links = URDF_utils.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_element_type=base_element_type)
         # Add an origin link at the beginning
-        return cls([link_lib.OriginLink()] + links, active_links_mask=active_links_mask)
+        return cls([link_lib.OriginLink()] + links, active_links_mask=active_links_mask, name=name)
 
     def active_to_full(self, active_joints, initial_position):
         full_joints = np.array(initial_position, copy=True, dtype=np.float)
