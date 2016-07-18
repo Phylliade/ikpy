@@ -1,4 +1,6 @@
 # IKPy #
+
+[![Join the chat at https://gitter.im/Phylliade/ikpy](https://badges.gitter.im/Phylliade/ikpy.svg)](https://gitter.im/Phylliade/ikpy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 ![Travis-CI](https://travis-ci.org/Phylliade/ikpy.svg?branch=master)
 [![PyPI](https://img.shields.io/pypi/v/ikpy.svg)](https://pypi.python.org/pypi/ikpy/)
 [![Documentation Status](https://readthedocs.org/projects/ikpy/badge/?version=latest)](http://ikpy.readthedocs.org/en/latest/?badge=latest)
