@@ -36,7 +36,7 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
             return optimize_target(x)
 
     # Compute bounds
-    real_bounds = [link.bounds for link in chain.links]
+    real_bounds = [bounds for link in chain.links for bounds in link.get_bounds()]
     # real_bounds = real_bounds[chain.first_active_joint:]
     real_bounds = chain.active_from_full(real_bounds)
 
