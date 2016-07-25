@@ -39,7 +39,7 @@ class Chain(object):
             # Always set the last link to True
             self.active_links_mask[-1] = False
         else:
-            self.active_links_mask = np.array([True] * len(links))
+            self.active_links_mask = np.array([True] * self.get_num_params())
 
     def __repr__(self):
         return("Kinematic chain name={} links={} active_links={}".format(self.name, self.links, self.active_links_mask))

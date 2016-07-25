@@ -19,8 +19,7 @@ class Link(object):
     :type use_symbolic_matrix: bool
     """
 
-    def __init__(self, name, bounds=(None, None)):
-        self.bounds = bounds
+    def __init__(self, name):
         self.name = name
 
     def __repr__(self):
@@ -33,6 +32,9 @@ class Link(object):
     def get_transformation_params(self):
         return 0
 
+    def get_bounds(self):
+        return []
+    
     def get_transformation_matrix(self):
         raise NotImplementedError
 
@@ -62,7 +64,7 @@ class URDFLink(Link):
     """
 
     def __init__(self, name, translation_vector, orientation, rotation, bounds=(None, None), angle_representation="rpy", use_symbolic_matrix=True):
-        Link.__init__(self, name=name, bounds=bounds)
+        Link.__init__(self, name=name)
         self.use_symbolic_matrix = use_symbolic_matrix
         self.translation_vector = np.array(translation_vector)
         self.orientation = np.array(orientation)
@@ -100,6 +102,9 @@ class URDFLink(Link):
     def get_transformation_params(self):
         return 1
 
+    def get_bounds(self):
+        return [(None, None)]
+    
     def get_transformation_matrix(self, theta):
         if self.use_symbolic_matrix:
             frame_matrix = self.symbolic_transformation_matrix(theta)
@@ -140,6 +145,9 @@ class DHLink(Link):
     def get_transformation_params(self):
         return 2
 
+    def get_bounds(self):
+        return [(None, None), (None, None)]
+    
     def get_transformation_matrix(self, theta, a):
         """ Computes the homogeneous transformation matrix for this link. """
         ct = np.cos(theta + self.theta)
@@ -165,5 +173,8 @@ class OriginLink(Link):
     def get_transformation_params(self):
         return 0
 
+    def get_bounds(self):
+        return []
+    
     def get_transformation_matrix(self):
         return np.eye(4)
