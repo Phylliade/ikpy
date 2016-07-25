@@ -47,7 +47,7 @@ class Chain(object):
 
     def get_num_params(self):
         _to_num_params = lambda link: link.get_transformation_params()
-        return sum(map(_to_num_params, self.links))
+        return sum(list(map(_to_num_params, self.links)))
     
     def forward_kinematics(self, joints, full_kinematics=False):
         """Returns the transformation matrix of the forward kinematics
@@ -66,7 +66,7 @@ class Chain(object):
         if self.get_num_params() != len(joints):
             raise ValueError("Your joints vector length is {} but you have {} links".format(len(joints), self.get_num_params()))
 
-        joints_groups = _groups(map(lambda link: link.get_transformation_params(), self.links), joints)
+        joints_groups = _groups(list(map(lambda link: link.get_transformation_params(), self.links)), joints)
         for index, (link, joint_angle) in enumerate(zip(self.links, joints_groups)):
             # Compute iteratively the position
             # NB : Use asarray to avoid old sympy problems
