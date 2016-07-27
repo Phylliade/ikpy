@@ -6,6 +6,7 @@ from ikpy import plot_utils
 from ikpy import matrix_link
 import sympy
 import params
+import json
 
 plot = params.interactive
 
@@ -61,6 +62,10 @@ class TestChain(unittest.TestCase):
         if plot:
             c.plot(ik, self.ax)
             plot_utils.show_figure()
+
+    def test_blender(self):
+        test = json.loads('{ "b" : 666}')
+        print(test)
             
         
 
