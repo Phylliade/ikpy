@@ -19,8 +19,9 @@ class Link(object):
     :type use_symbolic_matrix: bool
     """
 
-    def __init__(self, name):
+    def __init__(self, name, parent=None):
         self.name = name
+        self.parent = parent
 
     def __repr__(self):
         return("Link name={}".format(self.name))
@@ -63,8 +64,8 @@ class URDFLink(Link):
     URDFlink()
     """
 
-    def __init__(self, name, translation_vector, orientation, rotation, bounds=(None, None), angle_representation="rpy", use_symbolic_matrix=True):
-        Link.__init__(self, name=name)
+    def __init__(self, name, translation_vector, orientation, rotation, bounds=(None, None), angle_representation="rpy", use_symbolic_matrix=True, parent=None):
+        Link.__init__(self, name=name, parent=parent)
         self.use_symbolic_matrix = use_symbolic_matrix
         self.translation_vector = np.array(translation_vector)
         self.orientation = np.array(orientation)
@@ -139,8 +140,8 @@ class DHLink(Link):
    :rtype: DHLink
     """
 
-    def __init__(self, name, d=0, a=0, bounds=None, use_symbolic_matrix=True):
-        Link.__init__(self, use_symbolic_matrix)
+    def __init__(self, name, parent=None, d=0, a=0, bounds=None, use_symbolic_matrix=True):
+        Link.__init__(self, name, parent)
 
     def get_transformation_params(self):
         return 2

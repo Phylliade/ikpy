@@ -139,11 +139,16 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
         translation = joint.find("origin").attrib["xyz"].split()
         orientation = joint.find("origin").attrib["rpy"].split()
         rotation = joint.find("axis").attrib['xyz'].split()
+        parent = None
+        for j in joints:
+            if joint.find("parent").attrib["link"] == j.find("child").attrib["link"]:
+                parent = j.attrib["name"]
         parameters.append(lib_link.URDFLink(
             translation_vector=[float(translation[0]), float(translation[1]), float(translation[2])],
             orientation=[float(orientation[0]), float(orientation[1]), float(orientation[2])],
             rotation=[float(rotation[0]), float(rotation[1]), float(rotation[2])],
-            name=joint.attrib["name"]
+            name=joint.attrib["name"],
+            parent=parent
         ))
 
     # Add last_link_vector to parameters
@@ -152,7 +157,8 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
             translation_vector=last_link_vector,
             orientation=[0, 0, 0],
             rotation=[0, 0, 0],
-            name="last_joint"
+            name="last_joint",
+            parent=parameters[-1].name
         ))
 
     return(parameters)
