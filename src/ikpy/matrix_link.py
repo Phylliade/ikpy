@@ -49,7 +49,6 @@ class VariableMatrixLink(link.Link):
         link.Link.__init__(self, name, parent)
         self._length = 1 # dirty
         self.symbols = symbols
-        print(sympy.Matrix(matrix))
         self.matrix = sympy.lambdify(symbols, sympy.Matrix(matrix), "numpy")
 
     def get_transformation_params(self):
