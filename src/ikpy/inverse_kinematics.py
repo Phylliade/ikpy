@@ -14,7 +14,7 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
     :param int max_iter: Maximum number of iterations for the optimisation algorithm.
     """
     # Only get the position
-    target = target_frame[:3, 3]
+    target = target_frame[:3, -1]
 
     if starting_nodes_angles is None:
         raise ValueError("starting_nodes_angles must be specified")
