@@ -4,9 +4,9 @@ import sys
 from ikpy import chain
 from ikpy import plot_utils
 from ikpy import matrix_link
+from ikpy import blender_utils
 import sympy
 import params
-
 import json
 import subprocess
 
@@ -17,6 +17,12 @@ class TestChain(unittest.TestCase):
     def setUp(self):
         if plot:
             self.ax = plot_utils.init_3d_figure()
+            self.ax.set_xlim3d([-300.0, 300.0])
+            self.ax.set_xlabel('X')
+            self.ax.set_ylim3d([-300.0, 300.0])
+            self.ax.set_ylabel('Y')
+            self.ax.set_zlim3d([-300.0, 300.0])
+            self.ax.set_zlabel('Z')
 
     def test_matrix(self):
         x = sympy.Symbol("x")
@@ -36,41 +42,31 @@ class TestChain(unittest.TestCase):
 
     def test_blender(self):
         blend_path = "../../resources/buggybot.blend"
-        python_script = "../../scripts/blender/blender_export.py"
-        command = ["blender", blend_path, "--background", "--python", python_script]
-        out = subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0]
-        data = False
-        out_data = []
-        for l in out.split("\n"):
-            if l == "end_data":
-                data = False
-            if data:
-                out_data.append(l)
-            if l == "begin_data":
-                data = True
-        json_links_list = json.loads("\n".join(out_data))
-        json_links_dict = {}
-        for l in json_links_list:
-            json_links_dict[l["name"]] = l
-        endpoint = "armature/forearm_right_back/endpoint"
-        links_list = []
-        while endpoint != None:
-            json_link = json_links_dict[endpoint]
-            if json_link["is_variable"]:
-                link = matrix_link.VariableMatrixLink(json_link["name"], json_link["parent"], json_link["matrix"], [sympy.Symbol("x")])
-                links_list = [link] + links_list
-            else:
-                link = matrix_link.ConstantMatrixLink(json_link["name"], json_link["parent"], json_link["matrix"])
-                links_list = [link] + links_list
-            endpoint = json_link["parent"]
-        c = chain.Chain(links_list, [True, True, True])
+        #for side in ["left_back", "right_back", "left_front", "right_front"]:
+        side = "left_back"
+        endpoint = "armature/forearm_"+side+"/endpoint"
+        c = chain.Chain.from_blend_file(blend_path, endpoint)
         target_matrix = np.eye(4)
-        target = [-100,-100,-100]
+        target = [0,0,0]
+        initial = [0,0,0]
+        if side == "left_back":
+            target = [-100,100,-100]
+            initial = [0,0,3.1415/2]
+        if side == "right_back":
+            target = [-100,-100,-100]
+            initial = [0,0,3.1415/2]
+        if side == "left_front":
+            target = [100,100,-100]
+            initial = [0,0,-3.1415/2]
+        if side == "right_front":
+            target = [100,-100,-100]
+            initial = [0,0,-3.1415/2]
         target_matrix[:3,3] = target
         args = {"max_iter": 1000}
-        ik = c.inverse_kinematics(target_matrix, [0,0,3.1415/2], **args)
+        ik = c.inverse_kinematics(target_matrix, initial, **args)
         if plot:
             c.plot(ik, self.ax)
+        if plot:
             plot_utils.show_figure()
 
 if __name__ == '__main__':
