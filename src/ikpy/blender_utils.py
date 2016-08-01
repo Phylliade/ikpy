@@ -33,9 +33,10 @@ import sympy
 import json
 import subprocess
 import os
+import sys
 
 def get_links_from_blender(blend_path, endpoint):
-    python_script = "/usr/share/ikpy/blender_export.py"
+    python_script = sys.prefix + "/share/ikpy/blender_export.py"
     command = ["blender", blend_path, "--background", "--python", python_script]
     out = subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0]
     data = False

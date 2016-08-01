@@ -20,6 +20,6 @@ setup(name='ikpy',
           "Topic :: Scientific/Engineering",
       ],
       data_files=[
-          ("/usr/share/ikpy", ["scripts/blender/blender_export.py"])
+          ("share/ikpy", ["scripts/blender/blender_export.py"])
       ]
       )
