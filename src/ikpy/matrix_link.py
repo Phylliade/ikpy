@@ -49,7 +49,9 @@ class VariableMatrixLink(link.Link):
         link.Link.__init__(self, name, parent)
         self._length = 1 # dirty
         self.symbols = symbols
-        self.matrix = sympy.lambdify(symbols, sympy.Matrix(matrix), "numpy")
+        self.matrix = matrix
+        self.lambda_matrix = sympy.lambdify(self.symbols, sympy.Matrix(self.matrix), "numpy")
+        self.sympy_lambda_matrix = sympy.lambdify(self.symbols, sympy.Matrix(self.matrix), "sympy")
 
     def get_transformation_params(self):
         return len(self.symbols)
@@ -58,7 +60,10 @@ class VariableMatrixLink(link.Link):
         return [(None, None)] * len(self.symbols)
 
     def get_transformation_matrix(self, *args):
+        matrix = self.lambda_matrix
+        if any(list(map(lambda e: type(e) == sympy.Symbol, args))):
+            matrix = self.sympy_lambda_matrix
         if len(self.symbols) == len(args):
-            return self.matrix(*args)
+            return matrix(*args)
         else:
             raise IndexError("{} parameters for {} symbols".format(len(args), len(self.symbols)))
