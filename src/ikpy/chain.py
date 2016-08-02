@@ -10,12 +10,6 @@ from . import inverse_kinematics as ik
 import numpy as np
 from . import link as link_lib
 
-def _groups(cardinals, joints, res = []):
-    if len(cardinals) == 0:
-        return res
-    else:
-        return _groups(cardinals[1:], joints[cardinals[0]:], res+list([joints[:cardinals[0]]]))
-
 class Chain(object):
     """The base Chain class
 
@@ -65,6 +59,12 @@ class Chain(object):
 
         if self.get_num_params() != len(joints):
             raise ValueError("Your joints vector length is {} but you have {} links".format(len(joints), self.get_num_params()))
+
+        def _groups(cardinals, joints, res = []):
+            if len(cardinals) == 0:
+                return res
+            else:
+                return _groups(cardinals[1:], joints[cardinals[0]:], res+list([joints[:cardinals[0]]]))
 
         joints_groups = _groups(list(map(lambda link: link.get_transformation_params(), self.links)), joints)
         for index, (link, joint_angle) in enumerate(zip(self.links, joints_groups)):
