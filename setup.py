@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import sys
 from setuptools import setup
 
 setup(name='ikpy',
@@ -12,6 +11,9 @@ setup(name='ikpy',
       package_dir={'': 'src'},
       setup_requires=['numpy'],
       install_requires=['numpy', 'scipy', 'sympy'],
+      extras_require={
+          'plot': ["matplotlib"],
+      },
       classifiers=[
           "Programming Language :: Python :: 2",
           "Programming Language :: Python :: 3",
