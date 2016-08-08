@@ -38,10 +38,10 @@ You have three options :
    ```bash
    pip install ikpy
    ```
-If you intend to plot your robot, you can install the plotting dependencies (mainly matplotlib) : 
-```bash
-pip install 'ikpy[plot]'
-```
+  If you intend to plot your robot, you can install the plotting dependencies (mainly matplotlib) : 
+  ```bash
+  pip install 'ikpy[plot]'
+  ```
 
 2. If you work with Anaconda, there's also a Conda package of Pypi :
   ```
