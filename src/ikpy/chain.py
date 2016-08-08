@@ -6,7 +6,6 @@ This module implements the Chain class.
 
 from . import URDF_utils
 from . import inverse_kinematics as ik
-from . import plot_utils
 import numpy as np
 from . import link as link_lib
 
@@ -94,6 +93,8 @@ class Chain(object):
         :param numpy.array target: An optional target
         :param bool show: Display the axe. Defaults to False
         """
+        from . import plot_utils
+
         if ax is None:
             # If ax is not given, create one
             ax = plot_utils.init_3d_figure()
