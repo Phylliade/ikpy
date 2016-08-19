@@ -147,8 +147,7 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
             translation_vector=[float(translation[0]), float(translation[1]), float(translation[2])],
             orientation=[float(orientation[0]), float(orientation[1]), float(orientation[2])],
             rotation=[float(rotation[0]), float(rotation[1]), float(rotation[2])],
-            name=joint.attrib["name"],
-            parent=parent
+            name=joint.attrib["name"]
         ))
 
     # Add last_link_vector to parameters
@@ -157,8 +156,7 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
             translation_vector=last_link_vector,
             orientation=[0, 0, 0],
             rotation=[0, 0, 0],
-            name="last_joint",
-            parent=parameters[-1].name
+            name="last_joint"
         ))
 
     return(parameters)

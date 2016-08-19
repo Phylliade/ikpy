@@ -56,10 +56,10 @@ def get_links_from_blender(blend_path, endpoint):
     while endpoint != None:
         json_link = json_links_dict[endpoint]
         if json_link["is_variable"]:
-            link = matrix_link.VariableMatrixLink(json_link["name"], json_link["parent"], json_link["matrix"], [sympy.Symbol("x")])
+            link = matrix_link.VariableMatrixLink(json_link["name"], json_link["matrix"], [sympy.Symbol("x")])
             links_list = [link] + links_list
         else:
-            link = matrix_link.ConstantMatrixLink(json_link["name"], json_link["parent"], json_link["matrix"])
+            link = matrix_link.ConstantMatrixLink(json_link["name"], json_link["matrix"])
             links_list = [link] + links_list
         endpoint = json_link["parent"]
     return links_list

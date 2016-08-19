@@ -27,8 +27,8 @@ class TestChain(unittest.TestCase):
     def test_matrix(self):
         x = sympy.Symbol("x")
         y = sympy.Symbol("y")
-        l1 = matrix_link.VariableMatrixLink("r1", None, [[sympy.cos(x),-sympy.sin(x),0,0],[sympy.sin(x),sympy.cos(x),0,0],[0,0,1,0],[0,0,0,1]], [x, y])
-        l2 = matrix_link.ConstantMatrixLink("test", "r1", [[10],[0],[0],[1]])
+        l1 = matrix_link.VariableMatrixLink("r1", [[sympy.cos(x),-sympy.sin(x),0,0],[sympy.sin(x),sympy.cos(x),0,0],[0,0,1,0],[0,0,0,1]], [x, y])
+        l2 = matrix_link.ConstantMatrixLink("test", [[10],[0],[0],[1]])
         c = chain.Chain([l1, l2], [True, False])
         args = {"max_iter": 100}
         target_matrix = np.eye(4)

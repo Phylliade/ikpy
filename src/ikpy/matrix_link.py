@@ -33,8 +33,8 @@ import numpy as np
 import sympy
 
 class ConstantMatrixLink(link.Link):
-    def __init__(self, name, parent, matrix):
-        link.Link.__init__(self, name, parent)
+    def __init__(self, name, matrix):
+        link.Link.__init__(self, name)
         self._length = 1 # dirty
         if type(matrix) == np.matrix:
             self.matrix = matrix
@@ -45,8 +45,8 @@ class ConstantMatrixLink(link.Link):
         return self.matrix
 
 class VariableMatrixLink(link.Link):
-    def __init__(self, name, parent, matrix, symbols):
-        link.Link.__init__(self, name, parent)
+    def __init__(self, name, matrix, symbols):
+        link.Link.__init__(self, name)
         self._length = 1 # dirty
         self.symbols = symbols
         self.matrix = matrix
