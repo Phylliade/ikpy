@@ -171,10 +171,10 @@ class OriginLink(Link):
         return [0, 0, 0, 1]
 
     def get_transformation_params(self):
-        return 0
+        return 1
 
     def get_bounds(self):
-        return []
+        return [(None, None)]
     
-    def get_transformation_matrix(self):
+    def get_transformation_matrix(self, dummy):
         return np.eye(4)
