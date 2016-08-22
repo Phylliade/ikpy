@@ -6,9 +6,11 @@ This module implements the Chain class.
 
 from . import URDF_utils
 from . import blender_utils
+
 from . import inverse_kinematics as ik
 import numpy as np
 from . import link as link_lib
+
 
 class Chain(object):
     """The base Chain class
@@ -28,21 +30,17 @@ class Chain(object):
 
         # If the active_links_mask is not given, set it to True for every link
         if active_links_mask is not None:
-            if len(active_links_mask) != self.get_num_params():
-                raise ValueError("Your active links mask length of {} is different from the number of your links, which is {}".format(len(active_links_mask), self.get_num_params()))
+            if len(active_links_mask) != len(self.links):
+                raise ValueError("Your active links mask length of {} is different from the number of your links, which is {}".format(len(active_links_mask), len(self.links)))
             self.active_links_mask = np.array(active_links_mask)
             # Always set the last link to True
-            #self.active_links_mask[-1] = False # whaat ???
+            self.active_links_mask[-1] = False
         else:
-            self.active_links_mask = np.array([True] * self.get_num_params())
+            self.active_links_mask = np.array([True] * len(links))
 
     def __repr__(self):
         return("Kinematic chain name={} links={} active_links={}".format(self.name, self.links, self.active_links_mask))
 
-    def get_num_params(self):
-        _to_num_params = lambda link: link.get_transformation_params()
-        return sum(list(map(_to_num_params, self.links)))
-    
     def forward_kinematics(self, joints, full_kinematics=False):
         """Returns the transformation matrix of the forward kinematics
 
@@ -55,22 +53,13 @@ class Chain(object):
         if full_kinematics:
             frame_matrixes = []
 
-        _test = lambda link: type(link)
+        if len(self.links) != len(joints):
+            raise ValueError("Your joints vector length is {} but you have {} links".format(len(joints), len(self.links)))
 
-        if self.get_num_params() != len(joints):
-            raise ValueError("Your joints vector length is {} but you have {} links".format(len(joints), self.get_num_params()))
-
-        def _groups(cardinals, joints, res = []):
-            if len(cardinals) == 0:
-                return res
-            else:
-                return _groups(cardinals[1:], joints[cardinals[0]:], res+list([joints[:cardinals[0]]]))
-
-        joints_groups = _groups(list(map(lambda link: link.get_transformation_params(), self.links)), joints)
-        for index, (link, joint_angle) in enumerate(zip(self.links, joints_groups)):
+        for index, (link, joint_angle) in enumerate(zip(self.links, joints)):
             # Compute iteratively the position
             # NB : Use asarray to avoid old sympy problems
-            frame_matrix = np.dot(frame_matrix, np.asarray(link.get_transformation_matrix(*joint_angle)))
+            frame_matrix = np.dot(frame_matrix, np.asarray(link.get_transformation_matrix(joint_angle)))
             if full_kinematics:
                 # rotation_axe = np.dot(frame_matrix, link.rotation)
                 frame_matrixes.append(frame_matrix)
@@ -94,7 +83,7 @@ class Chain(object):
             raise ValueError("Your target must be a 4x4 transformation matrix")
 
         if initial_position is None:
-            initial_position = [0] * self.get_num_params()
+            initial_position = [0] * len(self.links)
 
         return ik.inverse_kinematic_optimization(self, target, starting_nodes_angles=initial_position, **kwargs)
 
@@ -141,7 +130,7 @@ class Chain(object):
     def from_blend_file(cls, blend_file, endpoint, active_links_mask=None, name="chain"):
         links = blender_utils.get_links_from_blender(blend_file, endpoint)
         return cls(links, active_links_mask=active_links_mask, name=name)
-    
+
     def active_to_full(self, active_joints, initial_position):
         full_joints = np.array(initial_position, copy=True, dtype=np.float)
         np.place(full_joints, self.active_links_mask, active_joints)

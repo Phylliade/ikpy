@@ -32,10 +32,19 @@ from . import link
 import numpy as np
 import sympy
 
-class ConstantMatrixLink(link.Link):
+class SubLink:
+    def __init__(self, name):
+        self.name = name
+
+    def get_num_params(self):
+        return 0
+
+    def get_transformation_matrix(self):
+        raise NotImplementedError
+
+class ConstantMatrixSubLink(SubLink):
     def __init__(self, name, matrix):
-        link.Link.__init__(self, name)
-        self._length = 1 # dirty
+        SubLink.__init__(self, name)
         if type(matrix) == np.matrix:
             self.matrix = matrix
         else:
@@ -44,20 +53,16 @@ class ConstantMatrixLink(link.Link):
     def get_transformation_matrix(self):
         return self.matrix
 
-class VariableMatrixLink(link.Link):
+class VariableMatrixSubLink(SubLink):
     def __init__(self, name, matrix, symbols):
-        link.Link.__init__(self, name)
-        self._length = 1 # dirty
+        SubLink.__init__(self, name)
         self.symbols = symbols
         self.matrix = matrix
         self.lambda_matrix = sympy.lambdify(self.symbols, sympy.Matrix(self.matrix), "numpy")
         self.sympy_lambda_matrix = sympy.lambdify(self.symbols, sympy.Matrix(self.matrix), "sympy")
 
-    def get_transformation_params(self):
+    def get_num_params(self):
         return len(self.symbols)
-
-    def get_bounds(self):
-        return [(None, None)] * len(self.symbols)
 
     def get_transformation_matrix(self, *args):
         matrix = self.lambda_matrix
@@ -67,3 +72,30 @@ class VariableMatrixLink(link.Link):
             return matrix(*args)
         else:
             raise IndexError("{} parameters for {} symbols".format(len(args), len(self.symbols)))
+
+class MatrixLink(link.Link):
+    def __init__(self, name, sublinks):
+        link.Link.__init__(self, name, (None, None))
+        self.sublinks = sublinks
+        self._length = 1 #dirty
+        sumparams = 0
+        for l in sublinks:
+            sumparams += l.get_num_params()
+            if sumparams > 1:
+                raise NotImplementedError("Current Link implementation don't support multiple params")
+
+    def get_transformation_matrix(self, theta):
+        ret = np.eye(4)
+        for l in self.sublinks:
+            if l.get_num_params() == 0:
+                ret = ret * l.get_transformation_matrix()
+            elif l.get_num_params() == 1:
+                ret = ret * l.get_transformation_matrix(theta)
+        if ret.shape == (4,1):
+            tmp =  np.eye(4)
+            tmp[0,3] = ret[0,0]
+            tmp[1,3] = ret[1,0]
+            tmp[2,3] = ret[2,0]
+            tmp[3,3] = ret[3,0]
+            return tmp
+        return ret

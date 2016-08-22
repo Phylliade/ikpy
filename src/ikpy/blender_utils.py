@@ -35,7 +35,7 @@ import subprocess
 import os
 import sys
 
-def get_links_from_blender(blend_path, endpoint):
+def get_sublinks_from_blender(blend_path, endpoint):
     python_script = sys.prefix + "/share/ikpy/blender_export.py"
     command = ["blender", blend_path, "--background", "--python", python_script]
     out = subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0]
@@ -56,10 +56,23 @@ def get_links_from_blender(blend_path, endpoint):
     while endpoint != None:
         json_link = json_links_dict[endpoint]
         if json_link["is_variable"]:
-            link = matrix_link.VariableMatrixLink(json_link["name"], json_link["matrix"], [sympy.Symbol("x")])
+            link = matrix_link.VariableMatrixSubLink(json_link["name"], json_link["matrix"], [sympy.Symbol("x")])
             links_list = [link] + links_list
         else:
-            link = matrix_link.ConstantMatrixLink(json_link["name"], json_link["matrix"])
+            link = matrix_link.ConstantMatrixSubLink(json_link["name"], json_link["matrix"])
             links_list = [link] + links_list
         endpoint = json_link["parent"]
     return links_list
+
+def get_links_from_blender(blend_path, endpoint):
+    ret = []
+    link_sublinks = []
+    sublinks = get_sublinks_from_blender(blend_path, endpoint)
+    for l in sublinks:
+        link_sublinks.append(l)
+        if l.get_num_params() == 1:
+            ret.append(matrix_link.MatrixLink(link_sublinks[0].name, link_sublinks))
+            link_sublinks = []
+    if len(link_sublinks) != 0:
+        ret.append(matrix_link.MatrixLink(link_sublinks[0].name, link_sublinks))
+    return ret
