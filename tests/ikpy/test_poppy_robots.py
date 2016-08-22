@@ -14,14 +14,9 @@ class TestPoppyRobot(unittest.TestCase):
         target = [0.1, -0.2, 0.1]
         frame_target = np.eye(4)
         frame_target[:3, 3] = target
-        joints = [0] * a.get_num_params()
+        joints = [0] * len(a.links)
         ik = a.inverse_kinematics(frame_target, initial_position=joints)
 
-        res = a.forward_kinematics(ik)
-
-        if not all(map(lambda elem: elem < 1e-6, frame_target[:3, 3] - res[:3, 3])):
-            raise ValueError("Target not reached !")
-        
         if plot:
             ax = plot_utils.init_3d_figure()
 
