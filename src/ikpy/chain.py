@@ -73,6 +73,7 @@ class Chain(object):
 
         :param numpy.array target: The frame target of the inverse kinematic, in meters. It must be 4x4 transformation matrix
         :param numpy.array initial_position: Optional : the initial position of each joint of the chain. Defaults to 0 for each joint
+        :param string method: Name of the inverse kinematics method to use. Defaults to "optimization"
         :returns: The list of the positions of each joint according to the target. Note : Inactive joints are in the list.
         """
         # Checks on input
