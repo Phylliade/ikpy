@@ -52,3 +52,7 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
 
     return(chain.active_to_full(res.x, starting_nodes_angles))
     # return(np.append(starting_nodes_angles[:chain.first_active_joint], res.x))
+
+ik_methods = {
+    "optimization": inverse_kinematic_optimization
+}

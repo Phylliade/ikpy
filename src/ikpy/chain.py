@@ -69,7 +69,7 @@ class Chain(object):
         else:
             return frame_matrix
 
-    def inverse_kinematics(self, target, initial_position=None, **kwargs):
+    def inverse_kinematics(self, target, initial_position=None, method="optimization", **kwargs):
         """Computes the inverse kinematic on the specified target
 
         :param numpy.array target: The frame target of the inverse kinematic, in meters. It must be 4x4 transformation matrix
@@ -84,7 +84,10 @@ class Chain(object):
         if initial_position is None:
             initial_position = [0] * len(self.links)
 
-        return ik.inverse_kinematic_optimization(self, target, starting_nodes_angles=initial_position, **kwargs)
+        if method in ik.ik_methods:
+            return ik.ik_methods[method](self, target, starting_nodes_angles=initial_position, **kwargs)
+        else:
+            raise ValueError("Unknown IK method: {}".format(method))
 
     def plot(self, joints, ax, target=None, show=False):
         """Plots the Chain using Matplotlib
