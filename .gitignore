@@ -9,3 +9,4 @@ notebooks/*/.ipynb_*
 .sass-cache/
 src/*.egg-info/
 *.odg
+*.whl
