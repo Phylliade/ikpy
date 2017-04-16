@@ -9,6 +9,11 @@ from . import inverse_kinematics as ik
 import numpy as np
 from . import link as link_lib
 
+def _groups(cardinals, joints, res = []):
+    if len(cardinals) == 0:
+        return res
+    else:
+        return _groups(cardinals[1:], joints[cardinals[0]:], res+list([joints[:cardinals[0]]]))
 
 class Chain(object):
     """The base Chain class
@@ -28,17 +33,21 @@ class Chain(object):
 
         # If the active_links_mask is not given, set it to True for every link
         if active_links_mask is not None:
-            if len(active_links_mask) != len(self.links):
-                raise ValueError("Your active links mask length of {} is different from the number of your links, which is {}".format(len(active_links_mask), len(self.links)))
+            if len(active_links_mask) != self.get_num_params():
+                raise ValueError("Your active links mask length of {} is different from the number of your links, which is {}".format(len(active_links_mask), self.get_num_params()))
             self.active_links_mask = np.array(active_links_mask)
             # Always set the last link to True
             self.active_links_mask[-1] = False
         else:
-            self.active_links_mask = np.array([True] * len(links))
+            self.active_links_mask = np.array([True] * self.get_num_params())
 
     def __repr__(self):
         return("Kinematic chain name={} links={} active_links={}".format(self.name, self.links, self.active_links_mask))
 
+    def get_num_params(self):
+        _to_num_params = lambda link: link.get_transformation_params()
+        return sum(list(map(_to_num_params, self.links)))
+    
     def forward_kinematics(self, joints, full_kinematics=False):
         """Returns the transformation matrix of the forward kinematics
 
@@ -51,13 +60,16 @@ class Chain(object):
         if full_kinematics:
             frame_matrixes = []
 
-        if len(self.links) != len(joints):
-            raise ValueError("Your joints vector length is {} but you have {} links".format(len(joints), len(self.links)))
+        _test = lambda link: type(link)
 
-        for index, (link, joint_angle) in enumerate(zip(self.links, joints)):
+        if self.get_num_params() != len(joints):
+            raise ValueError("Your joints vector length is {} but you have {} links".format(len(joints), self.get_num_params()))
+
+        joints_groups = _groups(list(map(lambda link: link.get_transformation_params(), self.links)), joints)
+        for index, (link, joint_angle) in enumerate(zip(self.links, joints_groups)):
             # Compute iteratively the position
             # NB : Use asarray to avoid old sympy problems
-            frame_matrix = np.dot(frame_matrix, np.asarray(link.get_transformation_matrix(joint_angle)))
+            frame_matrix = np.dot(frame_matrix, np.asarray(link.get_transformation_matrix(*joint_angle)))
             if full_kinematics:
                 # rotation_axe = np.dot(frame_matrix, link.rotation)
                 frame_matrixes.append(frame_matrix)
@@ -81,7 +93,7 @@ class Chain(object):
             raise ValueError("Your target must be a 4x4 transformation matrix")
 
         if initial_position is None:
-            initial_position = [0] * len(self.links)
+            initial_position = [0] * self.get_num_params()
 
         return ik.inverse_kinematic_optimization(self, target, starting_nodes_angles=initial_position, **kwargs)
 
