@@ -18,5 +18,8 @@ setup(name='ikpy',
           "Programming Language :: Python :: 2",
           "Programming Language :: Python :: 3",
           "Topic :: Scientific/Engineering",
+      ],
+      data_files=[
+          ("share/ikpy", ["scripts/blender/blender_export.py"])
       ]
       )

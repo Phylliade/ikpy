@@ -5,6 +5,8 @@ This module implements the Chain class.
 """
 
 from . import URDF_utils
+from . import blender_utils
+
 from . import inverse_kinematics as ik
 import numpy as np
 from . import link as link_lib
@@ -123,6 +125,11 @@ class Chain(object):
         links = URDF_utils.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_element_type=base_element_type)
         # Add an origin link at the beginning
         return cls([link_lib.OriginLink()] + links, active_links_mask=active_links_mask, name=name)
+
+    @classmethod
+    def from_blend_file(cls, blend_file, endpoint, active_links_mask=None, name="chain"):
+        links = blender_utils.get_links_from_blender(blend_file, endpoint)
+        return cls(links, active_links_mask=active_links_mask, name=name)
 
     def active_to_full(self, active_joints, initial_position):
         full_joints = np.array(initial_position, copy=True, dtype=np.float)
