@@ -10,10 +10,8 @@ setup(name='ikpy',
       packages=['ikpy'],
       package_dir={'': 'src'},
       setup_requires=['numpy'],
-      install_requires=['numpy', 'scipy', 'sympy'],
-      extras_require={
-          'plot': ["matplotlib"],
-      },
+      install_requires=['numpy', 'scipy', 'sympy', "matplotlib"],
+      # TODO: Move maptlotlib to extra_requires
       classifiers=[
           "Programming Language :: Python :: 2",
           "Programming Language :: Python :: 3",
