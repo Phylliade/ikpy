@@ -8,3 +8,5 @@ install:
   - pip install .
 script: cd tests/ikpy && ./tests.sh
 cache: pip
+dist: trusty
+sudo: false
