@@ -139,6 +139,7 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
         translation = [0, 0, 0]
         orientation = [0, 0, 0]
         rotation = [1, 0, 0]
+        bounds = [None, None]
 
         origin = joint.find("origin")
         if origin is not None:
@@ -151,8 +152,16 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
         if axis is not None:
             rotation = [float(x) for x in axis.attrib["xyz"].split()]
 
+        limit = joint.find("limit")
+        if limit is not None:
+            if limit.attrib["lower"]:
+                bounds[0] = float(limit.attrib["lower"])
+            if limit.attrib["upper"]:
+                bounds[1] = float(limit.attrib["upper"])
+
         parameters.append(lib_link.URDFLink(
             name=joint.attrib["name"],
+            bounds=tuple(bounds),
             translation_vector=translation,
             orientation=orientation,
             rotation=rotation,
