@@ -6,4 +6,4 @@ python:
 install:
   - pip install .[plot]
   - pip install pytest
-script: cd tests/ikpy && ./tests.sh
+script: cd tests && ./tests.sh
