@@ -8,7 +8,7 @@ setup(
     description="An inverse kinematics library aiming performance and modularity",
     url="https://github.com/Phylliade/ikpy",
     license="GNU GENERAL PUBLIC LICENSE Version 3",
-    packages=find_packages(exclude=("tests", "docs")),
+    packages=find_packages("src", exclude=("tests", "docs")),
     package_dir={'': 'src'},
     setup_requires=['numpy'],
     install_requires=['numpy', 'scipy', 'sympy'],
