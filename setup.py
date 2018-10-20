@@ -1,22 +1,22 @@
 #!/usr/bin/env python
-from setuptools import setup
+from setuptools import setup, find_packages
 
-setup(name='ikpy',
-      version='2.2.3',
-      author="Pierre Manceron",
-      description="An inverse kinematics library aiming performance and modularity",
-      url="https://github.com/Phylliade/ikpy",
-      license="GNU GENERAL PUBLIC LICENSE Version 3",
-      packages=['ikpy'],
-      package_dir={'': 'src'},
-      setup_requires=['numpy'],
-      install_requires=['numpy', 'scipy', 'sympy'],
-      extras_require={
-          'plot': ["matplotlib"],
-      },
-      classifiers=[
-          "Programming Language :: Python :: 2",
-          "Programming Language :: Python :: 3",
-          "Topic :: Scientific/Engineering",
-      ]
-      )
+setup(
+    name='ikpy',
+    version='2.2.3',
+    author="Pierre Manceron",
+    description="An inverse kinematics library aiming performance and modularity",
+    url="https://github.com/Phylliade/ikpy",
+    license="GNU GENERAL PUBLIC LICENSE Version 3",
+    packages=find_packages(exclude=("tests", "docs")),
+    package_dir={'': 'src'},
+    setup_requires=['numpy'],
+    install_requires=['numpy', 'scipy', 'sympy'],
+    extras_require={
+        'plot': ["matplotlib"],
+    },
+    classifiers=[
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 3",
+        "Topic :: Scientific/Engineering",
+    ])
