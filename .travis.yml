@@ -7,3 +7,4 @@ install:
   - pip install .[plot]
   - pip install pytest
 script: cd tests && ./tests.sh
+cache: pip
