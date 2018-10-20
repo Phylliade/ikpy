@@ -5,4 +5,5 @@ python:
   - "3.6"
 install:
   - pip install .[plot]
+  - pip install pytest
 script: cd tests/ikpy && ./tests.sh
