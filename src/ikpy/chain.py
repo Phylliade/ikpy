@@ -3,10 +3,11 @@
 .. module:: chain
 This module implements the Chain class.
 """
+import numpy as np
 
+# IKPY imports
 from . import URDF_utils
 from . import inverse_kinematics as ik
-import numpy as np
 from . import link as link_lib
 
 
