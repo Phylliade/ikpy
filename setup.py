@@ -1,9 +1,18 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
+import os
+
+
+def get_version():
+    version = {}
+    with open(os.path.join(os.path.dirname(__file__), "src/ikpy/_version.py")) as fp:
+        exec(fp.read(), version)
+    return version["__version__"]
+
 
 setup(
     name='ikpy',
-    version='2.2.3',
+    version=get_version(),
     author="Pierre Manceron",
     description="An inverse kinematics library aiming performance and modularity",
     url="https://github.com/Phylliade/ikpy",
