@@ -58,6 +58,7 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
+    'sphinx.ext.napoleon'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -76,7 +77,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'ikpy'
-copyright = '2015, Pierre Manceron'
+copyright = '2015-2018, Pierre Manceron'
 author = 'Pierre Manceron'
 
 # The version info for the project you're documenting, acts as replacement for

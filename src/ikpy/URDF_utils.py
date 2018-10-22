@@ -1,6 +1,7 @@
 # coding= utf8
 """
-.. module:: URDF_utils
+URDF_utils module
+
 This module contains helper functions used to parse URDF.
 """
 
@@ -96,6 +97,8 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
     """
     Returns translated parameters from the given URDF file
 
+    Parameters
+    ----------
     urdf_file: str
         The path of the URDF file
     base_elements: list of strings
