@@ -3,19 +3,25 @@
 .. module:: chain
 This module implements the Chain class.
 """
+import numpy as np
 
+# IKPY imports
 from . import URDF_utils
 from . import inverse_kinematics as ik
-import numpy as np
 from . import link as link_lib
 
 
 class Chain(object):
     """The base Chain class
 
-    :param list links: List of the links of the chain
-    :param list active_links_mask: A list of boolean indicating that whether or not the corresponding link is active
-    :param string name: The name of the Chain
+    Parameters
+    ----------
+    links: list
+        List of the links of the chain
+    active_links_mask: list
+        A list of boolean indicating that whether or not the corresponding link is active
+    name: str
+        The name of the Chain
     """
     def __init__(self, links, active_links_mask=None, name="chain", profile=''"", **kwargs):
         self.name = name
@@ -37,14 +43,22 @@ class Chain(object):
             self.active_links_mask = np.array([True] * len(links))
 
     def __repr__(self):
-        return("Kinematic chain name={} links={} active_links={}".format(self.name, self.links, self.active_links_mask))
+        return "Kinematic chain name={} links={} active_links={}".format(self.name, self.links, self.active_links_mask)
 
     def forward_kinematics(self, joints, full_kinematics=False):
         """Returns the transformation matrix of the forward kinematics
 
-        :param list joints: The list of the positions of each joint. Note : Inactive joints must be in the list.
-        :param bool full_kinematics: Return the transorfmation matrixes of each joint
-        :returns: The transformation matrix
+        Parameters
+        ----------
+        joints: list
+            The list of the positions of each joint. Note : Inactive joints must be in the list.
+        full_kinematics: bool
+            Return the transformation matrices of each joint
+
+        Returns
+        -------
+        frame_matrix:
+            The transformation matrix
         """
         frame_matrix = np.eye(4)
 
@@ -71,9 +85,16 @@ class Chain(object):
     def inverse_kinematics(self, target, initial_position=None, **kwargs):
         """Computes the inverse kinematic on the specified target
 
-        :param numpy.array target: The frame target of the inverse kinematic, in meters. It must be 4x4 transformation matrix
-        :param numpy.array initial_position: Optional : the initial position of each joint of the chain. Defaults to 0 for each joint
-        :returns: The list of the positions of each joint according to the target. Note : Inactive joints are in the list.
+        Parameters
+        ----------
+        target: numpy.array
+            The frame target of the inverse kinematic, in meters. It must be 4x4 transformation matrix
+        initial_position: numpy.array
+            Optional : the initial position of each joint of the chain. Defaults to 0 for each joint
+
+        Returns
+        -------
+        The list of the positions of each joint according to the target. Note : Inactive joints are in the list.
         """
         # Checks on input
         target = np.array(target)
@@ -88,10 +109,16 @@ class Chain(object):
     def plot(self, joints, ax, target=None, show=False):
         """Plots the Chain using Matplotlib
 
-        :param list joints: The list of the positions of each joint
-        :param matplotlib.axes.Axes ax: A matplotlib axes
-        :param numpy.array target: An optional target
-        :param bool show: Display the axe. Defaults to False
+        Parameters
+        ----------
+        joints: list
+            The list of the positions of each joint
+        ax: matplotlib.axes.Axes
+            A matplotlib axes
+        target: numpy.array
+            An optional target
+        show: bool
+            Display the axe. Defaults to False
         """
         from . import plot_utils
 
@@ -111,14 +138,18 @@ class Chain(object):
     def from_urdf_file(cls, urdf_file, base_elements=["base_link"], last_link_vector=None, base_element_type="link", active_links_mask=None, name="chain"):
         """Creates a chain from an URDF file
 
-       :param urdf_file: The path of the URDF file
-       :type urdf_file: string
-       :param base_elements: List of the links beginning the chain
-       :type base_elements: list of strings
-       :param last_link_vector: Optional : The translation vector of the tip.
-       :type last_link_vector: numpy.array
-       :param list active_links: The active links
-       :param string Name: The name of the Chain
+        Parameters
+        ----------
+        urdf_file: str
+            The path of the URDF file
+        base_elements: list of strings
+            List of the links beginning the chain
+        last_link_vector: numpy.array
+            Optional : The translation vector of the tip.
+        active_links: list
+            The active links
+        name: str
+            The name of the Chain
         """
         links = URDF_utils.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_element_type=base_element_type)
         # Add an origin link at the beginning

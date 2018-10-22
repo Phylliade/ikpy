@@ -1,9 +1,11 @@
 import unittest
 import numpy as np
 import params
+import sys
+
+# IKpy imports
 from ikpy import chain
 from ikpy import plot_utils
-import sys
 
 plot = params.interactive
 
