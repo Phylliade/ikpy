@@ -6,7 +6,9 @@ import sys
 from ikpy import chain
 from ikpy import plot_utils
 import params
+from ikpy.chain import Chain
 
+Chain()
 plot = params.interactive
 
 
