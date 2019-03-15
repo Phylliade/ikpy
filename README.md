@@ -11,9 +11,10 @@
 ![demo](two_arms.png)
 
 # Demo
-A live demo of what IKpy can do : (click on the image below to see the video)
+Live demos of what IKPy can do : (click on the image below to see the video)
 
 [![](http://img.youtube.com/vi/H0ysr5qSbis/0.jpg)](https://www.youtube.com/watch?v=H0ysr5qSbis)
+[![](http://img.youtube.com/vi/Jq0-DkEwwj4/0.jpg)](https://www.youtube.com/watch?v=Jq0-DkEwwj4)
 
 Also, a presentation of IKPy : [Presentation](https://github.com/Phylliade/ikpy/blob/master/tutorials/IKPy%20speech.pdf).
 
@@ -38,7 +39,7 @@ You have three options :
    ```bash
    pip install ikpy
    ```
-  If you intend to plot your robot, you can install the plotting dependencies (mainly matplotlib) : 
+  If you intend to plot your robot, you can install the plotting dependencies (mainly matplotlib) :
   ```bash
   pip install 'ikpy[plot]'
   ```
