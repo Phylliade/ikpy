@@ -37,6 +37,7 @@ setup(
         "Topic :: Scientific/Engineering",
 
     ],
+    # Used in the Pypi page
     long_description=long_description,
     long_description_content_type='text/markdown'
 )
