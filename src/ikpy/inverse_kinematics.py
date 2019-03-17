@@ -12,7 +12,7 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
     ----------
     chain: ikpy.chain.Chain
         The chain used for the Inverse kinematics.
-    target: numpy.array
+    target_frame: numpy.array
         The desired target.
     starting_nodes_angles: numpy.array
         The initial pose of your chain.
@@ -58,5 +58,5 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
 
     logs.manager.info("Inverse kinematic optimisation OK, done in {} iterations".format(res.nit))
 
-    return(chain.active_to_full(res.x, starting_nodes_angles))
+    return chain.active_to_full(res.x, starting_nodes_angles)
     # return(np.append(starting_nodes_angles[:chain.first_active_joint], res.x))

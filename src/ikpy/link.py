@@ -5,6 +5,8 @@ This module implements the Link class.
 """
 import numpy as np
 import sympy
+
+# Ikpy imports
 from . import geometry_utils
 
 
@@ -18,13 +20,13 @@ class Link(object):
         The name of the link
     bounds: tuple
         Optional : The bounds of the link. Defaults to None
-    use_symbolic_matrix: bool
-        wether the transformation matrix is stored as Numpy array or as a Sympy symbolic matrix.
     """
 
-    def __init__(self, name, bounds=(None, None)):
+    def __init__(self, name, length, bounds=(None, None)):
         self.bounds = bounds
         self.name = name
+        self.length = length
+        self.axis_length = length
 
     def __repr__(self):
         return("Link name={} bounds={}".format(self.name, self.bounds))
@@ -40,36 +42,40 @@ class Link(object):
 class URDFLink(Link):
     """Link in URDF representation.
 
-    :param name: The name of the link
-    :type name: string
-    :param bounds: Optional : The bounds of the link. Defaults to None
-    :type bounds: tuple
-    :param translation_vector: The translation vector. (In URDF, attribute "xyz" of the "origin" element)
-    :type translation_vector: numpy.array
-    :param orientation: The orientation of the link. (In URDF, attribute "rpy" of the "origin" element)
-    :type orientation: numpy.array
-    :param rotation: The rotation axis of the link. (In URDF, attribute "xyz" of the "axis" element)
-    :type rotation: numpy.array
-    :param angle_representation: Optionnal : The representation used by the angle. Currently supported representations : rpy. Defaults to rpy, the URDF standard.
-    :type angle_representation: string
-    :param use_symbolic_matrix: wether the transformation matrix is stored as a Numpy array or as a Sympy symbolic matrix.
-    :type use_symbolic_matrix: bool
-    :returns: The link object
-    :rtype: URDFLink
-    :Example:
+    Parameters
+    ----------
+    name: str
+        The name of the link
+    bounds: tuple
+        Optional : The bounds of the link. Defaults to None
+    translation_vector: numpy.array
+        The translation vector. (In URDF, attribute "xyz" of the "origin" element)
+    orientation: numpy.array
+        The orientation of the link. (In URDF, attribute "rpy" of the "origin" element)
+    rotation: numpy.array
+        The rotation axis of the link. (In URDF, attribute "xyz" of the "axis" element)
+    angle_representation: str
+        Optional : The representation used by the angle. Currently supported representations : rpy. Defaults to rpy, the URDF standard.
+    use_symbolic_matrix: bool
+        whether the transformation matrix is stored as a Numpy array or as a Sympy symbolic matrix.
+
+    Returns
+    -------
+    URDFLink
+        The link object
+
+    Example
+    -------
 
     URDFlink()
     """
 
     def __init__(self, name, translation_vector, orientation, rotation, bounds=(None, None), angle_representation="rpy", use_symbolic_matrix=True):
-        Link.__init__(self, name=name, bounds=bounds)
+        Link.__init__(self, name=name, bounds=bounds, length=np.linalg.norm(translation_vector))
         self.use_symbolic_matrix = use_symbolic_matrix
         self.translation_vector = np.array(translation_vector)
         self.orientation = np.array(orientation)
         self.rotation = np.array(rotation)
-
-        self._length = np.linalg.norm(translation_vector)
-        self._axis_length = self._length
 
         if use_symbolic_matrix:
             # Angle symbolique qui paramètre la rotation du joint en cours
@@ -96,7 +102,13 @@ class URDFLink(Link):
     Rotation : {}""".format(self.name, self.bounds, self.translation_vector, self.orientation, self.rotation))
 
     def _get_rotation_axis(self):
-        return (np.dot(geometry_utils.homogeneous_translation_matrix(*self.translation_vector), np.dot(geometry_utils.cartesian_to_homogeneous(geometry_utils.rpy_matrix(*self.orientation)), geometry_utils.cartesian_to_homogeneous_vectors(self.rotation * self._axis_length))))
+        return np.dot(
+            geometry_utils.homogeneous_translation_matrix(*self.translation_vector),
+            np.dot(
+                geometry_utils.cartesian_to_homogeneous(geometry_utils.rpy_matrix(*self.orientation)),
+                geometry_utils.cartesian_to_homogeneous_vectors(self.rotation * self.axis_length)
+            )
+        )
 
     def get_transformation_matrix(self, theta):
         if self.use_symbolic_matrix:
@@ -158,8 +170,7 @@ class DHLink(Link):
 class OriginLink(Link):
     """The link at the origin of the robot"""
     def __init__(self):
-        Link.__init__(self, name="Base link")
-        self._length = 1
+        Link.__init__(self, name="Base link", length=1)
 
     def _get_rotation_axis(self):
         return [0, 0, 0, 1]

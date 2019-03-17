@@ -19,15 +19,17 @@ def find_next_joint(root, current_link, next_joint_name):
 
     Parameters
     ----------
+    root
     current_link: xml.etree.ElementTree
         The current URDF link
     next_joint_name: str
-        Optional : The name of the next joint
+        Optional : The name of the next joint. If not provided, find it automatically as the first child of the link.
     """
-    # Trouver le joint attaché
+    # Find the joint attached to the link
     has_next = False
     next_joint = None
     search_by_name = True
+    current_link_name = None
 
     if next_joint_name is None:
         # If no next joint is provided, find it automatically
@@ -36,18 +38,21 @@ def find_next_joint(root, current_link, next_joint_name):
 
     for joint in root.iter("joint"):
         # Iterate through all joints to find the good one
-        if(search_by_name):
+        if search_by_name:
             # Find the joint given its name
             if joint.attrib["name"] == next_joint_name:
                 has_next = True
                 next_joint = joint
         else:
-            # Find the joint which parent is the current_link
+            # Find the first joint whose parent is the current_link
+            # FIXME: We are not sending a warning when we have two children for the same link
+            # Even if this is not possible, we should ensure something coherent
             if joint.find("parent").attrib["link"] == current_link_name:
                 has_next = True
                 next_joint = joint
+                break
 
-    return(has_next, next_joint)
+    return has_next, next_joint
 
 
 def find_next_link(root, current_joint, next_link_name):
@@ -56,14 +61,16 @@ def find_next_link(root, current_joint, next_link_name):
 
     Parameters
     ----------
+    root
     current_joint: xml.etree.ElementTree
         The current URDF joint
     next_link_name: str
-        Optional : The name of the next link
+        Optional : The name of the next link. If not provided, find it automatically as the first child of the joint.
     """
     has_next = False
     next_link = None
-    # If no next link, find it automaticly
+
+    # If no next link, find it automatically
     if next_link_name is None:
         # If the name of the next link is not provided, find it
         next_link_name = current_joint.find("child").attrib["link"]
@@ -72,7 +79,7 @@ def find_next_link(root, current_joint, next_link_name):
         if urdf_link.attrib["name"] == next_link_name:
             next_link = urdf_link
             has_next = True
-    return(has_next, next_link)
+    return has_next, next_link
 
 
 def find_parent_link(root, joint_name):
@@ -93,7 +100,7 @@ def get_chain_from_joints(urdf_file, joints):
     return chain
 
 
-def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector=None, base_element_type="link"):
+def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, base_element_type="link"):
     """
     Returns translated parameters from the given URDF file
 
@@ -105,11 +112,18 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
         List of the links beginning the chain
     last_link_vector: numpy.array
         Optional : The translation vector of the tip.
+    base_element_type: str
+
+    Returns
+    -------
+    list[ikpy.link.URDFLink]
     """
     tree = ET.parse(urdf_file)
     root = tree.getroot()
     base_elements = list(base_elements)
-    if base_elements == []:
+    if base_elements is None:
+        base_elements = ["base_link"]
+    elif base_elements is []:
         raise ValueError("base_elements can't be the empty list []")
 
     joints = []
@@ -118,16 +132,19 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
     current_joint = None
     current_link = None
 
+    # Initialize the tree traversal
     if base_element_type == "link":
         # The first element is a link, so its (virtual) parent should be a joint
         node_type = "joint"
     elif base_element_type == "joint":
         # The same as before, but swap link and joint
         node_type = "link"
+    else:
+        raise ValueError("Unknown type: {}".format(base_element_type))
 
     # Parcours récursif de la structure de la chain
-    while(has_next):
-        if base_elements != []:
+    while has_next:
+        if len(base_elements) != 0:
             next_element = base_elements.pop(0)
         else:
             next_element = None
@@ -136,14 +153,14 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
             # Current element is a link, find child joint
             (has_next, current_joint) = find_next_joint(root, current_link, next_element)
             node_type = "joint"
-            if(has_next):
+            if has_next:
                 joints.append(current_joint)
 
         elif node_type == "joint":
             # Current element is a joint, find child link
             (has_next, current_link) = find_next_link(root, current_joint, next_element)
             node_type = "link"
-            if(has_next):
+            if has_next:
                 links.append(current_link)
 
     parameters = []
@@ -190,7 +207,7 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
             name="last_joint"
         ))
 
-    return(parameters)
+    return parameters
 
 
 def _get_motor_parameters(json_file):
@@ -211,7 +228,7 @@ def _get_motor_parameters(json_file):
 
 def _convert_angle_to_pypot(angle, joint, **kwargs):
     """Converts an angle to a PyPot-compatible format"""
-    angle_deg = (angle * 180 / (np.pi))
+    angle_deg = (angle * 180 / np.pi)
 
     if joint["orientation-convention"] == "indirect":
         angle_deg = -1 * angle_deg
@@ -236,7 +253,7 @@ def _convert_angle_from_pypot(angle, joint, **kwargs):
     if joint["name"].startswith("l_shoulder_x"):
         angle_internal = -1 * angle_internal
 
-    angle_internal = (angle_internal / 180 * (np.pi))
+    angle_internal = (angle_internal / 180 * np.pi)
 
     return angle_internal
 
@@ -251,4 +268,4 @@ def _convert_angle_limit(angle, joint, **kwargs):
 
     # angle_pypot = angle_pypot + offset
 
-    return angle_pypot * (np.pi) / 180
+    return angle_pypot * np.pi / 180

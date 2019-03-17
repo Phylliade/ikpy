@@ -16,7 +16,7 @@ class Chain(object):
 
     Parameters
     ----------
-    links: list
+    links: list[ikpy.link.Link]
         List of the links of the chain
     active_links_mask: list
         A list of boolean indicating that whether or not the corresponding link is active
@@ -26,11 +26,11 @@ class Chain(object):
     def __init__(self, links, active_links_mask=None, name="chain", profile=''"", **kwargs):
         self.name = name
         self.links = links
-        self._length = sum([link._length for link in links])
+        self._length = sum([link.length for link in links])
         # Avoid length of zero in a link
         for (index, link) in enumerate(self.links):
-            if link._length == 0:
-                link._axis_length = self.links[index - 1]._axis_length
+            if link.length == 0:
+                link.axis_length = self.links[index - 1].axis_length
 
         # If the active_links_mask is not given, set it to True for every link
         if active_links_mask is not None:
@@ -131,11 +131,11 @@ class Chain(object):
         # Plot the goal position
         if target is not None:
             plot_utils.plot_target(target, ax)
-        if(show):
+        if show:
             plot_utils.show_figure()
 
     @classmethod
-    def from_urdf_file(cls, urdf_file, base_elements=["base_link"], last_link_vector=None, base_element_type="link", active_links_mask=None, name="chain"):
+    def from_urdf_file(cls, urdf_file, base_elements=None, last_link_vector=None, base_element_type="link", active_links_mask=None, name="chain"):
         """Creates a chain from an URDF file
 
         Parameters
@@ -146,11 +146,14 @@ class Chain(object):
             List of the links beginning the chain
         last_link_vector: numpy.array
             Optional : The translation vector of the tip.
-        active_links: list
-            The active links
         name: str
             The name of the Chain
+        base_element_type: str
+        active_links_mask: list[bool]
         """
+        if base_elements is None:
+            base_elements = ["base_link"]
+
         links = URDF_utils.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_element_type=base_element_type)
         # Add an origin link at the beginning
         return cls([link_lib.OriginLink()] + links, active_links_mask=active_links_mask, name=name)
