@@ -4,13 +4,13 @@
 ![Travis-CI](https://travis-ci.org/Phylliade/ikpy.svg?branch=master)
 [![PyPI](https://img.shields.io/pypi/v/ikpy.svg)](https://pypi.python.org/pypi/ikpy/)
 [![Documentation Status](https://readthedocs.org/projects/ikpy/badge/?version=latest)](http://ikpy.readthedocs.org/en/latest/?badge=latest)
-[![PyPI](https://img.shields.io/pypi/pyversions/ikpy/.svg)](https://pypi.python.org/pypi/ikpy/)
 [![PyPI](https://img.shields.io/pypi/dm/ikpy.svg)](https://pypi.python.org/pypi/ikpy/)
 [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/Phylliade/ikpy)
 
 ![demo](two_arms.png)
 
 # Demo
+
 Live demos of what IKPy can do : (click on the image below to see the video)
 
 [![](http://img.youtube.com/vi/H0ysr5qSbis/0.jpg)](https://www.youtube.com/watch?v=H0ysr5qSbis)
