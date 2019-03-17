@@ -29,7 +29,7 @@ class Link(object):
         self.axis_length = length
 
     def __repr__(self):
-        return "Link name={}".format(self.name)
+        return("Link name={} bounds={}".format(self.name, self.bounds))
 
     def _get_rotation_axis(self):
         # Defaults to None
@@ -96,9 +96,10 @@ class URDFLink(Link):
 
     def __str__(self):
         return("""URDF Link {} :
+    Bounds : {}
     Translation : {}
     Orientation : {}
-    Rotation : {}""".format(self.name, self.translation_vector, self.orientation, self.rotation))
+    Rotation : {}""".format(self.name, self.bounds, self.translation_vector, self.orientation, self.rotation))
 
     def _get_rotation_axis(self):
         return np.dot(
