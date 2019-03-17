@@ -19,7 +19,7 @@ class Link(object):
     bounds: tuple
         Optional : The bounds of the link. Defaults to None
     use_symbolic_matrix: bool
-        wether the transformation matrix is stored as Numpy array or as a Sympy symbolic matrix.
+        whether the transformation matrix is stored as Numpy array or as a Sympy symbolic matrix.
     """
 
     def __init__(self, name, bounds=(None, None)):
@@ -40,23 +40,30 @@ class Link(object):
 class URDFLink(Link):
     """Link in URDF representation.
 
-    :param name: The name of the link
-    :type name: string
-    :param bounds: Optional : The bounds of the link. Defaults to None
-    :type bounds: tuple
-    :param translation_vector: The translation vector. (In URDF, attribute "xyz" of the "origin" element)
-    :type translation_vector: numpy.array
-    :param orientation: The orientation of the link. (In URDF, attribute "rpy" of the "origin" element)
-    :type orientation: numpy.array
-    :param rotation: The rotation axis of the link. (In URDF, attribute "xyz" of the "axis" element)
-    :type rotation: numpy.array
-    :param angle_representation: Optionnal : The representation used by the angle. Currently supported representations : rpy. Defaults to rpy, the URDF standard.
-    :type angle_representation: string
-    :param use_symbolic_matrix: wether the transformation matrix is stored as a Numpy array or as a Sympy symbolic matrix.
-    :type use_symbolic_matrix: bool
-    :returns: The link object
-    :rtype: URDFLink
-    :Example:
+    Parameters
+    ----------
+    name: str
+        The name of the link
+    bounds: tuple
+        Optional : The bounds of the link. Defaults to None
+    translation_vector: numpy.array
+        The translation vector. (In URDF, attribute "xyz" of the "origin" element)
+    orientation: numpy.array
+        The orientation of the link. (In URDF, attribute "rpy" of the "origin" element)
+    rotation: numpy.array
+        The rotation axis of the link. (In URDF, attribute "xyz" of the "axis" element)
+    angle_representation: str
+        Optional : The representation used by the angle. Currently supported representations : rpy. Defaults to rpy, the URDF standard.
+    use_symbolic_matrix: bool
+        whether the transformation matrix is stored as a Numpy array or as a Sympy symbolic matrix.
+
+    Returns
+    -------
+    URDFLink
+        The link object
+
+    Example
+    -------
 
     URDFlink()
     """

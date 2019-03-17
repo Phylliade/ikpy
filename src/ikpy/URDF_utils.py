@@ -19,6 +19,7 @@ def find_next_joint(root, current_link, next_joint_name):
 
     Parameters
     ----------
+    root
     current_link: xml.etree.ElementTree
         The current URDF link
     next_joint_name: str
@@ -36,7 +37,7 @@ def find_next_joint(root, current_link, next_joint_name):
 
     for joint in root.iter("joint"):
         # Iterate through all joints to find the good one
-        if(search_by_name):
+        if search_by_name:
             # Find the joint given its name
             if joint.attrib["name"] == next_joint_name:
                 has_next = True
@@ -47,7 +48,7 @@ def find_next_joint(root, current_link, next_joint_name):
                 has_next = True
                 next_joint = joint
 
-    return(has_next, next_joint)
+    return has_next, next_joint
 
 
 def find_next_link(root, current_joint, next_link_name):
@@ -72,7 +73,7 @@ def find_next_link(root, current_joint, next_link_name):
         if urdf_link.attrib["name"] == next_link_name:
             next_link = urdf_link
             has_next = True
-    return(has_next, next_link)
+    return has_next, next_link
 
 
 def find_parent_link(root, joint_name):
@@ -93,7 +94,7 @@ def get_chain_from_joints(urdf_file, joints):
     return chain
 
 
-def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector=None, base_element_type="link"):
+def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, base_element_type="link"):
     """
     Returns translated parameters from the given URDF file
 
@@ -105,11 +106,18 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
         List of the links beginning the chain
     last_link_vector: numpy.array
         Optional : The translation vector of the tip.
+    base_element_type: str
+
+    Returns
+    -------
+    list[ikpy.link.URDFLink]
     """
     tree = ET.parse(urdf_file)
     root = tree.getroot()
     base_elements = list(base_elements)
-    if base_elements == []:
+    if base_elements is None:
+        base_elements = ["base_link"]
+    elif base_elements is []:
         raise ValueError("base_elements can't be the empty list []")
 
     joints = []
@@ -126,8 +134,8 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
         node_type = "link"
 
     # Parcours récursif de la structure de la chain
-    while(has_next):
-        if base_elements != []:
+    while has_next:
+        if len(base_elements) != 0:
             next_element = base_elements.pop(0)
         else:
             next_element = None
@@ -143,7 +151,7 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
             # Current element is a joint, find child link
             (has_next, current_link) = find_next_link(root, current_joint, next_element)
             node_type = "link"
-            if(has_next):
+            if has_next:
                 links.append(current_link)
 
     parameters = []
@@ -169,7 +177,7 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
             name="last_joint"
         ))
 
-    return(parameters)
+    return parameters
 
 
 def _get_motor_parameters(json_file):
@@ -190,7 +198,7 @@ def _get_motor_parameters(json_file):
 
 def _convert_angle_to_pypot(angle, joint, **kwargs):
     """Converts an angle to a PyPot-compatible format"""
-    angle_deg = (angle * 180 / (np.pi))
+    angle_deg = (angle * 180 / np.pi)
 
     if joint["orientation-convention"] == "indirect":
         angle_deg = -1 * angle_deg
@@ -215,7 +223,7 @@ def _convert_angle_from_pypot(angle, joint, **kwargs):
     if joint["name"].startswith("l_shoulder_x"):
         angle_internal = -1 * angle_internal
 
-    angle_internal = (angle_internal / 180 * (np.pi))
+    angle_internal = (angle_internal / 180 * np.pi)
 
     return angle_internal
 
@@ -230,4 +238,4 @@ def _convert_angle_limit(angle, joint, **kwargs):
 
     # angle_pypot = angle_pypot + offset
 
-    return angle_pypot * (np.pi) / 180
+    return angle_pypot * np.pi / 180

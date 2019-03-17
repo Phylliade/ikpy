@@ -131,11 +131,11 @@ class Chain(object):
         # Plot the goal position
         if target is not None:
             plot_utils.plot_target(target, ax)
-        if(show):
+        if show:
             plot_utils.show_figure()
 
     @classmethod
-    def from_urdf_file(cls, urdf_file, base_elements=["base_link"], last_link_vector=None, base_element_type="link", active_links_mask=None, name="chain"):
+    def from_urdf_file(cls, urdf_file, base_elements=None, last_link_vector=None, base_element_type="link", active_links_mask=None, name="chain"):
         """Creates a chain from an URDF file
 
         Parameters
@@ -146,11 +146,14 @@ class Chain(object):
             List of the links beginning the chain
         last_link_vector: numpy.array
             Optional : The translation vector of the tip.
-        active_links: list
-            The active links
         name: str
             The name of the Chain
+        base_element_type: str
+        active_links_mask: list[bool]
         """
+        if base_elements is None:
+            base_elements = ["base_link"]
+
         links = URDF_utils.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_element_type=base_element_type)
         # Add an origin link at the beginning
         return cls([link_lib.OriginLink()] + links, active_links_mask=active_links_mask, name=name)
