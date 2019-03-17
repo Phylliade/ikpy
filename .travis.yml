@@ -7,6 +7,6 @@ install:
   - pip install .[plot]
   - pip install pytest flake8
 script:
-  - cd tests && ./tests.sh
+  - cd tests && MATPLOTLIBRC="../ci" ./tests.sh
   - flake8 src
 cache: pip
