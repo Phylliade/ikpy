@@ -3,8 +3,11 @@ python:
   - "2.7"
   - "3.5"
   - "3.6"
+  - "3.7"
 install:
   - pip install .[plot]
-  - pip install pytest
-script: cd tests && ./tests.sh
+  - pip install pytest flake8
+script:
+  - cd tests && ./tests.sh
+  - flake8 src
 cache: pip

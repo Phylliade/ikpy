@@ -3,7 +3,6 @@ import matplotlib.pyplot
 import numpy as np
 from . import geometry_utils
 import matplotlib.animation
-from mpl_toolkits.mplot3d import Axes3D
 
 
 def plot_basis(ax, arm_length=1):
