@@ -1,6 +1,7 @@
 # coding= utf8
 """
-.. module:: URDF_utils
+URDF_utils module
+
 This module contains helper functions used to parse URDF.
 """
 
@@ -13,10 +14,15 @@ from . import link as lib_link
 
 
 def find_next_joint(root, current_link, next_joint_name):
-    """Find the next joint in the URDF tree
+    """
+    Find the next joint in the URDF tree
 
-    :param xml.etree.ElementTree current_link: The current URDF link
-    :param string next_joint_name: Optional : The name of the next joint
+    Parameters
+    ----------
+    current_link: xml.etree.ElementTree
+        The current URDF link
+    next_joint_name: str
+        Optional : The name of the next joint
     """
     # Trouver le joint attaché
     has_next = False
@@ -45,10 +51,15 @@ def find_next_joint(root, current_link, next_joint_name):
 
 
 def find_next_link(root, current_joint, next_link_name):
-    """Find the next link in the URDF tree
+    """
+    Find the next link in the URDF tree
 
-    :param xml.etree.ElementTree current_joint: The current URDF joint
-    :param string next_link_name: Optional : The name of the next link
+    Parameters
+    ----------
+    current_joint: xml.etree.ElementTree
+        The current URDF joint
+    next_link_name: str
+        Optional : The name of the next link
     """
     has_next = False
     next_link = None
@@ -83,14 +94,17 @@ def get_chain_from_joints(urdf_file, joints):
 
 
 def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector=None, base_element_type="link"):
-    """Returns translated parameters from the given URDF file
+    """
+    Returns translated parameters from the given URDF file
 
-   :param urdf_file: The path of the URDF file
-   :type urdf_file: string
-   :param base_elements: List of the links beginning the chain
-   :type base_elements: list of strings
-   :param last_link_vector: Optional : The translation vector of the tip.
-   :type last_link_vector: numpy.array
+    Parameters
+    ----------
+    urdf_file: str
+        The path of the URDF file
+    base_elements: list of strings
+        List of the links beginning the chain
+    last_link_vector: numpy.array
+        Optional : The translation vector of the tip.
     """
     tree = ET.parse(urdf_file)
     root = tree.getroot()
@@ -180,7 +194,7 @@ def get_urdf_parameters(urdf_file, base_elements=["base_link"], last_link_vector
 
 
 def _get_motor_parameters(json_file):
-    """Returns a dictionnary with joints as keys, and a description (dict) of each joint as value"""
+    """Returns a dictionary with joints as keys, and a description (dict) of each joint as value"""
     with open(json_file) as motor_fd:
         global_config = json.load(motor_fd)
 

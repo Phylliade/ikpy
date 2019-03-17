@@ -5,13 +5,21 @@ from . import logs
 
 
 def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, regularization_parameter=None, max_iter=None):
-    """Computes the inverse kinematic on the specified target with an optimization method
+    """
+    Computes the inverse kinematic on the specified target with an optimization method
 
-    :param ikpy.chain.Chain chain: The chain used for the Inverse kinematics.
-    :param numpy.array target: The desired target.
-    :param numpy.array starting_nodes_angles: The initial pose of your chain.
-    :param float regularization_parameter: The coefficient of the regularization.
-    :param int max_iter: Maximum number of iterations for the optimisation algorithm.
+    Parameters
+    ----------
+    chain: ikpy.chain.Chain
+        The chain used for the Inverse kinematics.
+    target: numpy.array
+        The desired target.
+    starting_nodes_angles: numpy.array
+        The initial pose of your chain.
+    regularization_parameter: float
+        The coefficient of the regularization.
+    max_iter: int
+        Maximum number of iterations for the optimisation algorithm.
     """
     # Only get the position
     target = target_frame[:3, 3]

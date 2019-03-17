@@ -9,14 +9,17 @@ from . import geometry_utils
 
 
 class Link(object):
-    """Base Link class.
+    """
+    Base Link class.
 
-    :param name: The name of the link
-    :type name: string
-    :param bounds: Optional : The bounds of the link. Defaults to None
-    :type bounds: tuple
-    :param use_symbolic_matrix: wether the transformation matrix is stored as Numpy array or as a Sympy symbolic matrix.
-    :type use_symbolic_matrix: bool
+    Parameters
+    ----------
+    name: string
+        The name of the link
+    bounds: tuple
+        Optional : The bounds of the link. Defaults to None
+    use_symbolic_matrix: bool
+        wether the transformation matrix is stored as Numpy array or as a Sympy symbolic matrix.
     """
 
     def __init__(self, name, bounds=(None, None)):
@@ -117,16 +120,23 @@ class URDFLink(Link):
 class DHLink(Link):
     """Link in Denavit-Hartenberg representation.
 
-   :param name: The name of the link
-   :type name: string
-   :param bounds: Optional : The bounds of the link. Defaults to None
-   :type bounds: tuple
-   :param float d: offset along previous z to the common normal
-   :param float a: offset along previous   to the common normal
-   :param use_symbolic_matrix: wether the transformation matrix is stored as Numpy array or as a Sympy symbolic matrix.
-   :type use_symbolic_matrix: bool
-   :returns: The link object
-   :rtype: DHLink
+    Parameters
+    ----------
+    name: str
+        The name of the link
+    bounds: tuple
+        Optional : The bounds of the link. Defaults to None
+    d: float
+        offset along previous z to the common normal
+    a: float
+        offset along previous   to the common normal
+    use_symbolic_matrix: bool
+        whether the transformation matrix is stored as Numpy array or as a Sympy symbolic matrix.
+
+    Returns
+    -------
+    DHLink:
+        The link object
     """
 
     def __init__(self, name, d=0, a=0, bounds=None, use_symbolic_matrix=True):

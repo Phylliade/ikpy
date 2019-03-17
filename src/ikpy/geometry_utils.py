@@ -95,8 +95,12 @@ def from_transformation_matrix(transformation_matrix):
 def to_transformation_matrix(translation, orientation_matrix=np.zeros((3, 3))):
     """Converts a tuple (translation_vector, orientation_matrix)  to a transformation matrix
 
-    :param np.array translation: The translation of your frame presented as a 3D vector.
-    :param np.array orientation_matrix: Optional : The orientation of your frame, presented as a 3x3 matrix.
+    Parameters
+    ----------
+    translation: numpy.array
+        The translation of your frame presented as a 3D vector.
+    orientation_matrix: numpy.array
+        Optional : The orientation of your frame, presented as a 3x3 matrix.
     """
     matrix = np.eye(4)
 
@@ -133,8 +137,8 @@ def cartesian_to_homogeneous_vectors(cartesian_vector, matrix_type="numpy"):
 
 
 def homogeneous_to_cartesian_vectors(homogeneous_vector):
-        """Converts a cartesian vector to an homogenous vector"""
-        return homogeneous_vector[:-1]
+    """Converts a cartesian vector to an homogenous vector"""
+    return homogeneous_vector[:-1]
 
 
 def homogeneous_to_cartesian(homogeneous_matrix):

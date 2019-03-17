@@ -11,11 +11,12 @@
 ![demo](two_arms.png)
 
 # Demo
-A live demo of what IKpy can do : (click on the image below to see the video)
+Live demos of what IKPy can do : (click on the image below to see the video)
 
 [![](http://img.youtube.com/vi/H0ysr5qSbis/0.jpg)](https://www.youtube.com/watch?v=H0ysr5qSbis)
+[![](http://img.youtube.com/vi/Jq0-DkEwwj4/0.jpg)](https://www.youtube.com/watch?v=Jq0-DkEwwj4)
 
-Also, a presentation of IKPy : [Presentation](https://github.com/Phylliade/ikpy/blob/master/tutorials/ikpy/IKPy%20speech.pdf).
+Also, a presentation of IKPy : [Presentation](https://github.com/Phylliade/ikpy/blob/master/tutorials/IKPy%20speech.pdf).
 
 # Features
 With IKPy, you can :
@@ -38,7 +39,7 @@ You have three options :
    ```bash
    pip install ikpy
    ```
-  If you intend to plot your robot, you can install the plotting dependencies (mainly matplotlib) : 
+  If you intend to plot your robot, you can install the plotting dependencies (mainly matplotlib) :
   ```bash
   pip install 'ikpy[plot]'
   ```
@@ -56,7 +57,7 @@ You have three options :
    NB : You must have the proper rights to execute this command
 
 # Quickstart
-Follow this IPython [notebook](https://github.com/Phylliade/ikpy/blob/master/tutorials/ikpy/Quickstart.ipynb).
+Follow this IPython [notebook](https://github.com/Phylliade/ikpy/blob/master/tutorials/Quickstart.ipynb).
 
 
 # Guides and Tutorials

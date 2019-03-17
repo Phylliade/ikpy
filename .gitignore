@@ -9,3 +9,7 @@ notebooks/*/.ipynb_*
 .sass-cache/
 src/*.egg-info/
 *.odg
+.pytest_cache
+*.egg-info
+*.ipynb_checkpoints
+.idea
