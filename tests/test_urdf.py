@@ -24,7 +24,7 @@ def test_urdf_chain(resources_path, interactive):
     joints[-4] = 0
     ax = plot_utils.init_3d_figure()
     chain1.plot(joints, ax)
-    plt.savefig("out/chain1.jpg")
+    plt.savefig("out/chain1.png")
     if interactive:
         plt.show()
 
