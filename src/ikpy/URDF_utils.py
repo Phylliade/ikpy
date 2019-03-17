@@ -126,12 +126,15 @@ def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, ba
     current_joint = None
     current_link = None
 
+    # Initialize the tree traversal
     if base_element_type == "link":
         # The first element is a link, so its (virtual) parent should be a joint
         node_type = "joint"
     elif base_element_type == "joint":
         # The same as before, but swap link and joint
         node_type = "link"
+    else:
+        raise ValueError("Unknown type: {}".format(base_element_type))
 
     # Parcours récursif de la structure de la chain
     while has_next:
@@ -144,7 +147,7 @@ def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, ba
             # Current element is a link, find child joint
             (has_next, current_joint) = find_next_joint(root, current_link, next_element)
             node_type = "joint"
-            if(has_next):
+            if has_next:
                 joints.append(current_joint)
 
         elif node_type == "joint":
