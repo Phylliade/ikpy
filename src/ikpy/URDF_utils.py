@@ -45,10 +45,12 @@ def find_next_joint(root, current_link, next_joint_name):
                 next_joint = joint
         else:
             # Find the first joint whose parent is the current_link
+            # FIXME: We are not sending a warning when we have two children for the same link
+            # Even if this is not possible, we should ensure something coherent
             if joint.find("parent").attrib["link"] == current_link_name:
                 has_next = True
                 next_joint = joint
-            # Continue to look in
+                break
 
     return has_next, next_joint
 
