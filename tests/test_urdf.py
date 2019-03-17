@@ -7,7 +7,7 @@ from ikpy import URDF_utils
 from ikpy import plot_utils
 
 
-def test_urdf_chain(resources_path):
+def test_urdf_chain(resources_path, interactive):
     """Test that we can open chain from a URDF file"""
     chain1 = chain.Chain.from_urdf_file(
         os.path.join(resources_path, "poppy_torso.URDF"),
@@ -24,7 +24,8 @@ def test_urdf_chain(resources_path):
     joints[-4] = 0
     ax = plot_utils.init_3d_figure()
     chain1.plot(joints, ax)
-    plt.show()
+    if interactive:
+        plt.show()
     plt.savefig("out/chain1.jpg")
 
 
