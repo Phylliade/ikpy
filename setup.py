@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
 import os
+from os import path
 
 
 def get_version():
@@ -8,6 +9,12 @@ def get_version():
     with open(os.path.join(os.path.dirname(__file__), "src/ikpy/_version.py")) as fp:
         exec(fp.read(), version)
     return version["__version__"]
+
+
+# read the contents of your README file
+this_directory = path.abspath(path.dirname(__file__))
+with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
 
 
 setup(
@@ -28,4 +35,8 @@ setup(
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 3",
         "Topic :: Scientific/Engineering",
-    ])
+
+    ],
+    long_description=long_description,
+    long_description_content_type='text/markdown'
+)
