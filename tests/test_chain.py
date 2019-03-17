@@ -1,19 +1,17 @@
 import unittest
 import numpy as np
 import sys
+import matplotlib.pyplot as plt
 
 # IKPy imports
 from ikpy import chain
 from ikpy import plot_utils
 import params
 
-plot = params.interactive
-
 
 class TestChain(unittest.TestCase):
     def setUp(self):
-        if plot:
-            self.ax = plot_utils.init_3d_figure()
+        self.ax = plot_utils.init_3d_figure()
         self.chain1 = chain.Chain.from_urdf_file(
             params.resources_path + "/poppy_torso.URDF",
             base_elements=[
@@ -52,17 +50,17 @@ class TestChain(unittest.TestCase):
                 False, False, False, False, True, True, True, True, True
             ])
 
-        if plot:
-            self.chain1.plot(self.joints, self.ax)
-            self.chain2.plot(self.joints, self.ax)
+        self.chain1.plot(self.joints, self.ax)
+        self.chain2.plot(self.joints, self.ax)
+        plt.savefig("out/torso.png")
 
     def test_ik(self):
 
         ik = self.chain1.inverse_kinematics(
             self.frame_target, initial_position=self.joints)
 
-        if plot:
-            self.chain1.plot(ik, self.ax, target=self.target)
+        self.chain1.plot(ik, self.ax, target=self.target)
+        if params.interactive:
             plot_utils.show_figure()
 
         np.testing.assert_almost_equal(

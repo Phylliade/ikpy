@@ -16,7 +16,7 @@ class Chain(object):
 
     Parameters
     ----------
-    links: list
+    links: list[ikpy.link.Link]
         List of the links of the chain
     active_links_mask: list
         A list of boolean indicating that whether or not the corresponding link is active
@@ -26,11 +26,11 @@ class Chain(object):
     def __init__(self, links, active_links_mask=None, name="chain", profile=''"", **kwargs):
         self.name = name
         self.links = links
-        self._length = sum([link._length for link in links])
+        self._length = sum([link.length for link in links])
         # Avoid length of zero in a link
         for (index, link) in enumerate(self.links):
-            if link._length == 0:
-                link._axis_length = self.links[index - 1]._axis_length
+            if link.length == 0:
+                link.axis_length = self.links[index - 1].axis_length
 
         # If the active_links_mask is not given, set it to True for every link
         if active_links_mask is not None:

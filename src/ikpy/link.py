@@ -5,6 +5,8 @@ This module implements the Link class.
 """
 import numpy as np
 import sympy
+
+# Ikpy imports
 from . import geometry_utils
 
 
@@ -18,16 +20,16 @@ class Link(object):
         The name of the link
     bounds: tuple
         Optional : The bounds of the link. Defaults to None
-    use_symbolic_matrix: bool
-        whether the transformation matrix is stored as Numpy array or as a Sympy symbolic matrix.
     """
 
-    def __init__(self, name, bounds=(None, None)):
+    def __init__(self, name, length, bounds=(None, None)):
         self.bounds = bounds
         self.name = name
+        self.length = length
+        self.axis_length = length
 
     def __repr__(self):
-        return("Link name={}".format(self.name))
+        return "Link name={}".format(self.name)
 
     def _get_rotation_axis(self):
         # Defaults to None
@@ -69,14 +71,11 @@ class URDFLink(Link):
     """
 
     def __init__(self, name, translation_vector, orientation, rotation, bounds=(None, None), angle_representation="rpy", use_symbolic_matrix=True):
-        Link.__init__(self, name=name, bounds=bounds)
+        Link.__init__(self, name=name, bounds=bounds, length=np.linalg.norm(translation_vector))
         self.use_symbolic_matrix = use_symbolic_matrix
         self.translation_vector = np.array(translation_vector)
         self.orientation = np.array(orientation)
         self.rotation = np.array(rotation)
-
-        self._length = np.linalg.norm(translation_vector)
-        self._axis_length = self._length
 
         if use_symbolic_matrix:
             # Angle symbolique qui paramètre la rotation du joint en cours
@@ -102,7 +101,13 @@ class URDFLink(Link):
     Rotation : {}""".format(self.name, self.translation_vector, self.orientation, self.rotation))
 
     def _get_rotation_axis(self):
-        return (np.dot(geometry_utils.homogeneous_translation_matrix(*self.translation_vector), np.dot(geometry_utils.cartesian_to_homogeneous(geometry_utils.rpy_matrix(*self.orientation)), geometry_utils.cartesian_to_homogeneous_vectors(self.rotation * self._axis_length))))
+        return np.dot(
+            geometry_utils.homogeneous_translation_matrix(*self.translation_vector),
+            np.dot(
+                geometry_utils.cartesian_to_homogeneous(geometry_utils.rpy_matrix(*self.orientation)),
+                geometry_utils.cartesian_to_homogeneous_vectors(self.rotation * self.axis_length)
+            )
+        )
 
     def get_transformation_matrix(self, theta):
         if self.use_symbolic_matrix:
@@ -164,8 +169,7 @@ class DHLink(Link):
 class OriginLink(Link):
     """The link at the origin of the robot"""
     def __init__(self):
-        Link.__init__(self, name="Base link")
-        self._length = 1
+        Link.__init__(self, name="Base link", length=1)
 
     def _get_rotation_axis(self):
         return [0, 0, 0, 1]

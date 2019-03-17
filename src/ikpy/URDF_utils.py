@@ -23,12 +23,13 @@ def find_next_joint(root, current_link, next_joint_name):
     current_link: xml.etree.ElementTree
         The current URDF link
     next_joint_name: str
-        Optional : The name of the next joint
+        Optional : The name of the next joint. If not provided, find it automatically as the first child of the link.
     """
-    # Trouver le joint attaché
+    # Find the joint attached to the link
     has_next = False
     next_joint = None
     search_by_name = True
+    current_link_name = None
 
     if next_joint_name is None:
         # If no next joint is provided, find it automatically
@@ -43,10 +44,11 @@ def find_next_joint(root, current_link, next_joint_name):
                 has_next = True
                 next_joint = joint
         else:
-            # Find the joint which parent is the current_link
+            # Find the first joint whose parent is the current_link
             if joint.find("parent").attrib["link"] == current_link_name:
                 has_next = True
                 next_joint = joint
+            # Continue to look in
 
     return has_next, next_joint
 
@@ -57,14 +59,16 @@ def find_next_link(root, current_joint, next_link_name):
 
     Parameters
     ----------
+    root
     current_joint: xml.etree.ElementTree
         The current URDF joint
     next_link_name: str
-        Optional : The name of the next link
+        Optional : The name of the next link. If not provided, find it automatically as the first child of the joint.
     """
     has_next = False
     next_link = None
-    # If no next link, find it automaticly
+
+    # If no next link, find it automatically
     if next_link_name is None:
         # If the name of the next link is not provided, find it
         next_link_name = current_joint.find("child").attrib["link"]
