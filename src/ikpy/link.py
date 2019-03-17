@@ -27,7 +27,7 @@ class Link(object):
         self.name = name
 
     def __repr__(self):
-        return("Link name={}".format(self.name))
+        return("Link name={} bounds={}".format(self.name, self.bounds))
 
     def _get_rotation_axis(self):
         # Defaults to None
@@ -90,9 +90,10 @@ class URDFLink(Link):
 
     def __str__(self):
         return("""URDF Link {} :
+    Bounds : {}
     Translation : {}
     Orientation : {}
-    Rotation : {}""".format(self.name, self.translation_vector, self.orientation, self.rotation))
+    Rotation : {}""".format(self.name, self.bounds, self.translation_vector, self.orientation, self.rotation))
 
     def _get_rotation_axis(self):
         return (np.dot(geometry_utils.homogeneous_translation_matrix(*self.translation_vector), np.dot(geometry_utils.cartesian_to_homogeneous(geometry_utils.rpy_matrix(*self.orientation)), geometry_utils.cartesian_to_homogeneous_vectors(self.rotation * self._axis_length))))
