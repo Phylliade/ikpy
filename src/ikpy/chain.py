@@ -159,6 +159,7 @@ class Chain(object):
         * URDF joints = IKPY links
         * URDF links are not used by IKPY. They are thrown away when parsing
         """
+        # FIXME: Rename links to joints, to be coherent with URDF?
         if base_elements is None:
             base_elements = ["base_link"]
 
