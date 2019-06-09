@@ -10,7 +10,9 @@ import json
 import numpy as np
 import itertools
 
+# Ikpy imports
 from . import link as lib_link
+from . import logs
 
 
 def find_next_joint(root, current_link, next_joint_name):
@@ -36,21 +38,24 @@ def find_next_joint(root, current_link, next_joint_name):
         search_by_name = False
         current_link_name = current_link.attrib["name"]
 
-    for joint in root.iter("joint"):
-        # Iterate through all joints to find the good one
-        if search_by_name:
-            # Find the joint given its name
-            if joint.attrib["name"] == next_joint_name:
-                has_next = True
-                next_joint = joint
-        else:
-            # Find the first joint whose parent is the current_link
-            # FIXME: We are not sending a warning when we have two children for the same link
-            # Even if this is not possible, we should ensure something coherent
-            if joint.find("parent").attrib["link"] == current_link_name:
-                has_next = True
-                next_joint = joint
-                break
+    for joint in root.findall("joint"):
+        # Only use joints and links defined at the root.
+        # There may be other joints and links elsewhere, but there are just metadata
+        if joint is not None:
+            # Iterate through all joints to find the good one
+            if search_by_name:
+                # Find the joint given its name
+                if joint.attrib["name"] == next_joint_name:
+                    has_next = True
+                    next_joint = joint
+            else:
+                # Find the first joint whose parent is the current_link
+                # FIXME: We are not sending a warning when we have two children for the same link
+                # Even if this is not possible, we should ensure something coherent
+                if joint.find("parent").attrib["link"] == current_link_name:
+                    has_next = True
+                    next_joint = joint
+                    break
 
     return has_next, next_joint
 
@@ -75,7 +80,7 @@ def find_next_link(root, current_joint, next_link_name):
         # If the name of the next link is not provided, find it
         next_link_name = current_joint.find("child").attrib["link"]
 
-    for urdf_link in root.iter("link"):
+    for urdf_link in root.findall("link"):
         if urdf_link.attrib["name"] == next_link_name:
             next_link = urdf_link
             has_next = True
@@ -155,6 +160,7 @@ def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, ba
             node_type = "joint"
             if has_next:
                 joints.append(current_joint)
+                logs.logger.debug("Next element: joint {}".format(current_joint.attrib["name"]))
 
         elif node_type == "joint":
             # Current element is a joint, find child link
@@ -162,6 +168,7 @@ def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, ba
             node_type = "link"
             if has_next:
                 links.append(current_link)
+                logs.logger.debug("Next element: link {}".format(current_link.attrib["name"]))
 
     parameters = []
 

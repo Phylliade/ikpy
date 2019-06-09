@@ -1,7 +1,13 @@
 # coding= utf8
 import logging
 
-manager = logging.getLogger()
-manager.setLevel(logging.ERROR)
+logger = logging.getLogger("ikpy")
 stream_handler = logging.StreamHandler()
-manager.addHandler(stream_handler)
+logger.setLevel(logging.WARNING)
+logger.addHandler(stream_handler)
+
+
+def set_log_level(level):
+    logger.setLevel(level)
+
+
