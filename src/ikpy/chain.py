@@ -150,6 +150,14 @@ class Chain(object):
             The name of the Chain
         base_element_type: str
         active_links_mask: list[bool]
+
+
+        Note
+        ----
+        IKPY works with links, whereras URDF works with joints and links. The mapping is currently misleading:
+
+        * URDF joints = IKPY links
+        * URDF links are not used by IKPY. They are thrown away when parsing
         """
         if base_elements is None:
             base_elements = ["base_link"]

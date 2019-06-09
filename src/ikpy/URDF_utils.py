@@ -107,7 +107,8 @@ def get_chain_from_joints(urdf_file, joints):
 
 def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, base_element_type="link"):
     """
-    Returns translated parameters from the given URDF file
+    Returns translated parameters from the given URDF file.
+    Parse the URDF joints into IKPY links, throw away the URDF links.
 
     Parameters
     ----------
