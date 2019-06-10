@@ -8,7 +8,7 @@ For example, in this 4 links Chain, by specifying the mask :
 [True, True, False, True]
 ```
 You will activate every link, but the third one :
-![](https://github.com/Phylliade/ikpy/blob/master/tutorials/ikpy/link-mask.png)
+![](../assets/link-mask.png)
 
 To use the link, mask, use the parameter `active_links_mask` when creating the [Chain](http://ikpy.readthedocs.org/en/latest/chain.html) object.
 

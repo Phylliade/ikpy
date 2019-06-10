@@ -3,7 +3,7 @@
 The whole plotting is made through the `plot` method of the chain object.
 
 For example :
-![](right_arm.png)
+![](../assets/right_arm.png)
 Each link is displayed as a blue dot.
 For each link, the rotation axe is  the colored axe coming from the blue dot.
 The red dot is the target of the Inverse Kinematics.
@@ -28,7 +28,7 @@ matplotlib.pyplot.show()
 ```
 
 For example :
-![](dual-plot.png)
+![](../assets/dual-plot.png)
 
 ## Creating an `axes` object
 To create an `axes` object, you can use this snippet :

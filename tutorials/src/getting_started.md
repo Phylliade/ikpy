@@ -83,7 +83,7 @@ my_chain.plot(my_chain.inverse_kinematics([
 ```
 
 Here is the result :
-![](right_arm.png)
+![](../assets/right_arm.png)
 You can recognize the arm of a [Poppy Torso](https://www.poppy-project.org/creatures/poppy-torso/?lang=fr).
 
 The `show` argument is just a shortcut that will call `matplotlib.pyplot.show()` for you if set to `True`. It is set to `False` by default.

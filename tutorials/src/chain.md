@@ -9,7 +9,7 @@ Each link has a position and an orientation, that are stored in its transformati
 Moreover, each link represents a motor (currently revolute with one degree of freedom), that moves the next links.
 
 Let's consider the 2D robot below :
-![](chain.png)
+![](../assets/chain.png)
 
 The first link (called the "Origin" link) is the origin of the frame, at position (0, 0, 0).
 The last link is the end effector of the chain. Being the last link, its degree of freedom is purely virtual and has no interest : this link can't move anything. It's just here to have a position.
