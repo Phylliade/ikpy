@@ -35,7 +35,7 @@ setup(
     packages=find_packages("src", exclude=("tests", "docs")),
     package_dir={'': 'src'},
     setup_requires=['numpy'],
-    install_requires=,
+    install_requires=install_requires,
     extras_require={
         'plot': ["matplotlib"],
     },
