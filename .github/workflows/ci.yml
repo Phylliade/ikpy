@@ -1,0 +1,12 @@
+name: CI
+on: [push]
+
+jobs:
+  build:
+    name: Tests
+    # This job runs on Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: pip install .[plot] pytest flake8
+      - run: cd tests && MATPLOTLIBRC="../ci" pytest ./
