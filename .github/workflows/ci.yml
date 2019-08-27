@@ -17,5 +17,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: |
-        pip install .[plot] pytest flake8
-        cd tests && MATPLOTLIBRC="../ci" pytest ./
+          pip install .[plot] pytest flake8
+          cd tests && MATPLOTLIBRC="../ci" pytest ./
+    - name: Test with pytest
