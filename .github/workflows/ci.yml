@@ -19,4 +19,3 @@ jobs:
       - run: |
           pip install .[plot] pytest flake8
           cd tests && MATPLOTLIBRC="../ci" pytest ./
-    - name: Test with pytest
