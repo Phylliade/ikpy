@@ -20,8 +20,11 @@ with open(path.join(this_directory, 'README.md')) as f:
 if sys.version_info < (3, 0):
     # Python2 requires numpy < 1.17
     install_requires = ["numpy<1.17"]
+    setup_requires = ["numpy<1.17"]
+
 else:
     install_requires = ["numpy"]
+    setup_requires = ["numpy"]
 
 install_requires += ['scipy', 'sympy']
 
@@ -34,7 +37,7 @@ setup(
     license="GNU GENERAL PUBLIC LICENSE Version 3",
     packages=find_packages("src", exclude=("tests", "docs")),
     package_dir={'': 'src'},
-    setup_requires=['numpy'],
+    setup_requires=setup_requires,
     install_requires=install_requires,
     extras_require={
         'plot': ["matplotlib"],
