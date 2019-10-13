@@ -2,7 +2,7 @@ name: CI
 on: [push]
 
 jobs:
-  build:
+  test:
     name: Tests
     # This job runs on Linux
     runs-on: ubuntu-latest
@@ -19,3 +19,20 @@ jobs:
       - run: |
           pip install .[plot] pytest flake8
           cd tests && MATPLOTLIBRC="../ci" pytest ./
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+    name: Publish the package to PyPI
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - run: pip install wheel && python setup.py bdist_wheel --universal sdist
+      - uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: phylliadebot
+          password: ${{ secrets.phylliadebot_pass }}
