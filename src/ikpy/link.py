@@ -7,7 +7,7 @@ import numpy as np
 import sympy
 
 # Ikpy imports
-from . import geometry_utils
+from ikpy.utils import geometry
 
 
 class Link(object):
@@ -84,13 +84,13 @@ class URDFLink(Link):
             symbolic_frame_matrix = np.eye(4)
 
             # Apply translation matrix
-            symbolic_frame_matrix = symbolic_frame_matrix * sympy.Matrix(geometry_utils.homogeneous_translation_matrix(*translation_vector))
+            symbolic_frame_matrix = symbolic_frame_matrix * sympy.Matrix(geometry.homogeneous_translation_matrix(*translation_vector))
 
             # Apply orientation matrix
-            symbolic_frame_matrix = symbolic_frame_matrix * geometry_utils.cartesian_to_homogeneous(geometry_utils.rpy_matrix(*orientation))
+            symbolic_frame_matrix = symbolic_frame_matrix * geometry.cartesian_to_homogeneous(geometry.rpy_matrix(*orientation))
 
             # Apply rotation matrix
-            symbolic_frame_matrix = symbolic_frame_matrix * geometry_utils.cartesian_to_homogeneous(geometry_utils.symbolic_axis_rotation_matrix(rotation, theta), matrix_type="sympy")
+            symbolic_frame_matrix = symbolic_frame_matrix * geometry.cartesian_to_homogeneous(geometry.symbolic_axis_rotation_matrix(rotation, theta), matrix_type="sympy")
 
             self.symbolic_transformation_matrix = sympy.lambdify(theta, symbolic_frame_matrix, "numpy")
 
@@ -103,10 +103,10 @@ class URDFLink(Link):
 
     def _get_rotation_axis(self):
         return np.dot(
-            geometry_utils.homogeneous_translation_matrix(*self.translation_vector),
+            geometry.homogeneous_translation_matrix(*self.translation_vector),
             np.dot(
-                geometry_utils.cartesian_to_homogeneous(geometry_utils.rpy_matrix(*self.orientation)),
-                geometry_utils.cartesian_to_homogeneous_vectors(self.rotation * self.axis_length)
+                geometry.cartesian_to_homogeneous(geometry.rpy_matrix(*self.orientation)),
+                geometry.cartesian_to_homogeneous_vectors(self.rotation * self.axis_length)
             )
         )
 
@@ -118,13 +118,13 @@ class URDFLink(Link):
             frame_matrix = np.eye(4)
 
             # First, apply translation matrix
-            frame_matrix = np.dot(frame_matrix, geometry_utils.homogeneous_translation_matrix(*self.translation_vector))
+            frame_matrix = np.dot(frame_matrix, geometry.homogeneous_translation_matrix(*self.translation_vector))
 
             # Apply orientation
-            frame_matrix = np.dot(frame_matrix, geometry_utils.cartesian_to_homogeneous(geometry_utils.rpy_matrix(*self.orientation)))
+            frame_matrix = np.dot(frame_matrix, geometry.cartesian_to_homogeneous(geometry.rpy_matrix(*self.orientation)))
 
             # Apply rotation matrix
-            frame_matrix = np.dot(frame_matrix, geometry_utils.cartesian_to_homogeneous(geometry_utils.axis_rotation_matrix(self.rotation, theta)))
+            frame_matrix = np.dot(frame_matrix, geometry.cartesian_to_homogeneous(geometry.axis_rotation_matrix(self.rotation, theta)))
 
         return frame_matrix
 

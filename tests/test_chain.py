@@ -5,13 +5,13 @@ import matplotlib.pyplot as plt
 
 # IKPy imports
 from ikpy import chain
-from ikpy import plot_utils
+from ikpy.utils import plot
 import params
 
 
 class TestChain(unittest.TestCase):
     def setUp(self):
-        self.ax = plot_utils.init_3d_figure()
+        self.ax = plot.init_3d_figure()
         self.chain1 = chain.Chain.from_urdf_file(
             params.resources_path + "/poppy_torso.URDF",
             base_elements=[
@@ -61,7 +61,7 @@ class TestChain(unittest.TestCase):
 
         self.chain1.plot(ik, self.ax, target=self.target)
         if params.interactive:
-            plot_utils.show_figure()
+            plot.show_figure()
 
         np.testing.assert_almost_equal(
             self.chain1.forward_kinematics(ik)[:3, 3], self.target, decimal=3)

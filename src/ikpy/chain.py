@@ -6,7 +6,7 @@ This module implements the Chain class.
 import numpy as np
 
 # IKPY imports
-from . import URDF_utils
+from ikpy.utils import URDF
 from . import inverse_kinematics as ik
 from . import link as link_lib
 
@@ -120,19 +120,19 @@ class Chain(object):
         show: bool
             Display the axe. Defaults to False
         """
-        from . import plot_utils
+        from ikpy.utils import plot
 
         if ax is None:
             # If ax is not given, create one
-            ax = plot_utils.init_3d_figure()
-        plot_utils.plot_chain(self, joints, ax)
-        plot_utils.plot_basis(ax, self._length)
+            ax = plot.init_3d_figure()
+        plot.plot_chain(self, joints, ax)
+        plot.plot_basis(ax, self._length)
 
         # Plot the goal position
         if target is not None:
-            plot_utils.plot_target(target, ax)
+            plot.plot_target(target, ax)
         if show:
-            plot_utils.show_figure()
+            plot.show_figure()
 
     @classmethod
     def from_urdf_file(cls, urdf_file, base_elements=None, last_link_vector=None, base_element_type="link", active_links_mask=None, name="chain"):
@@ -163,7 +163,7 @@ class Chain(object):
         if base_elements is None:
             base_elements = ["base_link"]
 
-        links = URDF_utils.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_element_type=base_element_type)
+        links = URDF.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_element_type=base_element_type)
         # Add an origin link at the beginning
         return cls([link_lib.OriginLink()] + links, active_links_mask=active_links_mask, name=name)
 

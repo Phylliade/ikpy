@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.animation
 
 # Ikpy imports
-from . import geometry_utils
+from ikpy.utils import geometry
 
 
 def plot_basis(ax, arm_length=1):
@@ -36,13 +36,13 @@ def plot_chain(chain, joints, ax, target=None, show=False):
 
     # Get the nodes and the orientation from the tranformation matrix
     for (index, link) in enumerate(chain.links):
-        (node, rotation) = geometry_utils.from_transformation_matrix(transformation_matrixes[index])
+        (node, rotation) = geometry.from_transformation_matrix(transformation_matrixes[index])
         nodes.append(node)
         rotation_axis = link._get_rotation_axis()
         if index == 0:
             axes.append(rotation_axis)
         else:
-            axes.append(geometry_utils.homogeneous_to_cartesian_vectors(np.dot(transformation_matrixes[index - 1], rotation_axis)))
+            axes.append(geometry.homogeneous_to_cartesian_vectors(np.dot(transformation_matrixes[index - 1], rotation_axis)))
 
     # Plot the chain
     ax.plot([x[0] for x in nodes], [x[1] for x in nodes], [x[2] for x in nodes])
@@ -65,7 +65,6 @@ def plot_target_trajectory(targets_x, targets_y, targets_z, ax):
 
 
 def init_3d_figure():
-    from mpl_toolkits.mplot3d import axes3d, Axes3D # noqa
     fig = matplotlib.pyplot.figure()
     ax = fig.add_subplot(111, projection='3d')
     return ax

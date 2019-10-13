@@ -11,8 +11,8 @@ import numpy as np
 import itertools
 
 # Ikpy imports
-from . import link as lib_link
-from . import logs
+from ikpy import link as lib_link
+from ikpy import logs
 
 
 def find_next_joint(root, current_link, next_joint_name):

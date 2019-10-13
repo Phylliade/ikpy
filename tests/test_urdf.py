@@ -3,8 +3,7 @@ import matplotlib.pyplot as plt
 
 # ikpy imports
 from ikpy import chain
-from ikpy import URDF_utils
-from ikpy import plot_utils
+from ikpy.utils import plot, URDF
 
 
 def test_urdf_chain(resources_path, interactive):
@@ -22,7 +21,7 @@ def test_urdf_chain(resources_path, interactive):
 
     joints = [0] * len(chain1.links)
     joints[-4] = 0
-    ax = plot_utils.init_3d_figure()
+    ax = plot.init_3d_figure()
     chain1.plot(joints, ax)
     plt.savefig("out/chain1.png")
     if interactive:
@@ -38,6 +37,6 @@ def test_urdf_parser(resources_path):
         ]
     last_link_vector = [0, 0.18, 0]
 
-    links = URDF_utils.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector)
+    links = URDF.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector)
 
     assert len(links) == len(base_elements)
