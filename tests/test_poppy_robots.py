@@ -14,7 +14,7 @@ def test_ergo(resources_path, interactive):
     joints = [0] * len(a.links)
     ik = a.inverse_kinematics(frame_target, initial_position=joints)
 
-    ax = plot.init_3d_figure()
+    fig, ax = plot.init_3d_figure()
     a.plot(ik, ax, target=target)
     plt.savefig("out/ergo.png")
 

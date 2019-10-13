@@ -71,7 +71,7 @@ class Chain(object):
         for index, (link, joint_angle) in enumerate(zip(self.links, joints)):
             # Compute iteratively the position
             # NB : Use asarray to avoid old sympy problems
-            frame_matrix = np.dot(frame_matrix, np.asarray(link.get_transformation_matrix(joint_angle)))
+            frame_matrix = np.dot(frame_matrix, np.asarray(link.get_link_frame_matrix({"theta": joint_angle})))
             if full_kinematics:
                 # rotation_axe = np.dot(frame_matrix, link.rotation)
                 frame_matrixes.append(frame_matrix)
@@ -125,7 +125,7 @@ class Chain(object):
         if ax is None:
             # If ax is not given, create one
             ax = plot.init_3d_figure()
-        plot.plot_chain(self, joints, ax)
+        plot.plot_chain(self, joints, ax, length=self._length)
         plot.plot_basis(ax, self._length)
 
         # Plot the goal position
@@ -135,7 +135,7 @@ class Chain(object):
             plot.show_figure()
 
     @classmethod
-    def from_urdf_file(cls, urdf_file, base_elements=None, last_link_vector=None, base_element_type="link", active_links_mask=None, name="chain"):
+    def from_urdf_file(cls, urdf_file, base_elements=None, last_link_vector=None, base_element_type="link", active_links_mask=None, name="chain", symbolic=True):
         """Creates a chain from an URDF file
 
         Parameters
@@ -150,6 +150,8 @@ class Chain(object):
             The name of the Chain
         base_element_type: str
         active_links_mask: list[bool]
+        symbolic: bool
+            Use symoblic computations
 
 
         Note
@@ -163,7 +165,7 @@ class Chain(object):
         if base_elements is None:
             base_elements = ["base_link"]
 
-        links = URDF.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_element_type=base_element_type)
+        links = URDF.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_element_type=base_element_type, symbolic=symbolic)
         # Add an origin link at the beginning
         return cls([link_lib.OriginLink()] + links, active_links_mask=active_links_mask, name=name)
 

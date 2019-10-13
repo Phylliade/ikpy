@@ -11,7 +11,7 @@ import params
 
 class TestChain(unittest.TestCase):
     def setUp(self):
-        self.ax = plot.init_3d_figure()
+        self.fig, self.ax = plot.init_3d_figure()
         self.chain1 = chain.Chain.from_urdf_file(
             params.resources_path + "/poppy_torso.URDF",
             base_elements=[

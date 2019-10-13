@@ -105,7 +105,7 @@ def get_chain_from_joints(urdf_file, joints):
     return chain
 
 
-def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, base_element_type="link"):
+def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, base_element_type="link", symbolic=True):
     """
     Returns translated parameters from the given URDF file.
     Parse the URDF joints into IKPY links, throw away the URDF links.
@@ -204,15 +204,18 @@ def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, ba
             translation_vector=translation,
             orientation=orientation,
             rotation=rotation,
+            use_symbolic_matrix=symbolic
         ))
 
     # Add last_link_vector to parameters
     if last_link_vector is not None:
+        # The last link doesn't provide a rotation
         parameters.append(lib_link.URDFLink(
             translation_vector=last_link_vector,
             orientation=[0, 0, 0],
-            rotation=[1, 0, 0],
-            name="last_joint"
+            rotation=None,
+            name="last_joint",
+            use_symbolic_matrix=symbolic
         ))
 
     return parameters
