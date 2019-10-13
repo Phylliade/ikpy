@@ -7,5 +7,5 @@
    chain
    link
    inverse_kinematics
-   geometry_utils
-   URDF_utils
+   utils/geometry
+   utils/URDF
