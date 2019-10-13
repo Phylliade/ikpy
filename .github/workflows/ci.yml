@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
     name: Publish the package to PyPI
-      steps:
+    steps:
       - run: python setup.py bdist_wheel --universal sdist
       - uses: pypa/gh-action-pypi-publish@master
         with:
