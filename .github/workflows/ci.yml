@@ -23,7 +23,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     needs: test
-    # if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
     name: Publish the package to PyPI
     steps:
       - uses: actions/checkout@v1
@@ -36,4 +36,3 @@ jobs:
         with:
           user: phylliadebot
           password: ${{ secrets.phylliadebot_pass }}
-          repository_url: https://test.pypi.org/legacy/
