@@ -19,3 +19,15 @@ jobs:
       - run: |
           pip install .[plot] pytest flake8
           cd tests && MATPLOTLIBRC="../ci" pytest ./
+
+  publish:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+    name: Publish the package to PyPI
+      steps:
+      - run: python setup.py bdist_wheel --universal sdist
+      - uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: phylliadebot
+          password: ${{ secrets.phylliadebot_pass }}
+          repository_url: https://test.pypi.org/legacy/
