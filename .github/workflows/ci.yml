@@ -18,6 +18,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: install dependencies
         run: | 
+          # We need to install numpy by hand before, ortherwise it fails, because it tries to compile it from source...
           pip install numpy
           pip install .[plot] pytest flake8
           
