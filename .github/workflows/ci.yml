@@ -16,9 +16,14 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
-      - run: |
+      - name: install dependencies
+        run: | 
+          # We need to install numpy by hand before, ortherwise it fails, because it tries to compile it from source...
+          pip install numpy
           pip install .[plot] pytest flake8
-          cd tests && MATPLOTLIBRC="../ci" pytest ./
+          
+      - name: run the tests
+        run: cd tests && MATPLOTLIBRC="../ci" pytest ./
 
   publish:
     runs-on: ubuntu-latest
