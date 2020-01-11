@@ -12,7 +12,7 @@ def test_ergo(resources_path, interactive):
     frame_target = np.eye(4)
     frame_target[:3, 3] = target
     joints = [0] * len(a.links)
-    ik = a.inverse_kinematics(frame_target, initial_position=joints)
+    ik = a.inverse_kinematics_frame(frame_target, initial_position=joints)
 
     fig, ax = plot.init_3d_figure()
     a.plot(ik, ax, target=target)

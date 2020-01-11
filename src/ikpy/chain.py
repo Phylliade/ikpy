@@ -82,7 +82,36 @@ class Chain(object):
         else:
             return frame_matrix
 
-    def inverse_kinematics(self, target, initial_position=None, **kwargs):
+    def inverse_kinematics(self, target_vector=None, target_orientation=None, orientation_mode=None, **kwargs):
+        """
+
+        Parameters
+        ----------
+        target_vector: np.ndarray
+            Vector of shape (3,): the target point
+        target_orientation: np.ndarray
+            Vector of shape (3,): the target orientation
+        orientation_mode: str
+            Orientation to target. Choices:
+            * None: No orientation
+            * "X": Target the X axis
+            * "Y": Target the Y axis
+            * "Z": Target the Z axis
+            * "all": Target the entire frame (e.g. the three axes) (not currently supported)
+        kwargs
+
+        Returns
+        -------
+        list:
+            The list of the positions of each joint according to the target. Note : Inactive joints are in the list.
+        """
+        frame_target = np.eye(4)
+        frame_target[:3, 0] = target_orientation
+        frame_target[:3, 3] = target_vector
+
+        return self.inverse_kinematics_frame(target=frame_target, orientation_mode=orientation_mode, **kwargs)
+
+    def inverse_kinematics_frame(self, target, initial_position=None, **kwargs):
         """Computes the inverse kinematic on the specified target
 
         Parameters
@@ -94,7 +123,8 @@ class Chain(object):
 
         Returns
         -------
-        The list of the positions of each joint according to the target. Note : Inactive joints are in the list.
+        list:
+            The list of the positions of each joint according to the target. Note : Inactive joints are in the list.
         """
         # Checks on input
         target = np.array(target)

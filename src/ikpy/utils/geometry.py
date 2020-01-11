@@ -54,7 +54,7 @@ def symbolic_rotation_matrix(phi, theta, symbolic_psi):
 
 
 def rpy_matrix(roll, pitch, yaw):
-    """Returns a rotation matrix described by the extrinsinc roll, pitch, yaw coordinates"""
+    """Return a rotation matrix described by the extrinsinc roll, pitch, yaw coordinates"""
     return np.dot(rz_matrix(yaw), np.dot(ry_matrix(pitch), rx_matrix(roll)))
 
 

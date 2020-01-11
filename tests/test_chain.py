@@ -56,7 +56,7 @@ class TestChain(unittest.TestCase):
 
     def test_ik(self):
 
-        ik = self.chain1.inverse_kinematics(
+        ik = self.chain1.inverse_kinematics_frame(
             self.frame_target, initial_position=self.joints)
 
         self.chain1.plot(ik, self.ax, target=self.target)
@@ -69,7 +69,7 @@ class TestChain(unittest.TestCase):
     def test_ik_optimization(self):
         """Tests the IK optimization-based method"""
         args = {"max_iter": 3}
-        ik = self.chain1.inverse_kinematics(
+        ik = self.chain1.inverse_kinematics_frame(
             self.frame_target, initial_position=self.joints, **args)
         # Check whether the results are almost equal
         np.testing.assert_almost_equal(

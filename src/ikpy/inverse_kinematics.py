@@ -4,7 +4,7 @@ import numpy as np
 from . import logs
 
 
-def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, regularization_parameter=None, max_iter=None):
+def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, regularization_parameter=None, max_iter=None, orientation_mode=None):
     """
     Computes the inverse kinematic on the specified target with an optimization method
 
@@ -20,28 +20,60 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
         The coefficient of the regularization.
     max_iter: int
         Maximum number of iterations for the optimisation algorithm.
+    orientation_mode: str
+        Orientation to target. Choices:
+        * None: No orientation
+        * "X": Target the X axis
+        * "Y": Target the Y axis
+        * "Z": Target the Z axis
+        * "all": Target the three axes
     """
-    # Only get the position
-    target = target_frame[:3, 3]
+    # Begin with the position
+    target = target_frame[:3, -1]
+
+    # Compute squared distance to target
+    def optimize_target_function(x):
+        # y = np.append(starting_nodes_angles[:chain.first_active_joint], x)
+        y = chain.active_to_full(x, starting_nodes_angles)
+        squared_distance_to_target = np.linalg.norm(chain.forward_kinematics(y)[:3, -1] - target)
+
+        # We need to return y, it will be used in a later function
+        return y, squared_distance_to_target
+
+    if orientation_mode is None:
+        def optimize_function(x):
+            y, squared_distance_to_target = optimize_target_function(x)
+            return squared_distance_to_target
+    else:
+        # Only get the first orientation vector
+        if orientation_mode == "X":
+            orientation = target_frame[:3, 0]
+        elif orientation_mode == "Y":
+            orientation = target_frame[:3, 1]
+        elif orientation_mode == "Z":
+            orientation = target_frame[:3, 2]
+        else:
+            raise ValueError("Unknown orientation mode: {}".format(orientation_mode))
+
+        def optimize_function(x):
+            y, squared_distance_to_target = optimize_target_function(x)
+            squared_distance_to_orientation = np.linalg.norm(chain.forward_kinematics(y)[:3, 0] - orientation)
+
+            # Put more pressure on optimizing the distance to target, to avoid being stuck in a local minimum where the orientation is perfectly reached, but the target is nowhere to be reached
+            squared_distance = squared_distance_to_target + 0.2 * squared_distance_to_orientation
+
+            return squared_distance
 
     if starting_nodes_angles is None:
         raise ValueError("starting_nodes_angles must be specified")
-
-    # Compute squared distance to target
-    def optimize_target(x):
-        # y = np.append(starting_nodes_angles[:chain.first_active_joint], x)
-        y = chain.active_to_full(x, starting_nodes_angles)
-        squared_distance = np.linalg.norm(chain.forward_kinematics(y)[:3, -1] - target)
-        return squared_distance
 
     # If a regularization is selected
     if regularization_parameter is not None:
         def optimize_total(x):
             regularization = np.linalg.norm(x - starting_nodes_angles[chain.first_active_joint:])
-            return optimize_target(x) + regularization_parameter * regularization
+            return optimize_function(x) + regularization_parameter * regularization
     else:
-        def optimize_total(x):
-            return optimize_target(x)
+        optimize_total = optimize_function
 
     # Compute bounds
     real_bounds = [link.bounds for link in chain.links]

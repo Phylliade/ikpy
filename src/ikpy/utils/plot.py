@@ -25,9 +25,10 @@ def plot_basis(ax, arm_length=1):
 
     # Plot du repère
     # Sa taille est relative à la taille du bras
-    ax.plot([0, arm_length * 1.5], [0, 0], [0, 0], c=directions_colors[0])
-    ax.plot([0, 0], [0, arm_length * 1.5], [0, 0], c=directions_colors[1])
-    ax.plot([0, 0], [0, 0], [0, arm_length * 1.5], c=directions_colors[2])
+    ax.plot([0, arm_length * 1.5], [0, 0], [0, 0], c=directions_colors[0], label="X")
+    ax.plot([0, 0], [0, arm_length * 1.5], [0, 0], c=directions_colors[1], label="Y")
+    ax.plot([0, 0], [0, 0], [0, arm_length * 1.5], c=directions_colors[2], label="Z")
+    ax.legend()
 
 
 def plot_chain(chain, joints, ax, target=None, show=False, length=1):
