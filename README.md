@@ -4,7 +4,7 @@
 
 [![Join the chat at https://gitter.im/Phylliade/ikpy](https://badges.gitter.im/Phylliade/ikpy.svg)](https://gitter.im/Phylliade/ikpy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) ![Travis-CI](https://travis-ci.org/Phylliade/ikpy.svg?branch=master) [![PyPI](https://img.shields.io/pypi/v/ikpy.svg)](https://pypi.python.org/pypi/ikpy/) [![Documentation Status](https://readthedocs.org/projects/ikpy/badge/?version=latest)](http://ikpy.readthedocs.org/en/latest/?badge=latest) [![PyPI](https://img.shields.io/pypi/dm/ikpy.svg)](https://pypi.python.org/pypi/ikpy/) [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/Phylliade/ikpy)
 
-![demo](.gitbook/assets/two_arms.png)
+![demo](two_arms.png)
 
 ## Demo
 
