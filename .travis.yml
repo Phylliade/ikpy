@@ -4,6 +4,7 @@ python:
   - "3.5"
   - "3.6"
 install:
+  - sudo apt-get update --yes && sudo apt-get install graphviz
   - pip install .[plot]
   - pip install pytest flake8
 script:
