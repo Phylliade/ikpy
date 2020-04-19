@@ -18,6 +18,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: |
           pip install .[plot] pytest flake8
+          apt-get update --yes && apt-get install graphviz
+      - run: |
           cd tests && MATPLOTLIBRC="../ci" pytest ./
 
   publish:
