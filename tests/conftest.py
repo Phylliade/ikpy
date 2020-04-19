@@ -4,6 +4,7 @@ import json
 # IKPy imports
 from ikpy.chain import Chain
 
+
 @pytest.fixture
 def resources_path():
     return "../resources"

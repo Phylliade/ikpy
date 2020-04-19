@@ -11,7 +11,7 @@ from ikpy.urdf.utils import plot_urdf_tree
 def test_urdf_chain(resources_path, interactive):
     """Test that we can open chain from a URDF file"""
     chain1 = chain.Chain.from_urdf_file(
-        os.path.join(resources_path, "poppy_torso.URDF"),
+        os.path.join(resources_path, "poppy_torso/poppy_torso.URDF"),
         base_elements=[
             "base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x",
             "chest", "r_shoulder_y"
@@ -32,7 +32,7 @@ def test_urdf_chain(resources_path, interactive):
 
 def test_urdf_parser(resources_path):
     """Test the correctness of a URDF parser"""
-    urdf_file = os.path.join(resources_path, "poppy_torso.URDF")
+    urdf_file = os.path.join(resources_path, "poppy_torso/poppy_torso.URDF")
     base_elements = [
             "base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x",
             "chest", "r_shoulder_y"
