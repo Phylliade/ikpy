@@ -3,7 +3,9 @@ import matplotlib.pyplot as plt
 
 # ikpy imports
 from ikpy import chain
-from ikpy.utils import plot, URDF
+from ikpy.utils import plot
+from ikpy.urdf import URDF
+from ikpy.urdf.utils import plot_urdf_tree
 
 
 def test_urdf_chain(resources_path, interactive):
@@ -40,3 +42,7 @@ def test_urdf_parser(resources_path):
     links = URDF.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector)
 
     assert len(links) == len(base_elements)
+
+
+def test_plot_urdf_tree(baxter_urdf):
+    dot = plot_urdf_tree(baxter_urdf, "./out/baxter")

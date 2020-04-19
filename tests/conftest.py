@@ -15,3 +15,8 @@ def pytest_addoption(parser):
 @pytest.fixture
 def interactive(request):
     return request.config.getoption("--interactive")
+
+
+@pytest.fixture
+def baxter_urdf():
+    return "../resources/baxter/baxter.urdf"

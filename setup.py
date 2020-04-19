@@ -40,7 +40,7 @@ setup(
     setup_requires=setup_requires,
     install_requires=install_requires,
     extras_require={
-        'plot': ["matplotlib"],
+        'plot': ["matplotlib", "graphviz"],
     },
     classifiers=[
         "Programming Language :: Python :: 2",

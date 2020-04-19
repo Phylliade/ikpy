@@ -6,7 +6,7 @@ This module implements the Chain class.
 import numpy as np
 
 # IKPY imports
-from ikpy.utils import URDF
+from .urdf import URDF
 from . import inverse_kinematics as ik
 from . import link as link_lib
 
@@ -106,8 +106,16 @@ class Chain(object):
             The list of the positions of each joint according to the target. Note : Inactive joints are in the list.
         """
         frame_target = np.eye(4)
-        frame_target[:3, 0] = target_orientation
-        frame_target[:3, 3] = target_vector
+        if orientation_mode is not None:
+            if orientation_mode == "X":
+                frame_target[:3, 0] = target_orientation
+            elif orientation_mode == "Y":
+                frame_target[:3, 1] = target_orientation
+            elif orientation_mode == "Z":
+                frame_target[:3, 2] = target_orientation
+            else:
+                raise ValueError("Unknown orientation mode: {}".format(orientation_mode))
+            frame_target[:3, 3] = target_vector
 
         return self.inverse_kinematics_frame(target=frame_target, orientation_mode=orientation_mode, **kwargs)
 
