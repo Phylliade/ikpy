@@ -12,7 +12,7 @@ def test_chain():
     fig, ax = plot.init_3d_figure()
 
     torso_right_arm = chain.Chain.from_urdf_file(
-        "../resources/poppy_torso.URDF",
+        "../resources/poppy_torso/poppy_torso.URDF",
         base_elements=[
             "base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x",
             "chest", "r_shoulder_y"
@@ -22,7 +22,7 @@ def test_chain():
             False, False, False, False, True, True, True, True, True
         ])
     torso_left_arm = chain.Chain.from_urdf_file(
-        "../resources/poppy_torso.URDF",
+        "../resources/poppy_torso/poppy_torso.URDF",
         base_elements=[
             "base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x",
             "chest", "l_shoulder_y"

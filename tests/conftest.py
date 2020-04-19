@@ -42,7 +42,7 @@ def baxter_left_arm():
 @pytest.fixture
 def torso_right_arm():
     chain1 = Chain.from_urdf_file(
-        "../resources/poppy_torso.URDF",
+        "../resources/poppy_torso/poppy_torso.URDF",
         base_elements=[
             "base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x",
             "chest", "r_shoulder_y"
@@ -59,7 +59,7 @@ def torso_right_arm():
 @pytest.fixture
 def torso_left_arm():
     return Chain.from_urdf_file(
-        "../resources/poppy_torso.URDF",
+        "../resources/poppy_torso/poppy_torso.URDF",
         base_elements=[
             "base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x",
             "chest", "l_shoulder_y"
