@@ -67,21 +67,6 @@ class TestChain(unittest.TestCase):
         np.testing.assert_almost_equal(
             self.chain1.forward_kinematics(ik)[:3, 3], self.target, decimal=3)
 
-    def test_ik_orientation(self):
-
-        ik = self.chain1.inverse_kinematics(
-            self.target, self.target_orientation, orientation_mode="X", initial_position=self.joints)
-
-        self.chain1.plot(ik, self.ax, target=self.target)
-        if params.interactive:
-            plot.show_figure()
-
-        np.testing.assert_almost_equal(
-            self.chain1.forward_kinematics(ik)[:3, 3], self.target, decimal=1)
-
-        np.testing.assert_almost_equal(
-            self.chain1.forward_kinematics(ik)[:3, 0], self.target_orientation, decimal=0)
-
     def test_ik_optimization(self):
         """Tests the IK optimization-based method"""
         args = {"max_iter": 3}
