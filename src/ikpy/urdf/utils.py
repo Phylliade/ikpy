@@ -36,7 +36,20 @@ class _URDFLink:
         return "URDF Link: {};\n".format(self.name)
 
 
-def _create_robot_tree_aux(dot: Digraph, root, current_link, current_robot_link):
+def _create_robot_tree_aux(dot, root, current_link, current_robot_link):
+    """
+
+    Parameters
+    ----------
+    dot: Digraph
+    root
+    current_link
+    current_robot_link
+
+    Returns
+    -------
+
+    """
     # TODO: This implementation could be greatly improved
     # Instead of doing a research of child links for each of the links and passing through all of the links (O(n^2))
     # We should instead parse each links and create their child/parent relationship once
@@ -66,7 +79,7 @@ def _create_robot_tree_aux(dot: Digraph, root, current_link, current_robot_link)
             _create_robot_tree_aux(dot, root, next_link, next_robot_link)
 
 
-def plot_urdf_tree(urdf_path: str, out_image_path: str = None, root_element: str = "base", legend: bool = False):
+def plot_urdf_tree(urdf_path, out_image_path=None, root_element="base", legend=False):
     """
 
     Parameters

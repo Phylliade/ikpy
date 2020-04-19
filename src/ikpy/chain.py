@@ -4,6 +4,9 @@
 This module implements the Chain class.
 """
 import numpy as np
+import json
+import os
+import shutil
 
 # IKPY imports
 from .urdf import URDF
@@ -22,8 +25,10 @@ class Chain(object):
         A list of boolean indicating that whether or not the corresponding link is active
     name: str
         The name of the Chain
+    urdf_metadata
+        Technical attribute
     """
-    def __init__(self, links, active_links_mask=None, name="chain", profile=''"", **kwargs):
+    def __init__(self, links, active_links_mask=None, name="chain", urdf_metadata=None, **kwargs):
         self.name = name
         self.links = links
         self._length = sum([link.length for link in links])
@@ -31,6 +36,8 @@ class Chain(object):
         for (index, link) in enumerate(self.links):
             if link.length == 0:
                 link.axis_length = self.links[index - 1].axis_length
+        # Optional argument
+        self._urdf_metadata = urdf_metadata
 
         # If the active_links_mask is not given, set it to True for every link
         if active_links_mask is not None:
@@ -172,6 +179,89 @@ class Chain(object):
         if show:
             plot.show_figure()
 
+    @property
+    def _json_path(self):
+        """Path where the JSON is expected to be"""
+        return os.path.dirname(self._urdf_metadata["urdf_file"]) + "/" + self.name + ".json"
+
+    @classmethod
+    def from_json_file(cls, json_file):
+        """
+        Load a chain serialized in the JSON format.
+        This is basically a URDF file with some metadata
+
+        Parameters
+        ----------
+        json_file: str
+            Path to the json file serializing the robot
+
+        Returns
+        -------
+
+        """
+        with open(json_file, "r") as fd:
+            chain_config = json.load(fd)
+
+        # The path where is stored the URDF file
+        chain_basedir = os.path.dirname(json_file)
+
+        # Get the different attributes
+        urdf_file = chain_config["urdf_file"]
+        elements = chain_config["elements"]
+        if elements == "":
+            elements = None
+        active_links_mask = chain_config["active_links_mask"]
+        if active_links_mask == "":
+            active_links_mask = None
+        last_link_vector = chain_config["last_link_vector"]
+        if last_link_vector == "":
+            last_link_vector = None
+
+        return cls.from_urdf_file(
+            urdf_file=chain_basedir + "/" + urdf_file,
+            base_elements=elements,
+            active_links_mask=active_links_mask,
+            last_link_vector=last_link_vector
+        )
+
+    def to_json_file(self, force=False):
+        """
+        Serialize the chain into a json that will be saved next to the original URDF, with the name of the chain
+
+        Parameters
+        ----------
+        force: bool
+            Overwrite if existing
+
+        Returns
+        -------
+        str:
+            Path of the exported JSON
+
+        """
+        print("A")
+        print((self._urdf_metadata["urdf_file"]))
+        print(os.path.basename(self._urdf_metadata["urdf_file"]))
+        chain_dict = {
+            "elements": self._urdf_metadata["base_elements"],
+            "urdf_file": os.path.basename(self._urdf_metadata["urdf_file"]),
+            "active_links_mask": [bool(x) for x in self.active_links_mask],
+            "last_link_vector": self._urdf_metadata["last_link_vector"],
+            "name": self.name,
+            "version": "v1"
+        }
+
+        print(chain_dict)
+
+        if os.path.exists(self._json_path) and not force:
+            raise OSError("File {} exists")
+
+        # And create the json file
+        with open(self._json_path, "w") as fd:
+            json.dump(chain_dict, fd, indent=2)
+
+        return self._json_path
+
     @classmethod
     def from_urdf_file(cls, urdf_file, base_elements=None, last_link_vector=None, base_element_type="link", active_links_mask=None, name="chain", symbolic=True):
         """Creates a chain from an URDF file
@@ -199,13 +289,28 @@ class Chain(object):
         * URDF joints = IKPY links
         * URDF links are not used by IKPY. They are thrown away when parsing
         """
+
         # FIXME: Rename links to joints, to be coherent with URDF?
+        urdf_metadata = {
+            "base_elements": base_elements,
+            "urdf_file": urdf_file,
+            "last_link_vector": last_link_vector
+        }
+
         if base_elements is None:
             base_elements = ["base_link"]
 
         links = URDF.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_element_type=base_element_type, symbolic=symbolic)
+        print(len(links))
         # Add an origin link at the beginning
-        return cls([link_lib.OriginLink()] + links, active_links_mask=active_links_mask, name=name)
+        chain = cls([link_lib.OriginLink()] + links, active_links_mask=active_links_mask, name=name, urdf_metadata=urdf_metadata)
+
+        # Save some useful metadata
+        # FIXME: We have attributes specific to objects created in this style, not great...
+        chain.urdf_file = urdf_file
+        chain.base_elements = base_elements
+
+        return chain
 
     def active_to_full(self, active_joints, initial_position):
         full_joints = np.array(initial_position, copy=True, dtype=np.float)
@@ -217,4 +322,5 @@ class Chain(object):
 
     @classmethod
     def concat(cls, chain1, chain2):
+        """Concatenate two chains"""
         return cls(links=chain1.links + chain2.links, active_links_mask=chain1.active_links_mask + chain2.active_links_mask)
