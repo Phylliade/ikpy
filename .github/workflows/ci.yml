@@ -12,6 +12,7 @@ jobs:
         python-version: [2.7, 3.6, 3.7]
     steps:
       - uses: actions/checkout@v1
+        name: "Checkout branch"
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v1
         with:
@@ -19,8 +20,10 @@ jobs:
       - run: |
           pip install .[plot] pytest flake8
           sudo apt-get update --yes && sudo apt-get install graphviz
+        name: "Install dependencies"
       - run: |
           cd tests && MATPLOTLIBRC="../ci" pytest ./
+        name: "Run the tests"
 
   publish:
     runs-on: ubuntu-latest
