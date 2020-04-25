@@ -15,7 +15,7 @@ from . import link as lib_link
 from . import logs
 
 
-def find_next_joint(root, current_link, next_joint_name):
+def _find_next_joint(root, current_link, next_joint_name):
     """
     Find the next joint in the URDF tree
 
@@ -60,7 +60,7 @@ def find_next_joint(root, current_link, next_joint_name):
     return has_next, next_joint
 
 
-def find_next_link(root, current_joint, next_link_name):
+def _find_next_link(root, current_joint, next_link_name):
     """
     Find the next link in the URDF tree
 
@@ -87,7 +87,7 @@ def find_next_link(root, current_joint, next_link_name):
     return has_next, next_link
 
 
-def find_parent_link(root, joint_name):
+def _find_parent_link(root, joint_name):
     return next(joint.find("parent").attrib["link"]
                 for joint in root.iter("joint")
                 if joint.attrib["name"] == joint_name)
@@ -97,7 +97,7 @@ def get_chain_from_joints(urdf_file, joints):
     tree = ET.parse(urdf_file)
     root = tree.getroot()
 
-    links = [find_parent_link(root, j) for j in joints]
+    links = [_find_parent_link(root, j) for j in joints]
 
     iters = [iter(links), iter(joints)]
     chain = list(next(it) for it in itertools.cycle(iters))
@@ -157,7 +157,7 @@ def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, ba
 
         if node_type == "link":
             # Current element is a link, find child joint
-            (has_next, current_joint) = find_next_joint(root, current_link, next_element)
+            (has_next, current_joint) = _find_next_joint(root, current_link, next_element)
             node_type = "joint"
             if has_next:
                 joints.append(current_joint)
@@ -165,7 +165,7 @@ def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, ba
 
         elif node_type == "joint":
             # Current element is a joint, find child link
-            (has_next, current_link) = find_next_link(root, current_joint, next_element)
+            (has_next, current_link) = _find_next_link(root, current_joint, next_element)
             node_type = "link"
             if has_next:
                 links.append(current_link)
