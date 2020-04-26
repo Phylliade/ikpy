@@ -28,7 +28,7 @@ def baxter_urdf():
 
 @pytest.fixture
 def baxter_left_arm():
-    with open("../resources/baxter/baxter_left_arm_elements.json", "r") as fd:
+    with open("../resources/baxter/baxter_left_arm.json", "r") as fd:
         baxter_left_arm_elements = json.load(fd)
 
     baxter_left_arm_chain = Chain.from_urdf_file(
