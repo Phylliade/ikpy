@@ -1,0 +1,195 @@
+digraph robot {
+	link_base [label=base color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_collision_head_1 [label=collision_head_1 color=green fillcolor=lightgrey style=filled]
+	link_base -> joint_collision_head_1
+	link_collision_head_link_1 [label=collision_head_link_1 color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_collision_head_1 -> link_collision_head_link_1
+	joint_collision_head_2 [label=collision_head_2 color=green fillcolor=lightgrey style=filled]
+	link_base -> joint_collision_head_2
+	link_collision_head_link_2 [label=collision_head_link_2 color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_collision_head_2 -> link_collision_head_link_2
+	joint_torso_t0 [label=torso_t0 color=green fillcolor=lightgrey style=filled]
+	link_base -> joint_torso_t0
+	link_torso [label=torso color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_torso_t0 -> link_torso
+	joint_left_torso_itb_fixed [label=left_torso_itb_fixed color=green fillcolor=lightgrey style=filled]
+	link_torso -> joint_left_torso_itb_fixed
+	link_left_torso_itb [label=left_torso_itb color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_left_torso_itb_fixed -> link_left_torso_itb
+	joint_right_torso_itb_fixed [label=right_torso_itb_fixed color=green fillcolor=lightgrey style=filled]
+	link_torso -> joint_right_torso_itb_fixed
+	link_right_torso_itb [label=right_torso_itb color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_right_torso_itb_fixed -> link_right_torso_itb
+	joint_pedestal_fixed [label=pedestal_fixed color=green fillcolor=lightgrey style=filled]
+	link_torso -> joint_pedestal_fixed
+	link_pedestal [label=pedestal color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_pedestal_fixed -> link_pedestal
+	joint_head_pan [label=head_pan color=green fillcolor=lightgrey style=filled]
+	link_torso -> joint_head_pan
+	link_head [label=head color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_head_pan -> link_head
+	joint_dummy [label=dummy color=green fillcolor=lightgrey style=filled]
+	link_head -> joint_dummy
+	link_dummyhead1 [label=dummyhead1 color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_dummy -> link_dummyhead1
+	joint_head_nod [label=head_nod color=green fillcolor=lightgrey style=filled]
+	link_head -> joint_head_nod
+	link_screen [label=screen color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_head_nod -> link_screen
+	joint_display_joint [label=display_joint color=green fillcolor=lightgrey style=filled]
+	link_screen -> joint_display_joint
+	link_display [label=display color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_display_joint -> link_display
+	joint_head_camera [label=head_camera color=green fillcolor=lightgrey style=filled]
+	link_head -> joint_head_camera
+	link_head_camera [label=head_camera color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_head_camera -> link_head_camera
+	joint_sonar_s0 [label=sonar_s0 color=green fillcolor=lightgrey style=filled]
+	link_torso -> joint_sonar_s0
+	link_sonar_ring [label=sonar_ring color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_sonar_s0 -> link_sonar_ring
+	joint_right_torso_arm_mount [label=right_torso_arm_mount color=green fillcolor=lightgrey style=filled]
+	link_torso -> joint_right_torso_arm_mount
+	link_right_arm_mount [label=right_arm_mount color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_right_torso_arm_mount -> link_right_arm_mount
+	joint_right_s0 [label=right_s0 color=green fillcolor=lightgrey style=filled]
+	link_right_arm_mount -> joint_right_s0
+	link_right_upper_shoulder [label=right_upper_shoulder color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_right_s0 -> link_right_upper_shoulder
+	joint_right_s1 [label=right_s1 color=green fillcolor=lightgrey style=filled]
+	link_right_upper_shoulder -> joint_right_s1
+	link_right_lower_shoulder [label=right_lower_shoulder color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_right_s1 -> link_right_lower_shoulder
+	joint_right_e0 [label=right_e0 color=green fillcolor=lightgrey style=filled]
+	link_right_lower_shoulder -> joint_right_e0
+	link_right_upper_elbow [label=right_upper_elbow color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_right_e0 -> link_right_upper_elbow
+	joint_right_e1 [label=right_e1 color=green fillcolor=lightgrey style=filled]
+	link_right_upper_elbow -> joint_right_e1
+	link_right_lower_elbow [label=right_lower_elbow color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_right_e1 -> link_right_lower_elbow
+	joint_right_w0 [label=right_w0 color=green fillcolor=lightgrey style=filled]
+	link_right_lower_elbow -> joint_right_w0
+	link_right_upper_forearm [label=right_upper_forearm color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_right_w0 -> link_right_upper_forearm
+	joint_right_w0_to_itb_fixed [label=right_w0_to_itb_fixed color=green fillcolor=lightgrey style=filled]
+	link_right_upper_forearm -> joint_right_w0_to_itb_fixed
+	link_right_arm_itb [label=right_arm_itb color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_right_w0_to_itb_fixed -> link_right_arm_itb
+	joint_right_w1 [label=right_w1 color=green fillcolor=lightgrey style=filled]
+	link_right_upper_forearm -> joint_right_w1
+	link_right_lower_forearm [label=right_lower_forearm color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_right_w1 -> link_right_lower_forearm
+	joint_right_w2 [label=right_w2 color=green fillcolor=lightgrey style=filled]
+	link_right_lower_forearm -> joint_right_w2
+	link_right_wrist [label=right_wrist color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_right_w2 -> link_right_wrist
+	joint_right_hand [label=right_hand color=green fillcolor=lightgrey style=filled]
+	link_right_wrist -> joint_right_hand
+	link_right_hand [label=right_hand color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_right_hand -> link_right_hand
+	joint_right_hand_camera [label=right_hand_camera color=green fillcolor=lightgrey style=filled]
+	link_right_hand -> joint_right_hand_camera
+	link_right_hand_camera [label=right_hand_camera color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_right_hand_camera -> link_right_hand_camera
+	joint_right_hand_camera_axis [label=right_hand_camera_axis color=green fillcolor=lightgrey style=filled]
+	link_right_hand -> joint_right_hand_camera_axis
+	link_right_hand_camera_axis [label=right_hand_camera_axis color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_right_hand_camera_axis -> link_right_hand_camera_axis
+	joint_right_hand_range [label=right_hand_range color=green fillcolor=lightgrey style=filled]
+	link_right_hand -> joint_right_hand_range
+	link_right_hand_range [label=right_hand_range color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_right_hand_range -> link_right_hand_range
+	joint_right_hand_accelerometer [label=right_hand_accelerometer color=green fillcolor=lightgrey style=filled]
+	link_right_hand -> joint_right_hand_accelerometer
+	link_right_hand_accelerometer [label=right_hand_accelerometer color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_right_hand_accelerometer -> link_right_hand_accelerometer
+	joint_right_gripper_base [label=right_gripper_base color=green fillcolor=lightgrey style=filled]
+	link_right_hand -> joint_right_gripper_base
+	link_right_gripper_base [label=right_gripper_base color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_right_gripper_base -> link_right_gripper_base
+	joint_right_endpoint [label=right_endpoint color=green fillcolor=lightgrey style=filled]
+	link_right_gripper_base -> joint_right_endpoint
+	link_right_gripper [label=right_gripper color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_right_endpoint -> link_right_gripper
+	joint_right_w0_fixed [label=right_w0_fixed color=green fillcolor=lightgrey style=filled]
+	link_right_lower_elbow -> joint_right_w0_fixed
+	link_right_upper_forearm_visual [label=right_upper_forearm_visual color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_right_w0_fixed -> link_right_upper_forearm_visual
+	joint_right_e0_fixed [label=right_e0_fixed color=green fillcolor=lightgrey style=filled]
+	link_right_lower_shoulder -> joint_right_e0_fixed
+	link_right_upper_elbow_visual [label=right_upper_elbow_visual color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_right_e0_fixed -> link_right_upper_elbow_visual
+	joint_left_torso_arm_mount [label=left_torso_arm_mount color=green fillcolor=lightgrey style=filled]
+	link_torso -> joint_left_torso_arm_mount
+	link_left_arm_mount [label=left_arm_mount color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_left_torso_arm_mount -> link_left_arm_mount
+	joint_left_s0 [label=left_s0 color=green fillcolor=lightgrey style=filled]
+	link_left_arm_mount -> joint_left_s0
+	link_left_upper_shoulder [label=left_upper_shoulder color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_left_s0 -> link_left_upper_shoulder
+	joint_left_s1 [label=left_s1 color=green fillcolor=lightgrey style=filled]
+	link_left_upper_shoulder -> joint_left_s1
+	link_left_lower_shoulder [label=left_lower_shoulder color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_left_s1 -> link_left_lower_shoulder
+	joint_left_e0 [label=left_e0 color=green fillcolor=lightgrey style=filled]
+	link_left_lower_shoulder -> joint_left_e0
+	link_left_upper_elbow [label=left_upper_elbow color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_left_e0 -> link_left_upper_elbow
+	joint_left_e1 [label=left_e1 color=green fillcolor=lightgrey style=filled]
+	link_left_upper_elbow -> joint_left_e1
+	link_left_lower_elbow [label=left_lower_elbow color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_left_e1 -> link_left_lower_elbow
+	joint_left_w0 [label=left_w0 color=green fillcolor=lightgrey style=filled]
+	link_left_lower_elbow -> joint_left_w0
+	link_left_upper_forearm [label=left_upper_forearm color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_left_w0 -> link_left_upper_forearm
+	joint_left_w0_to_itb_fixed [label=left_w0_to_itb_fixed color=green fillcolor=lightgrey style=filled]
+	link_left_upper_forearm -> joint_left_w0_to_itb_fixed
+	link_left_arm_itb [label=left_arm_itb color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_left_w0_to_itb_fixed -> link_left_arm_itb
+	joint_left_w1 [label=left_w1 color=green fillcolor=lightgrey style=filled]
+	link_left_upper_forearm -> joint_left_w1
+	link_left_lower_forearm [label=left_lower_forearm color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_left_w1 -> link_left_lower_forearm
+	joint_left_w2 [label=left_w2 color=green fillcolor=lightgrey style=filled]
+	link_left_lower_forearm -> joint_left_w2
+	link_left_wrist [label=left_wrist color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_left_w2 -> link_left_wrist
+	joint_left_hand [label=left_hand color=green fillcolor=lightgrey style=filled]
+	link_left_wrist -> joint_left_hand
+	link_left_hand [label=left_hand color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_left_hand -> link_left_hand
+	joint_left_hand_camera [label=left_hand_camera color=green fillcolor=lightgrey style=filled]
+	link_left_hand -> joint_left_hand_camera
+	link_left_hand_camera [label=left_hand_camera color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_left_hand_camera -> link_left_hand_camera
+	joint_left_hand_camera_axis [label=left_hand_camera_axis color=green fillcolor=lightgrey style=filled]
+	link_left_hand -> joint_left_hand_camera_axis
+	link_left_hand_camera_axis [label=left_hand_camera_axis color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_left_hand_camera_axis -> link_left_hand_camera_axis
+	joint_left_hand_range [label=left_hand_range color=green fillcolor=lightgrey style=filled]
+	link_left_hand -> joint_left_hand_range
+	link_left_hand_range [label=left_hand_range color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_left_hand_range -> link_left_hand_range
+	joint_left_hand_accelerometer [label=left_hand_accelerometer color=green fillcolor=lightgrey style=filled]
+	link_left_hand -> joint_left_hand_accelerometer
+	link_left_hand_accelerometer [label=left_hand_accelerometer color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_left_hand_accelerometer -> link_left_hand_accelerometer
+	joint_left_gripper_base [label=left_gripper_base color=green fillcolor=lightgrey style=filled]
+	link_left_hand -> joint_left_gripper_base
+	link_left_gripper_base [label=left_gripper_base color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_left_gripper_base -> link_left_gripper_base
+	joint_left_endpoint [label=left_endpoint color=green fillcolor=lightgrey style=filled]
+	link_left_gripper_base -> joint_left_endpoint
+	link_left_gripper [label=left_gripper color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_left_endpoint -> link_left_gripper
+	joint_left_w0_fixed [label=left_w0_fixed color=green fillcolor=lightgrey style=filled]
+	link_left_lower_elbow -> joint_left_w0_fixed
+	link_left_upper_forearm_visual [label=left_upper_forearm_visual color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_left_w0_fixed -> link_left_upper_forearm_visual
+	joint_left_e0_fixed [label=left_e0_fixed color=green fillcolor=lightgrey style=filled]
+	link_left_lower_shoulder -> joint_left_e0_fixed
+	link_left_upper_elbow_visual [label=left_upper_elbow_visual color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_left_e0_fixed -> link_left_upper_elbow_visual
+}
