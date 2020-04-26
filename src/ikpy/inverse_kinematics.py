@@ -38,46 +38,48 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
     def optimize_target_function(x):
         # y = np.append(starting_nodes_angles[:chain.first_active_joint], x)
         y = chain.active_to_full(x, starting_nodes_angles)
-        squared_distance_to_target = np.linalg.norm(chain.forward_kinematics(y)[:3, -1] - target)
+        fk = chain.forward_kinematics(y)
+        squared_distance_to_target = np.linalg.norm(fk[:3, -1] - target)
 
-        # We need to return y, it will be used in a later function
-        return y, squared_distance_to_target
+        # We need to return the fk, it will be used in a later function
+        # This way, we don't have to recompute it
+        return fk, squared_distance_to_target
 
     if orientation_mode is None:
         def optimize_function(x):
-            y, squared_distance_to_target = optimize_target_function(x)
+            fk, squared_distance_to_target = optimize_target_function(x)
             return squared_distance_to_target
     else:
         # Only get the first orientation vector
         if orientation_mode == "X":
             orientation = target_frame[:3, 0]
 
-            def get_orientation(y):
-                return chain.forward_kinematics(y)[:3, 0]
+            def get_orientation(fk):
+                return fk[:3, 0]
 
         elif orientation_mode == "Y":
             orientation = target_frame[:3, 1]
 
-            def get_orientation(y):
-                return chain.forward_kinematics(y)[:3, 1]
+            def get_orientation(fk):
+                return fk[:3, 1]
 
         elif orientation_mode == "Z":
             orientation = target_frame[:3, 2]
 
-            def get_orientation(y):
-                return chain.forward_kinematics(y)[:3, 2]
+            def get_orientation(fk):
+                return fk[:3, 2]
 
         elif orientation_mode == "all":
             orientation = target_frame[:3, :3]
 
-            def get_orientation(y):
-                return chain.forward_kinematics(y)[:3, :3]
+            def get_orientation(fk):
+                return fk[:3, :3]
         else:
             raise ValueError("Unknown orientation mode: {}".format(orientation_mode))
 
         def optimize_function(x):
-            y, squared_distance_to_target = optimize_target_function(x)
-            squared_distance_to_orientation = np.linalg.norm(get_orientation(y) - orientation)
+            fk, squared_distance_to_target = optimize_target_function(x)
+            squared_distance_to_orientation = np.linalg.norm(get_orientation(fk) - orientation)
 
             # Put more pressure on optimizing the distance to target, to avoid being stuck in a local minimum where the orientation is perfectly reached, but the target is nowhere to be reached
             squared_distance = squared_distance_to_target + ORIENTATION_COEFF * squared_distance_to_orientation
