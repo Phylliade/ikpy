@@ -26,8 +26,11 @@ def _get_next_links(root, current_joint):
     return [child_link]
 
 
-class _URDFLink:
-    """Utility class to represent a URDF link, only used here"""
+class URDFTree:
+    """
+    Utility class to represent a URDF tree, only used here
+    Still very experimental, this class will change in the future
+    """
     def __init__(self, name):
         self.name = name
         self.children_links = {}
@@ -68,7 +71,7 @@ def _create_robot_tree_aux(dot, root, current_link, current_robot_link):
 
         # Get link associated with each joint
         next_link = _get_next_links(root, next_joint)[0]
-        next_robot_link = _URDFLink(name=next_link.attrib["name"])
+        next_robot_link = URDFTree(name=next_link.attrib["name"])
         current_robot_link.children_links[next_link.attrib["name"]] = next_robot_link
         next_link_id = "link_" + next_link.attrib["name"]
         dot.node(next_link_id, label=next_link.attrib["name"], shape="box", color=LINK_COLOR, fillcolor="lightgrey", style="filled")
@@ -79,7 +82,7 @@ def _create_robot_tree_aux(dot, root, current_link, current_robot_link):
             _create_robot_tree_aux(dot, root, next_link, next_robot_link)
 
 
-def plot_urdf_tree(urdf_path, out_image_path=None, root_element="base", legend=False):
+def get_urdf_tree(urdf_path, out_image_path=None, root_element="base", legend=False):
     """
 
     Parameters
@@ -98,20 +101,21 @@ def plot_urdf_tree(urdf_path, out_image_path=None, root_element="base", legend=F
     -------
     dot: graphviz.Digraph
         The rendered plot
+    urdf_tree: URDFTree
 
     """
     tree = ElementTree.parse(urdf_path)
     root = tree.getroot()
 
     base_link = root.find("link[@name='{}']".format(root_element))
-    robot = _URDFLink(root_element)
+    urdf_tree = URDFTree(root_element)
 
     # Initialize the rec
     dot = Digraph(name="robot")
     dot.node("link_" + root_element, label=root_element, shape="box", color=LINK_COLOR, fillcolor="lightgrey", style="filled")
 
     # Parse the tree
-    _create_robot_tree_aux(dot, root, base_link, robot)
+    _create_robot_tree_aux(dot, root, base_link, urdf_tree)
 
     if legend:
         # Add a little legend
@@ -125,4 +129,4 @@ def plot_urdf_tree(urdf_path, out_image_path=None, root_element="base", legend=F
     if out_image_path is not None:
         dot.render(out_image_path)
 
-    return dot
+    return dot, urdf_tree

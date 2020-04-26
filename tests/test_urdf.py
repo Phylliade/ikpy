@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from ikpy import chain
 from ikpy.utils import plot
 from ikpy.urdf import URDF
-from ikpy.urdf.utils import plot_urdf_tree
+from ikpy.urdf.utils import get_urdf_tree
 
 
 def test_urdf_chain(resources_path, interactive):
@@ -45,4 +45,4 @@ def test_urdf_parser(resources_path):
 
 
 def test_plot_urdf_tree(baxter_urdf):
-    dot = plot_urdf_tree(baxter_urdf, "./out/baxter")
+    dot = get_urdf_tree(baxter_urdf, "./out/baxter")

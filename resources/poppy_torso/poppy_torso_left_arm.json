@@ -1,0 +1,31 @@
+{
+  "elements": [
+    "base",
+    "abs_z",
+    "spine",
+    "bust_y",
+    "bust_motors",
+    "bust_x",
+    "chest",
+    "l_shoulder_y"
+  ],
+  "urdf_file": "poppy_torso.URDF",
+  "active_links_mask": [
+    false,
+    false,
+    false,
+    false,
+    true,
+    true,
+    true,
+    true,
+    false
+  ],
+  "last_link_vector": [
+    0,
+    0.18,
+    0
+  ],
+  "name": "poppy_torso_left_arm",
+  "version": "v1"
+}

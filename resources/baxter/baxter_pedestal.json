@@ -1,0 +1,23 @@
+{
+  "elements": [
+    "base",
+    "torso_t0",
+    "torso",
+    "pedestal_fixed",
+    "pedestal"
+  ],
+  "urdf_file": "baxter.urdf",
+  "active_links_mask": [
+    true,
+    true,
+    true,
+    true
+  ],
+  "last_link_vector": [
+    0,
+    0.18,
+    0
+  ],
+  "name": "baxter_pedestal",
+  "version": "v1"
+}

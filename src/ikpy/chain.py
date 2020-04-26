@@ -52,6 +52,9 @@ class Chain(object):
     def __repr__(self):
         return "Kinematic chain name={} links={} active_links={}".format(self.name, self.links, self.active_links_mask)
 
+    def __len__(self):
+        return len(self.links)
+
     def forward_kinematics(self, joints, full_kinematics=False):
         """Returns the transformation matrix of the forward kinematics
 
@@ -239,9 +242,6 @@ class Chain(object):
             Path of the exported JSON
 
         """
-        print("A")
-        print((self._urdf_metadata["urdf_file"]))
-        print(os.path.basename(self._urdf_metadata["urdf_file"]))
         chain_dict = {
             "elements": self._urdf_metadata["base_elements"],
             "urdf_file": os.path.basename(self._urdf_metadata["urdf_file"]),
@@ -251,10 +251,8 @@ class Chain(object):
             "version": "v1"
         }
 
-        print(chain_dict)
-
         if os.path.exists(self._json_path) and not force:
-            raise OSError("File {} exists")
+            raise OSError("File {} exists".format(self._json_path))
 
         # And create the json file
         with open(self._json_path, "w") as fd:
@@ -301,7 +299,6 @@ class Chain(object):
             base_elements = ["base_link"]
 
         links = URDF.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_element_type=base_element_type, symbolic=symbolic)
-        print(len(links))
         # Add an origin link at the beginning
         chain = cls([link_lib.OriginLink()] + links, active_links_mask=active_links_mask, name=name, urdf_metadata=urdf_metadata)
 
