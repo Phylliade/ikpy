@@ -173,8 +173,7 @@ class Chain(object):
         if ax is None:
             # If ax is not given, create one
             ax = plot.init_3d_figure()
-        plot.plot_chain(self, joints, ax, length=self._length)
-        plot.plot_basis(ax, self._length)
+        plot.plot_chain(self, joints, ax, name=self.name)
 
         # Plot the goal position
         if target is not None:
@@ -224,7 +223,8 @@ class Chain(object):
             urdf_file=chain_basedir + "/" + urdf_file,
             base_elements=elements,
             active_links_mask=active_links_mask,
-            last_link_vector=last_link_vector
+            last_link_vector=last_link_vector,
+            name=chain_config["name"]
         )
 
     def to_json_file(self, force=False):

@@ -1,7 +1,8 @@
 # coding= utf8
-import matplotlib.pyplot
 import numpy as np
 import matplotlib.animation
+from collections import OrderedDict
+import matplotlib.pyplot as plt
 
 # Ikpy imports
 from ikpy.utils import geometry
@@ -28,10 +29,9 @@ def plot_basis(ax, arm_length=1):
     ax.plot([0, arm_length * 1.5], [0, 0], [0, 0], c=directions_colors[0], label="X")
     ax.plot([0, 0], [0, arm_length * 1.5], [0, 0], c=directions_colors[1], label="Y")
     ax.plot([0, 0], [0, 0], [0, arm_length * 1.5], c=directions_colors[2], label="Z")
-    ax.legend()
 
 
-def plot_chain(chain, joints, ax, target=None, show=False, length=1):
+def plot_chain(chain, joints, ax, name="chain"):
     """Plot the chain"""
     # List of nodes
     nodes = []
@@ -56,14 +56,16 @@ def plot_chain(chain, joints, ax, target=None, show=False, length=1):
                 rotation_axes.append((node, geometry.homogeneous_to_cartesian_vectors(np.dot(transformation_matrixes[index - 1], rotation_axis))))
 
     # Plot the chain
-    ax.plot([x[0] for x in nodes], [x[1] for x in nodes], [x[2] for x in nodes], linewidth=5)
+    lines = ax.plot([x[0] for x in nodes], [x[1] for x in nodes], [x[2] for x in nodes], linewidth=5, label=name)
     # Plot of the nodes of the chain
-    ax.scatter([x[0] for x in nodes], [x[1] for x in nodes], [x[2] for x in nodes], s=55)
+    # Note: Be sure that the nodes have the same color as the chain
+    ax.scatter([x[0] for x in nodes], [x[1] for x in nodes], [x[2] for x in nodes], s=55, c=lines[0].get_color())
 
     # Plot the rotation axes
     for (node, axe) in rotation_axes:
         # The last link doesn't need a rotation axe
-        ax.plot([node[0], axe[0]], [node[1], axe[1]], [node[2], axe[2]])
+        # Note: Be sure that the rotation axes have the same color as the chain
+        ax.plot([node[0], axe[0]], [node[1], axe[1]], [node[2], axe[2]], c=lines[0].get_color())
 
     # Plot the frame of the last joint
     plot_frame(transformation_matrixes[-1], ax, length=chain.links[-1].length)
@@ -101,6 +103,9 @@ def init_3d_figure():
     from mpl_toolkits.mplot3d import axes3d, Axes3D
     fig = matplotlib.pyplot.figure()
     ax = fig.add_subplot(111, projection='3d')
+
+    # Add the initial frame
+    plot_basis(ax)
     return fig, ax
 
 
