@@ -123,6 +123,8 @@ class Chain(object):
                 frame_target[:3, 1] = target_orientation
             elif orientation_mode == "Z":
                 frame_target[:3, 2] = target_orientation
+            elif orientation_mode == "all":
+                frame_target[:3, :3] = target_orientation
             else:
                 raise ValueError("Unknown orientation mode: {}".format(orientation_mode))
             frame_target[:3, 3] = target_vector

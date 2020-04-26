@@ -52,25 +52,25 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
     else:
         # Only get the first orientation vector
         if orientation_mode == "X":
-            orientation = target_frame[:3, 0]
+            target_orientation = target_frame[:3, 0]
 
             def get_orientation(fk):
                 return fk[:3, 0]
 
         elif orientation_mode == "Y":
-            orientation = target_frame[:3, 1]
+            target_orientation = target_frame[:3, 1]
 
             def get_orientation(fk):
                 return fk[:3, 1]
 
         elif orientation_mode == "Z":
-            orientation = target_frame[:3, 2]
+            target_orientation = target_frame[:3, 2]
 
             def get_orientation(fk):
                 return fk[:3, 2]
 
         elif orientation_mode == "all":
-            orientation = target_frame[:3, :3]
+            target_orientation = target_frame[:3, :3]
 
             def get_orientation(fk):
                 return fk[:3, :3]
@@ -79,7 +79,7 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
 
         def optimize_function(x):
             fk, squared_distance_to_target = optimize_target_function(x)
-            squared_distance_to_orientation = np.linalg.norm(get_orientation(fk) - orientation)
+            squared_distance_to_orientation = np.linalg.norm(get_orientation(fk) - target_orientation)
 
             # Put more pressure on optimizing the distance to target, to avoid being stuck in a local minimum where the orientation is perfectly reached, but the target is nowhere to be reached
             squared_distance = squared_distance_to_target + ORIENTATION_COEFF * squared_distance_to_orientation
