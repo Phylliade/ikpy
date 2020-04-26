@@ -116,6 +116,8 @@ class Chain(object):
             The list of the positions of each joint according to the target. Note : Inactive joints are in the list.
         """
         frame_target = np.eye(4)
+
+        # Compute orientation
         if orientation_mode is not None:
             if orientation_mode == "X":
                 frame_target[:3, 0] = target_orientation
@@ -127,9 +129,15 @@ class Chain(object):
                 frame_target[:3, :3] = target_orientation
             else:
                 raise ValueError("Unknown orientation mode: {}".format(orientation_mode))
+
+        # Compute target
+        if target_vector is None:
+            no_position = True
+        else:
+            no_position = False
             frame_target[:3, 3] = target_vector
 
-        return self.inverse_kinematics_frame(target=frame_target, orientation_mode=orientation_mode, **kwargs)
+        return self.inverse_kinematics_frame(target=frame_target, orientation_mode=orientation_mode, no_position=no_position, **kwargs)
 
     def inverse_kinematics_frame(self, target, initial_position=None, **kwargs):
         """Computes the inverse kinematic on the specified target

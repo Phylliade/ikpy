@@ -7,7 +7,7 @@ from . import logs
 ORIENTATION_COEFF = 1.
 
 
-def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, regularization_parameter=None, max_iter=None, orientation_mode=None):
+def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, regularization_parameter=None, max_iter=None, orientation_mode=None, no_position=False):
     """
     Computes the inverse kinematic on the specified target with an optimization method
 
@@ -30,25 +30,37 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
         * "Y": Target the Y axis
         * "Z": Target the Z axis
         * "all": Target the three axes
+    no_position: bool
+        Do not optimize against position
     """
     # Begin with the position
     target = target_frame[:3, -1]
 
-    # Compute squared distance to target
-    def optimize_target_function(x):
+    # Initial function call when optimizing
+    def optimize_basis(x):
         # y = np.append(starting_nodes_angles[:chain.first_active_joint], x)
         y = chain.active_to_full(x, starting_nodes_angles)
         fk = chain.forward_kinematics(y)
+
+        return fk
+
+    # Compute squared distance to target
+    def optimize_target_function(fk):
         squared_distance_to_target = np.linalg.norm(fk[:3, -1] - target)
 
         # We need to return the fk, it will be used in a later function
         # This way, we don't have to recompute it
-        return fk, squared_distance_to_target
+        return squared_distance_to_target
 
     if orientation_mode is None:
-        def optimize_function(x):
-            fk, squared_distance_to_target = optimize_target_function(x)
-            return squared_distance_to_target
+        if no_position:
+            raise ValueError("Unable to optimize against neither position or orientation")
+
+        else:
+            def optimize_function(x):
+                fk = optimize_basis(x)
+                squared_distance_to_target = optimize_target_function(fk)
+                return squared_distance_to_target
     else:
         # Only get the first orientation vector
         if orientation_mode == "X":
@@ -77,14 +89,25 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
         else:
             raise ValueError("Unknown orientation mode: {}".format(orientation_mode))
 
-        def optimize_function(x):
-            fk, squared_distance_to_target = optimize_target_function(x)
-            squared_distance_to_orientation = np.linalg.norm(get_orientation(fk) - target_orientation)
+        if not no_position:
+            def optimize_function(x):
+                fk = optimize_basis(x)
 
-            # Put more pressure on optimizing the distance to target, to avoid being stuck in a local minimum where the orientation is perfectly reached, but the target is nowhere to be reached
-            squared_distance = squared_distance_to_target + ORIENTATION_COEFF * squared_distance_to_orientation
+                squared_distance_to_target = optimize_target_function(fk)
+                squared_distance_to_orientation = np.linalg.norm(get_orientation(fk) - target_orientation)
 
-            return squared_distance
+                # Put more pressure on optimizing the distance to target, to avoid being stuck in a local minimum where the orientation is perfectly reached, but the target is nowhere to be reached
+                squared_distance = squared_distance_to_target + ORIENTATION_COEFF * squared_distance_to_orientation
+
+                return squared_distance
+        else:
+            def optimize_function(x):
+                fk = optimize_basis(x)
+
+                squared_distance_to_orientation = np.linalg.norm(get_orientation(fk) - target_orientation)
+                squared_distance = squared_distance_to_orientation
+
+                return squared_distance
 
     if starting_nodes_angles is None:
         raise ValueError("starting_nodes_angles must be specified")

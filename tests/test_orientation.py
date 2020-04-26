@@ -34,3 +34,25 @@ def test_orientation_full_frame(baxter_left_arm):
     # Check
     np.testing.assert_almost_equal(position, target_position, decimal=5)
     np.testing.assert_almost_equal(orientation, target_orientation, decimal=5)
+
+
+def test_orientation_only(baxter_left_arm):
+    target_orientation = np.eye(3)
+
+    # Begin to place the arm an initial position
+    target_position = [0.1, 0.4, -0.1]
+    ik = baxter_left_arm.inverse_kinematics(target_position)
+
+    # Optimize against orientation
+    ik = baxter_left_arm.inverse_kinematics(target_orientation=target_orientation, initial_position=ik, orientation_mode='all')
+    position = baxter_left_arm.forward_kinematics(ik)[:3, 3]
+    orientation = baxter_left_arm.forward_kinematics(ik)[:3, :3]
+
+    # Check orientation
+    np.testing.assert_almost_equal(orientation, target_orientation, decimal=5)
+
+    # At this point, we should get a random position, that is different that the position before
+    # So check that they are not equal
+    np.testing.assert_raises(AssertionError, np.testing.assert_almost_equal, position, target_position)
+
+
