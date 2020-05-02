@@ -23,13 +23,16 @@ Also, a presentation of IKPy: [Presentation](https://github.com/Phylliade/ikpy/b
 With IKPy, you can:
 
 * Compute the **Inverse Kinematics** of every existing robot.
-* Compute the Inverse Kinematics in **position, orientation**, or both
+* Compute the Inverse Kinematics in **position, [orientation](./tutorials/Orientation.ipynb)**, or both
 * Define your kinematic chain using **arbitrary representations**: DH (Denavit–Hartenberg), URDF, custom...
 * Automaticly import a kinematic chain from a **URDF file**.
-* Use pre-configured robots, such as **baxter** or the **poppy-torso**
+* Use pre-configured robots, such as [**baxter**](./tutorials/Baxter%20kinematics.ipynb) or the **poppy-torso**
 * IKPy is **precise** (up to 7 digits): the only limitation being your underlying model's precision, and **fast**: from 7 ms to 50 ms (depending on your precision) for a complete IK computation.
 * **Plot** your kinematic chain: no need to use a real robot (or a simulator) to test your algorithms!
 * Define your own Inverse Kinematics methods.
+* Utils to parse and analyze URDF files:
+
+![](./tutorials/assets/baxter_tree.png)
 
 Moreover, IKPy is a **pure-Python library**: the install is a matter of seconds, and no compiling is required.
 
