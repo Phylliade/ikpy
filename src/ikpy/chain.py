@@ -92,12 +92,12 @@ class Chain(object):
         else:
             return frame_matrix
 
-    def inverse_kinematics(self, target_vector=None, target_orientation=None, orientation_mode=None, **kwargs):
+    def inverse_kinematics(self, target_position=None, target_orientation=None, orientation_mode=None, **kwargs):
         """
 
         Parameters
         ----------
-        target_vector: np.ndarray
+        target_position: np.ndarray
             Vector of shape (3,): the target point
         target_orientation: np.ndarray
             Vector of shape (3,): the target orientation
@@ -131,11 +131,11 @@ class Chain(object):
                 raise ValueError("Unknown orientation mode: {}".format(orientation_mode))
 
         # Compute target
-        if target_vector is None:
+        if target_position is None:
             no_position = True
         else:
             no_position = False
-            frame_target[:3, 3] = target_vector
+            frame_target[:3, 3] = target_position
 
         return self.inverse_kinematics_frame(target=frame_target, orientation_mode=orientation_mode, no_position=no_position, **kwargs)
 

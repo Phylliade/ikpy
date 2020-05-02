@@ -80,8 +80,6 @@ def plot_frame(frame_matrix, ax, length=1):
         geometry.homogeneous_to_cartesian_vectors(np.dot(frame_matrix, [0, 0, length, 1]))
     ]
 
-    print(np.dot(axes[0] - node[:3], axes[1] - node[:3]))
-
     # Plot the rotation axes
     # NOTE: Could be interesting to plot arrows instead of lines,
     # as in https://stackoverflow.com/questions/22867620/putting-arrowheads-on-vectors-in-matplotlibs-3d-plot
