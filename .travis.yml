@@ -3,6 +3,8 @@ python:
   - "2.7"
   - "3.5"
   - "3.6"
+  - "3.7"
+  - "3.8"
 install:
   - sudo apt-get update --yes && sudo apt-get install graphviz
   - pip install .[plot]
