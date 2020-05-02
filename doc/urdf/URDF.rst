@@ -1,7 +1,7 @@
-:mod:`ikpy.utils.URDF` module
+:mod:`ikpy.urdf.URDF` module
 ----------------------------------------
 
-.. automodule:: ikpy.utils.URDF
+.. automodule:: ikpy.urdf.URDF
     :members:
     :undoc-members:
     :show-inheritance:
