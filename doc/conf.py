@@ -78,7 +78,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'ikpy'
-copyright = '2015-2018, Pierre Manceron'
+copyright = '2015-2020, Pierre Manceron'
 author = 'Pierre Manceron'
 
 # The version info for the project you're documenting, acts as replacement for

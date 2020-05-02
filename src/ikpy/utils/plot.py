@@ -1,7 +1,6 @@
 # coding= utf8
 import numpy as np
 import matplotlib.animation
-from collections import OrderedDict
 import matplotlib.pyplot as plt
 
 # Ikpy imports
