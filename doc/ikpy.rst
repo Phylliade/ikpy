@@ -8,4 +8,6 @@
    link
    inverse_kinematics
    utils/geometry
-   utils/URDF
+   urdf/URDF.rst
+   urdf/utils
+

@@ -84,6 +84,7 @@ def _create_robot_tree_aux(dot, root, current_link, current_robot_link):
 
 def get_urdf_tree(urdf_path, out_image_path=None, root_element="base", legend=False):
     """
+    Parse an URDF file into a tree of links
 
     Parameters
     ----------

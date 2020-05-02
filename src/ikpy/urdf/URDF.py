@@ -1,8 +1,6 @@
 # coding= utf8
 """
-URDF_utils module
-
-This module contains helper functions used to parse URDF.
+This module contains the main functions used to parse URDF files.
 """
 
 import xml.etree.ElementTree as ET
