@@ -1,16 +1,20 @@
-# README
+# IKPy
 
-## IKPy \#
+![Travis-CI](https://travis-ci.org/Phylliade/ikpy.svg?branch=master)
+[![PyPI](https://img.shields.io/pypi/v/ikpy.svg)](https://pypi.python.org/pypi/ikpy/)
 
-[![Join the chat at https://gitter.im/Phylliade/ikpy](https://badges.gitter.im/Phylliade/ikpy.svg)](https://gitter.im/Phylliade/ikpy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) ![Travis-CI](https://travis-ci.org/Phylliade/ikpy.svg?branch=master) [![PyPI](https://img.shields.io/pypi/v/ikpy.svg)](https://pypi.python.org/pypi/ikpy/) [![Documentation Status](https://readthedocs.org/projects/ikpy/badge/?version=latest)](http://ikpy.readthedocs.org/en/latest/?badge=latest) [![PyPI](https://img.shields.io/pypi/dm/ikpy.svg)](https://pypi.python.org/pypi/ikpy/) [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/Phylliade/ikpy)
 
-![demo](.gitbook/assets/two_arms.png)
+![demo](two_arms.png)
+
+![IKPy on the bacter robot](baxter.png)
 
 ## Demo
 
 Live demos of what IKPy can do \(click on the image below to see the video\):
 
-[![](http://img.youtube.com/vi/H0ysr5qSbis/0.jpg)](https://www.youtube.com/watch?v=H0ysr5qSbis) [![](http://img.youtube.com/vi/Jq0-DkEwwj4/0.jpg)](https://www.youtube.com/watch?v=Jq0-DkEwwj4)
+
+[![](http://img.youtube.com/vi/H0ysr5qSbis/0.jpg)](https://www.youtube.com/watch?v=H0ysr5qSbis)
+[![](http://img.youtube.com/vi/Jq0-DkEwwj4/0.jpg)](https://www.youtube.com/watch?v=Jq0-DkEwwj4)
 
 Also, a presentation of IKPy: [Presentation](https://github.com/Phylliade/ikpy/blob/master/tutorials/IKPy%20speech.pdf).
 
@@ -19,10 +23,12 @@ Also, a presentation of IKPy: [Presentation](https://github.com/Phylliade/ikpy/b
 With IKPy, you can:
 
 * Compute the **Inverse Kinematics** of every existing robot.
-* Define your kinematic chain using **arbitrary representations**: DH \(Denavit–Hartenberg\), URDF standard, custom...
+* Compute the Inverse Kinematics in **position, orientation**, or both
+* Define your kinematic chain using **arbitrary representations**: DH (Denavit–Hartenberg), URDF, custom...
 * Automaticly import a kinematic chain from a **URDF file**.
-* IKPy is **precise** \(up to 7 digits\): the only limitation being your underlying model's precision, and **fast**: from 7 ms to 50 ms \(depending on your precision\) for a complete IK computation.
-* **Plot** your kinematic chain: no need to use a real robot \(or a simulator\) to test your algorithms!
+* Use pre-configured robots, such as **baxter** or the **poppy-torso**
+* IKPy is **precise** (up to 7 digits): the only limitation being your underlying model's precision, and **fast**: from 7 ms to 50 ms (depending on your precision) for a complete IK computation.
+* **Plot** your kinematic chain: no need to use a real robot (or a simulator) to test your algorithms!
 * Define your own Inverse Kinematics methods.
 
 Moreover, IKPy is a **pure-Python library**: the install is a matter of seconds, and no compiling is required.
@@ -44,10 +50,9 @@ You have three options:
    ```
 
 2. If you work with Anaconda, there's also a Conda package of IKPy:
-
-   ```text
-   conda install -c https://conda.anaconda.org/phylliade ikpy
-   ```
+  ```bash
+  conda install -c https://conda.anaconda.org/phylliade ikpy
+  ```
 
 3. From source - first download and extract the archive, then run:
 
@@ -86,4 +91,3 @@ Contributions are welcome: if you have an awesome patented \(but also open-sourc
 ## Links
 
 * If performance is your main concern, `aversive++` has an inverse kinematics [module](https://github.com/AversivePlusPlus/ik) written in C++, which works the same way IKPy does.
-

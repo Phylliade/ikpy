@@ -13,3 +13,4 @@ src/*.egg-info/
 *.egg-info
 *.ipynb_checkpoints
 .idea
+research

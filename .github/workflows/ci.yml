@@ -12,18 +12,20 @@ jobs:
         python-version: [2.7, 3.5, 3.6, 3.7, 3.8]
     steps:
       - uses: actions/checkout@v1
+        name: "Checkout branch"
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
-      - name: install dependencies
-        run: | 
-          # We need to install numpy by hand before, ortherwise it fails, because it tries to compile it from source...
+      - run: |
+          # We need to install numpy by hand, to prevent manual compilation on py3.5n which fails...
           pip install numpy
           pip install .[plot] pytest flake8
-          
-      - name: run the tests
-        run: cd tests && MATPLOTLIBRC="../ci" pytest ./
+          sudo apt-get update --yes && sudo apt-get install graphviz
+        name: "Install dependencies"
+      - run: |
+          cd tests && MATPLOTLIBRC="../ci" pytest ./
+        name: "Run the tests"
 
   publish:
     runs-on: ubuntu-latest

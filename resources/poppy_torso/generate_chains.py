@@ -1,41 +1,10 @@
-import pytest
-import json
-
 # IKPy imports
 from ikpy.chain import Chain
 
 
-@pytest.fixture
-def resources_path():
-    return "../resources"
-
-
-def pytest_addoption(parser):
-    parser.addoption(
-        "--interactive", action="store_true", help="activate interactive mode"
-    )
-
-
-@pytest.fixture
-def interactive(request):
-    return request.config.getoption("--interactive")
-
-
-@pytest.fixture
-def baxter_urdf():
-    return "../resources/baxter/baxter.urdf"
-
-
-@pytest.fixture
-def baxter_left_arm():
-    baxter_left_arm_chain = Chain.from_json_file("../resources/baxter/baxter_left_arm.json")
-    return baxter_left_arm_chain
-
-
-@pytest.fixture
-def torso_right_arm():
+def get_torso_right_arm():
     chain1 = Chain.from_urdf_file(
-        "../resources/poppy_torso/poppy_torso.URDF",
+        "./poppy_torso.URDF",
         base_elements=[
             "base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x",
             "chest", "r_shoulder_y"
@@ -49,10 +18,9 @@ def torso_right_arm():
     return chain1
 
 
-@pytest.fixture
-def torso_left_arm():
+def get_torso_left_arm():
     return Chain.from_urdf_file(
-        "../resources/poppy_torso/poppy_torso.URDF",
+        "./poppy_torso.URDF",
         base_elements=[
             "base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x",
             "chest", "l_shoulder_y"
@@ -63,3 +31,10 @@ def torso_left_arm():
         ],
         name="poppy_torso_left_arm"
     )
+
+
+if __name__ == "__main__":
+    left_arm = get_torso_left_arm()
+    left_arm.to_json_file(force=True)
+    right_arm = get_torso_right_arm()
+    right_arm.to_json_file(force=True)

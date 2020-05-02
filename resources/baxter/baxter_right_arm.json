@@ -1,0 +1,53 @@
+{
+  "elements": [
+    "base",
+    "torso_t0",
+    "torso",
+    "right_torso_arm_mount",
+    "right_arm_mount",
+    "right_s0",
+    "right_upper_shoulder",
+    "right_s1",
+    "right_lower_shoulder",
+    "right_e0",
+    "right_upper_elbow",
+    "right_e1",
+    "right_lower_elbow",
+    "right_w0",
+    "right_upper_forearm",
+    "right_w1",
+    "right_lower_forearm",
+    "right_w2",
+    "right_wrist",
+    "right_hand",
+    "right_hand",
+    "right_gripper_base",
+    "right_gripper_base",
+    "right_endpoint",
+    "right_gripper"
+  ],
+  "urdf_file": "baxter.urdf",
+  "active_links_mask": [
+    false,
+    false,
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false
+  ],
+  "last_link_vector": [
+    0,
+    0.18,
+    0
+  ],
+  "name": "baxter_right_arm",
+  "version": "v1"
+}
