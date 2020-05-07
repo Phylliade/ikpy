@@ -98,8 +98,15 @@ def get_chain_from_joints(urdf_file, joints):
     links = [_find_parent_link(root, j) for j in joints]
 
     iters = [iter(links), iter(joints)]
-    chain = list(next(it) for it in itertools.cycle(iters))
 
+    chain = []
+    for it in itertools.cycle(iters):
+        try:
+            item = next(it)
+        except:
+            break
+        chain.append(item)
+    
     return chain
 
 
