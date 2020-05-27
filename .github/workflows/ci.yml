@@ -17,7 +17,7 @@ jobs:
           pip install flake8
       - name: "Linting test"
         run: |
-          flake 8 src
+          flake8 src
 
   test:
     name: Tests
