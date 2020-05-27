@@ -22,8 +22,18 @@ def interactive(request):
 
 
 @pytest.fixture
+def poppy_torso_urdf():
+    return "../resources/poppy_torso/poppy_torso.URDF"
+
+
+@pytest.fixture
 def baxter_urdf():
     return "../resources/baxter/baxter.urdf"
+
+
+@pytest.fixture
+def poppy_ergo_urdf():
+    return "../resources/poppy_ergo.URDF"
 
 
 @pytest.fixture

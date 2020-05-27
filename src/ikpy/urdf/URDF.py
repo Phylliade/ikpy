@@ -86,19 +86,38 @@ def _find_next_link(root, current_joint, next_link_name):
 
 
 def _find_parent_link(root, joint_name):
-    return next(joint.find("parent").attrib["link"]
-                for joint in root.iter("joint")
-                if joint.attrib["name"] == joint_name)
+    """Find the first link which is the parent of the given joint"""
+    try:
+        parent_link = next(joint.find("parent").attrib["link"]
+                           for joint in root.iter("joint")
+                           if joint.attrib["name"] == joint_name)
+    except StopIteration:
+        raise ValueError("Unable to locate the parent link")
+
+    return parent_link
 
 
 def get_chain_from_joints(urdf_file, joints):
+    """
+    Return a complete URDF chain (e.g. links + joints) from a list of joints.
+    This function is notably used by PyPot, which considers only joints, but needs to create the chain in order to use them as the `base_elements` of the `get_urdf_parameters`
+
+    Parameters
+    ----------
+    urdf_file: str
+    joints: list[str]
+
+    Returns
+    -------
+    list[Link]
+    """
     tree = ET.parse(urdf_file)
     root = tree.getroot()
 
     links = [_find_parent_link(root, j) for j in joints]
 
-    iters = [iter(links), iter(joints)]
-    chain = list(next(it) for it in itertools.cycle(iters))
+    # Merge and interleave the `links` and `chain`
+    chain = list(itertools.chain(*list(zip(links, joints))))
 
     return chain
 
@@ -117,6 +136,7 @@ def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, ba
     last_link_vector: numpy.array
         Optional : The translation vector of the tip.
     base_element_type: str
+    symbolic: bool
 
     Returns
     -------
