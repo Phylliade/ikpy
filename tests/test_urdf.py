@@ -30,19 +30,43 @@ def test_urdf_chain(resources_path, interactive):
         plt.show()
 
 
-def test_urdf_parser(resources_path):
+def test_urdf_parser(poppy_torso_urdf):
     """Test the correctness of a URDF parser"""
-    urdf_file = os.path.join(resources_path, "poppy_torso/poppy_torso.URDF")
     base_elements = [
             "base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x",
             "chest", "r_shoulder_y"
         ]
     last_link_vector = [0, 0.18, 0]
 
-    links = URDF.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector)
+    links = URDF.get_urdf_parameters(poppy_torso_urdf, base_elements=base_elements, last_link_vector=last_link_vector)
 
     assert len(links) == len(base_elements)
 
 
 def test_plot_urdf_tree(baxter_urdf):
     dot = get_urdf_tree(baxter_urdf, "./out/baxter")
+
+
+def test_chain_from_joints(poppy_ergo_urdf):
+    joint_list = ["m1", "m2", "m3", "m4", "m5", "m6"]
+    elements_list = URDF.get_chain_from_joints(poppy_ergo_urdf, joints=joint_list)
+    assert len(elements_list) == 2 * len(joint_list)
+    assert elements_list[1::2] == joint_list
+
+    # And also a manual test in the end, can be removed in the future
+    # Note: The last link is not included here, by design
+    assert elements_list == [
+        "base_link",
+        "m1",
+        "U_shape",
+        "m2",
+        "module_1",
+        "m3",
+        "base_module_2",
+        "m4",
+        "tip_module_1",
+        "m5",
+        "tip_middle",
+        "m6",
+        "tip"
+    ][:-1]

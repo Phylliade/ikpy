@@ -6,7 +6,6 @@ This module implements the Chain class.
 import numpy as np
 import json
 import os
-import shutil
 
 # IKPY imports
 from .urdf import URDF

@@ -1,7 +1,7 @@
 # coding= utf8
 import numpy as np
 import matplotlib.animation
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # noqa: F401
 
 # Ikpy imports
 from ikpy.utils import geometry
@@ -97,7 +97,7 @@ def plot_target_trajectory(targets_x, targets_y, targets_z, ax):
 
 
 def init_3d_figure():
-    from mpl_toolkits.mplot3d import axes3d, Axes3D
+    from mpl_toolkits.mplot3d import axes3d, Axes3D  # noqa: F401
     fig = matplotlib.pyplot.figure()
     ax = fig.add_subplot(111, projection='3d')
 

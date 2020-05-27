@@ -2,6 +2,23 @@ name: CI
 on: [push]
 
 jobs:
+  linting:
+    name: Linting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+        name: "Checkout branch"
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: "Linting test"
+        run: |
+          pip install flake8
+      - name: "Linting test"
+        run: |
+          flake8 src
+
   test:
     name: Tests
     # This job runs on Linux
@@ -20,7 +37,7 @@ jobs:
       - run: |
           # We need to install numpy by hand, to prevent manual compilation on py3.5n which fails...
           pip install numpy
-          pip install .[plot] pytest flake8
+          pip install .[plot] pytest
           sudo apt-get update --yes && sudo apt-get install graphviz
         name: "Install dependencies"
       - run: |
