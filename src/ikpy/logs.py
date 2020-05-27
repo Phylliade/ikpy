@@ -9,5 +9,3 @@ logger.addHandler(stream_handler)
 
 def set_log_level(level):
     logger.setLevel(level)
-
-
