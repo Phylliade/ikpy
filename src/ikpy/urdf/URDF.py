@@ -128,8 +128,6 @@ def get_chain_from_joints(urdf_file, joints):
             break
         chain.append(item)
 
-
-
     return chain
 
 
