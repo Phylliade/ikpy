@@ -53,15 +53,12 @@ def _create_robot_tree_aux(dot, root, current_link, current_robot_link):
     -------
 
     """
-    print(root)
     # TODO: This implementation could be greatly improved
     # Instead of doing a research of child links for each of the links and passing through all of the links (O(n^2))
     # We should instead parse each links and create their child/parent relationship once
     # For example in a dict
     # And with this we just a have to go trough this dict to build the _URDFLInk data structure
     for next_joint in _get_next_joints(root, current_link):
-        print(current_link)
-
         # NOTE: We need to create IDs that are unique to each joint/link and use them as node ids
         # Actually, some joints and links can have the same name, and they would appear as the same node in the final graph
 
