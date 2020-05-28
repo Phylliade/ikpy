@@ -117,8 +117,11 @@ def get_chain_from_joints(urdf_file, joints):
     links = [_find_parent_link(root, j) for j in joints]
 
     # Merge and interleave the `links` and `chain`
+    # Two ways to do this:
+    # First
     # chain = list(itertools.chain(*list(zip(links, joints))))
 
+    # Second:
     iters = [iter(links), iter(joints)]
     chain = []
     for it in itertools.cycle(iters):
