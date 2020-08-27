@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.spatial.transform import Rotation as R
 
 
 def test_orientation(baxter_left_arm):
@@ -32,9 +33,23 @@ def test_orientation_full_frame(baxter_left_arm):
     orientation = baxter_left_arm.forward_kinematics(ik)[:3, :3]
 
     # Check
-    np.testing.assert_almost_equal(position, target_position, decimal=5)
-    np.testing.assert_almost_equal(orientation, target_orientation, decimal=5)
+    np.testing.assert_almost_equal(position, target_position, decimal=3)
+    np.testing.assert_almost_equal(orientation, target_orientation, decimal=3)
 
+def test_orientation_no_eye_full_frame(baxter_left_arm):
+    target_position = [0.1, 0.4, -0.1]
+    target_orientation = R.from_euler('xyz', [0, 90, 90], degrees=True).as_matrix()
+
+    # Begin to place the arm in the right position
+    ik = baxter_left_arm.inverse_kinematics(target_position)
+    ik = baxter_left_arm.inverse_kinematics(target_position, target_orientation, initial_position=ik, orientation_mode='all')
+
+    position = baxter_left_arm.forward_kinematics(ik)[:3, 3]
+    orientation = baxter_left_arm.forward_kinematics(ik)[:3, :3]
+
+    # Check
+    np.testing.assert_almost_equal(position, target_position, decimal=3)
+    np.testing.assert_almost_equal(orientation, target_orientation, decimal=3)
 
 def test_orientation_only(baxter_left_arm):
     target_orientation = np.eye(3)
