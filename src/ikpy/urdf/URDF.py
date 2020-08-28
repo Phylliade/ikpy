@@ -223,9 +223,9 @@ def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, ba
 
         limit = joint.find("limit")
         if limit is not None:
-            if limit.attrib["lower"]:
+            if limit.find("lower") is not None:
                 bounds[0] = float(limit.attrib["lower"])
-            if limit.attrib["upper"]:
+            if limit.find("upper") is not None:
                 bounds[1] = float(limit.attrib["upper"])
 
         parameters.append(lib_link.URDFLink(
