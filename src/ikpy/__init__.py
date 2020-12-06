@@ -1,4 +1,3 @@
-from . import chain
 from ._version import __version__
 
-__all__ = ["chain", "__version__"]
+__all__ = ["__version__"]

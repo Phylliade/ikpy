@@ -13,7 +13,7 @@ from . import inverse_kinematics as ik
 from . import link as link_lib
 
 
-class Chain(object):
+class Chain:
     """The base Chain class
 
     Parameters
