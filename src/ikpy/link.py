@@ -10,7 +10,7 @@ import sympy
 from ikpy.utils import geometry
 
 
-class Link(object):
+class Link:
     """
     Base Link class.
 
@@ -52,7 +52,7 @@ class Link(object):
         # Defaults to None
         raise ValueError("This Link doesn't have a rotation axis")
 
-    def get_link_frame_matrix(self, actuator_parameters):
+    def get_link_frame_matrix(self, actuator_parameters: dict):
         """
         Return the frame matrix corresponding to the link, parameterized with theta
 
@@ -99,7 +99,7 @@ class URDFLink(Link):
     URDFlink()
     """
 
-    def __init__(self, name, translation_vector, orientation, rotation=None, bounds=(None, None), angle_representation="rpy", use_symbolic_matrix=True):
+    def __init__(self, name: str, translation_vector: np.ndarray, orientation: np.ndarray, rotation: np.ndarray = None, bounds=(None, None), angle_representation="rpy", use_symbolic_matrix=True):
         Link.__init__(self, name=name, bounds=bounds, length=np.linalg.norm(translation_vector))
         self.use_symbolic_matrix = use_symbolic_matrix
         self.translation_vector = np.array(translation_vector)
