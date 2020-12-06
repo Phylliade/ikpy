@@ -39,6 +39,7 @@ jobs:
           pip install numpy
           pip install .[plot] pytest
           sudo apt-get update --yes && sudo apt-get install graphviz
+          pip freeze
         name: "Install dependencies"
       - run: |
           cd tests && MATPLOTLIBRC="../ci" pytest ./
