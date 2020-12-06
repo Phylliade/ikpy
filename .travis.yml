@@ -7,10 +7,10 @@ python:
   - "3.9"
 dist: focal
 install:
-  - pip install -U pip
   - sudo apt-get update --yes && sudo apt-get install graphviz
   - pip install .[plot]
   - pip install pytest flake8
+  - pip freeze
 script:
   - cd tests && MATPLOTLIBRC="../ci" pytest ./ && cd ../
   - flake8 src
