@@ -55,7 +55,8 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: 3.7
-      - run: pip install wheel && python setup.py bdist_wheel --universal sdist
+      # Pip doesn't support building a sdist when in PEP517 mode, so use a dedicated package for this
+      - run: pip install build && python -m build --sdist --wheel
       - uses: pypa/gh-action-pypi-publish@master
         with:
           user: phylliadebot
