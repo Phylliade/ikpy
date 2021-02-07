@@ -228,12 +228,15 @@ def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, ba
             if "upper" in limit.attrib:
                 bounds[1] = float(limit.attrib["upper"])
 
+        is_revolute = joint.attrib["type"] == "revolute"
+
         parameters.append(lib_link.URDFLink(
             name=joint.attrib["name"],
             bounds=tuple(bounds),
             translation_vector=translation,
             orientation=orientation,
             rotation=rotation,
+            is_revolute = is_revolute,
             use_symbolic_matrix=symbolic
         ))
 
@@ -310,3 +313,4 @@ def _convert_angle_limit(angle, joint, **kwargs):
     # angle_pypot = angle_pypot + offset
 
     return angle_pypot * np.pi / 180
+

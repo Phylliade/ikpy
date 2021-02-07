@@ -99,9 +99,11 @@ class URDFLink(Link):
     URDFlink()
     """
 
-    def __init__(self, name: str, translation_vector: np.ndarray, orientation: np.ndarray, rotation: np.ndarray = None, bounds=(None, None), angle_representation="rpy", use_symbolic_matrix=True):
+    def __init__(self, name: str, translation_vector: np.ndarray, orientation: np.ndarray, rotation: np.ndarray = None, bounds=(None, None), angle_representation="rpy",
+                 is_revolute=True, use_symbolic_matrix=True):
         Link.__init__(self, name=name, bounds=bounds, length=np.linalg.norm(translation_vector))
         self.use_symbolic_matrix = use_symbolic_matrix
+        self.is_revolute = is_revolute
         self.translation_vector = np.array(translation_vector)
         self.orientation = np.array(orientation)
         if rotation is not None:
@@ -157,8 +159,10 @@ class URDFLink(Link):
             symbolic_frame_matrix = symbolic_frame_matrix * geometry.cartesian_to_homogeneous(geometry.rpy_matrix(*self.orientation))
 
             # Apply rotation matrix
-            if self.rotation is not None:
+            if self.rotation is not None and self.is_revolute:
                 symbolic_frame_matrix = symbolic_frame_matrix * geometry.cartesian_to_homogeneous(geometry.symbolic_axis_rotation_matrix(self.rotation, theta), matrix_type="sympy")
+            else:
+                symbolic_frame_matrix[2, 3] += theta
 
             symbolic_frame_matrix = sympy.lambdify(theta, symbolic_frame_matrix, "numpy")
 
@@ -175,8 +179,10 @@ class URDFLink(Link):
             frame_matrix = np.dot(frame_matrix, geometry.cartesian_to_homogeneous(geometry.rpy_matrix(*self.orientation)))
 
             # Apply rotation matrix
-            if self.rotation is not None:
+            if self.rotation is not None and self.is_revolute:
                 frame_matrix = np.dot(frame_matrix, geometry.cartesian_to_homogeneous(geometry.axis_rotation_matrix(self.rotation, theta)))
+            else:
+                frame_matrix[2, 3] += theta
 
             return frame_matrix
 
@@ -229,3 +235,4 @@ class OriginLink(Link):
 
     def get_link_frame_matrix(self, theta):
         return np.eye(4)
+
