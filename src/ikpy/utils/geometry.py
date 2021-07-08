@@ -82,6 +82,20 @@ def symbolic_axis_rotation_matrix(axis, symbolic_theta):
     return sympy.Matrix(_axis_rotation_matrix_formula(x, y, z, c, s))
 
 
+def get_translation_matrix(mu):
+    """Returns a translation matrix of the given mu"""
+    translation_matrix = np.eye(4)
+    translation_matrix[:3, 3] = mu
+    return translation_matrix
+
+
+def get_symbolic_translation_matrix(mu):
+    """Returns a translation matrix of the given mu"""
+    translation_matrix = sympy.eye(4)
+    translation_matrix[:3, 3] = mu
+    return sympy.Matrix(translation_matrix)
+
+
 def homogeneous_translation_matrix(trans_x, trans_y, trans_z):
     """Return a translation matrix the homogeneous space"""
     return np.array([[1, 0, 0, trans_x], [0, 1, 0, trans_y], [0, 0, 1, trans_z], [0, 0, 0, 1]])

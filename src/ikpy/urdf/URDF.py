@@ -205,21 +205,33 @@ def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, ba
 
     # Save the joints in the good format
     for joint in joints:
-        translation = [0, 0, 0]
-        orientation = [0, 0, 0]
+        origin_translation = [0, 0, 0]
+        origin_orientation = [0, 0, 0]
         rotation = [1, 0, 0]
+        translation = [0, 0, 0]
         bounds = [None, None]
 
         origin = joint.find("origin")
         if origin is not None:
-            if origin.attrib["xyz"]:
-                translation = [float(x) for x in origin.attrib["xyz"].split()]
-            if origin.attrib["rpy"]:
-                orientation = [float(x) for x in origin.attrib["rpy"].split()]
+            if "xyz" in origin.attrib.keys():
+                origin_translation = [float(x) for x in origin.attrib["xyz"].split()]
+            if "rpy" in origin.attrib.keys():
+                origin_orientation = [float(x) for x in origin.attrib["rpy"].split()]
+
+        joint_type = joint.attrib["type"]
+        if joint_type not in ["revolute", "prismatic"]:
+            raise ValueError("Unknown joint type: {}".format(joint_type))
 
         axis = joint.find("axis")
         if axis is not None:
-            rotation = [float(x) for x in axis.attrib["xyz"].split()]
+            if joint_type == "revolute":
+                rotation = [float(x) for x in axis.attrib["xyz"].split()]
+                translation = None
+            elif joint_type == "prismatic":
+                rotation = None
+                translation = [float(x) for x in axis.attrib["xyz"].split()]
+            else:
+                raise ValueError
 
         limit = joint.find("limit")
         if limit is not None:
@@ -231,21 +243,25 @@ def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, ba
         parameters.append(lib_link.URDFLink(
             name=joint.attrib["name"],
             bounds=tuple(bounds),
-            translation_vector=translation,
-            orientation=orientation,
+            origin_translation=origin_translation,
+            origin_orientation=origin_orientation,
             rotation=rotation,
-            use_symbolic_matrix=symbolic
+            translation=translation,
+            use_symbolic_matrix=symbolic,
+            joint_type=joint_type
         ))
 
     # Add last_link_vector to parameters
     if last_link_vector is not None:
         # The last link doesn't provide a rotation
         parameters.append(lib_link.URDFLink(
-            translation_vector=last_link_vector,
-            orientation=[0, 0, 0],
+            origin_translation=last_link_vector,
+            origin_orientation=[0, 0, 0],
             rotation=None,
+            translation=None,
             name="last_joint",
-            use_symbolic_matrix=symbolic
+            use_symbolic_matrix=symbolic,
+            joint_type="fixed"
         ))
 
     return parameters

@@ -6,6 +6,7 @@ This module implements the Chain class.
 import numpy as np
 import json
 import os
+from typing import List
 
 # IKPY imports
 from .urdf import URDF
@@ -54,7 +55,7 @@ class Chain:
     def __len__(self):
         return len(self.links)
 
-    def forward_kinematics(self, joints, full_kinematics=False):
+    def forward_kinematics(self, joints: List, full_kinematics=False):
         """Returns the transformation matrix of the forward kinematics
 
         Parameters
@@ -77,10 +78,11 @@ class Chain:
         if len(self.links) != len(joints):
             raise ValueError("Your joints vector length is {} but you have {} links".format(len(joints), len(self.links)))
 
-        for index, (link, joint_angle) in enumerate(zip(self.links, joints)):
+        for index, (link, joint_parameters) in enumerate(zip(self.links, joints)):
             # Compute iteratively the position
             # NB : Use asarray to avoid old sympy problems
-            frame_matrix = np.dot(frame_matrix, np.asarray(link.get_link_frame_matrix({"theta": joint_angle})))
+            # FIXME: The casting to array is a loss of time
+            frame_matrix = np.dot(frame_matrix, np.asarray(link.get_link_frame_matrix(joint_parameters)))
             if full_kinematics:
                 # rotation_axe = np.dot(frame_matrix, link.rotation)
                 frame_matrixes.append(frame_matrix)
