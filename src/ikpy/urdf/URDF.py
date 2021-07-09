@@ -7,6 +7,7 @@ import xml.etree.ElementTree as ET
 import json
 import numpy as np
 import itertools
+import warnings
 
 # Ikpy imports
 from ikpy import link as lib_link
@@ -207,8 +208,8 @@ def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, ba
     for joint in joints:
         origin_translation = [0, 0, 0]
         origin_orientation = [0, 0, 0]
-        rotation = [1, 0, 0]
-        translation = [0, 0, 0]
+        rotation = None
+        translation = None
         bounds = [None, None]
 
         origin = joint.find("origin")
@@ -219,7 +220,7 @@ def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, ba
                 origin_orientation = [float(x) for x in origin.attrib["rpy"].split()]
 
         joint_type = joint.attrib["type"]
-        if joint_type not in ["revolute", "prismatic"]:
+        if joint_type not in ["revolute", "prismatic", "fixed"]:
             raise ValueError("Unknown joint type: {}".format(joint_type))
 
         axis = joint.find("axis")
@@ -230,8 +231,10 @@ def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, ba
             elif joint_type == "prismatic":
                 rotation = None
                 translation = [float(x) for x in axis.attrib["xyz"].split()]
+            elif joint_type == "fixed":
+                warnings.warn("Joint {} is of type: fixed, but has an 'axis' attribute defined. This is not in the URDF spec and thus this axis is ignored")
             else:
-                raise ValueError
+                raise ValueError("Unknown joint type with an axis: {}, {}".format(joint_type, axis))
 
         limit = joint.find("limit")
         if limit is not None:
