@@ -37,6 +37,11 @@ def poppy_ergo_urdf():
 
 
 @pytest.fixture
+def prismatic_robot_urdf():
+    return "../resources/prismatic/prismatic_robot.URDF"
+
+
+@pytest.fixture
 def baxter_left_arm():
     baxter_left_arm_chain = Chain.from_json_file("../resources/baxter/baxter_left_arm.json")
     return baxter_left_arm_chain

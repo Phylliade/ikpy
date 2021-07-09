@@ -173,6 +173,18 @@ class URDFLink(Link):
         else:
             raise ValueError("This link doesn't provide a rotation")
 
+    def get_translation_axis(self):
+        if self.has_translation:
+            return np.dot(
+                geometry.homogeneous_translation_matrix(*self.origin_translation),
+                np.dot(
+                    geometry.cartesian_to_homogeneous(geometry.rpy_matrix(*self.origin_orientation)),
+                    geometry.cartesian_to_homogeneous_vectors(self.translation * self.axis_length)
+                )
+            )
+        else:
+            raise ValueError("This link doesn't provide a translation")
+
     def get_link_frame_matrix(self, parameters):
         if self.joint_type == "revolute":
             theta = parameters
@@ -213,7 +225,7 @@ class URDFLink(Link):
                 translation_vector = self.translation * mu
                 symbolic_frame_matrix = symbolic_frame_matrix * geometry.get_symbolic_translation_matrix(translation_vector)
 
-            symbolic_frame_matrix = sympy.lambdify(theta, symbolic_frame_matrix, "numpy")
+            symbolic_frame_matrix = sympy.lambdify([theta, mu], symbolic_frame_matrix, "numpy")
 
             return symbolic_frame_matrix
 
@@ -282,6 +294,8 @@ class OriginLink(Link):
     """The link at the origin of the robot"""
     def __init__(self):
         Link.__init__(self, name="Base link", length=1)
+        self.has_rotation = False
+        self.has_translation = False
 
     def get_rotation_axis(self):
         return [0, 0, 0, 1]

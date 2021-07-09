@@ -1,5 +1,6 @@
 import os
 import matplotlib.pyplot as plt
+import numpy as np
 
 # ikpy imports
 from ikpy import chain
@@ -70,3 +71,18 @@ def test_chain_from_joints(poppy_ergo_urdf):
         "m6",
         "tip"
     ][:-1]
+
+
+def test_prismatic_joints(prismatic_robot_urdf):
+    """Test prismatic joints"""
+    chain1 = chain.Chain.from_urdf_file(
+        prismatic_robot_urdf,
+        base_elements=[
+            "baseLink", "joint_baseLink_childA", "childA"],
+        last_link_vector=[0, 1, 0])
+
+    initial_kinematics = [0.15] * len(chain1)
+    fk = chain1.forward_kinematics(initial_kinematics)
+    ik = chain1.inverse_kinematics_frame(fk)
+
+    np.testing.assert_almost_equal(fk, chain1.forward_kinematics(ik))
