@@ -232,7 +232,7 @@ def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, ba
                 rotation = None
                 translation = [float(x) for x in axis.attrib["xyz"].split()]
             elif joint_type == "fixed":
-                warnings.warn("Joint {} is of type: fixed, but has an 'axis' attribute defined. This is not in the URDF spec and thus this axis is ignored")
+                warnings.warn("Joint {} is of type: fixed, but has an 'axis' attribute defined. This is not in the URDF spec and thus this axis is ignored".format(joint.attrib["name"]))
             else:
                 raise ValueError("Unknown joint type with an axis: {}, {}".format(joint_type, axis))
 

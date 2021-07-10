@@ -152,7 +152,7 @@ class URDFLink(Link):
             mu = sympy.symbols("mu")
             self.symbolic_transformation_matrix = self._apply_geometric_transformations(theta=theta, mu=mu, symbolic=True)
 
-    def __str__(self):
+    def __repr__(self):
         return("""URDF Link {} :
     Type : {} 
     Bounds : {}
