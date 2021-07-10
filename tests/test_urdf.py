@@ -45,7 +45,7 @@ def test_urdf_parser(poppy_torso_urdf):
 
 
 def test_plot_urdf_tree(baxter_urdf):
-    dot = get_urdf_tree(baxter_urdf, "./out/baxter")
+    dot = get_urdf_tree(baxter_urdf, root_element="base", out_image_path="./out/baxter")
 
 
 def test_chain_from_joints(poppy_ergo_urdf):
