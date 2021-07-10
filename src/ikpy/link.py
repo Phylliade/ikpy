@@ -8,7 +8,7 @@ import sympy
 
 # Ikpy imports
 from ikpy.utils import geometry
-from typing import Union, Optional
+from typing import Optional
 
 
 class Link:
@@ -276,6 +276,8 @@ class DHLink(Link):
 
     def __init__(self, name, d=0, a=0, bounds=None, use_symbolic_matrix=True):
         Link.__init__(self, use_symbolic_matrix)
+        self.d = d
+        self.a = a
 
     def get_link_frame_matrix(self, parameters):
         """ Computes the homogeneous transformation matrix for this link. """
@@ -285,8 +287,8 @@ class DHLink(Link):
         ca = np.cos(self.alpha)
         sa = np.sin(self.alpha)
 
-        return np.matrix(((ct, -st * ca, st * sa, a * ct),
-                          (st, ct * ca, -ct * sa, a * st),
+        return np.matrix(((ct, -st * ca, st * sa, self.a * ct),
+                          (st, ct * ca, -ct * sa, self.a * st),
                           (0, sa, ca, self.d),
                           (0, 0, 0, 1)))
 
