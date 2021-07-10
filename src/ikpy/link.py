@@ -155,7 +155,7 @@ class URDFLink(Link):
 
     def __repr__(self):
         return("""URDF Link {} :
-    Type : {} 
+    Type : {}
     Bounds : {}
     Origin Translation : {}
     Origin Orientation : {}
