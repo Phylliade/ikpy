@@ -37,6 +37,7 @@ class Link:
         self.axis_length = length
         self.is_final = is_final
         self.has_rotation = False
+        self.joint_type = None
 
     def __repr__(self):
         return "Link name={} bounds={}".format(self.name, self.bounds)
@@ -296,6 +297,7 @@ class OriginLink(Link):
         Link.__init__(self, name="Base link", length=1)
         self.has_rotation = False
         self.has_translation = False
+        self.joint_type = "fixed"
 
     def get_rotation_axis(self):
         return [0, 0, 0, 1]
