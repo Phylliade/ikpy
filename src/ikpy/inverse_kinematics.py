@@ -7,7 +7,7 @@ from . import logs
 ORIENTATION_COEFF = 1.
 
 
-def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, regularization_parameter=None, max_iter=None, orientation_mode=None, no_position=False):
+def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, regularization_parameter=None, max_iter=None, orientation_mode=None, no_position=False, optimization_method='L-BFGS-B'):
     """
     Computes the inverse kinematic on the specified target with an optimization method
 
@@ -32,6 +32,8 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
         * "all": Target the three axes
     no_position: bool
         Do not optimize against position
+    optimization_method: str
+        Optimization method to use. Defaults to 'L-BFGS-B'
     """
     # Begin with the position
     target = target_frame[:3, -1]
@@ -131,7 +133,7 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
         options["maxiter"] = max_iter
 
     # Utilisation d'une optimisation L-BFGS-B
-    res = scipy.optimize.minimize(optimize_total, chain.active_from_full(starting_nodes_angles), method='L-BFGS-B', bounds=real_bounds, options=options)
+    res = scipy.optimize.minimize(optimize_total, chain.active_from_full(starting_nodes_angles), method=optimization_method, bounds=real_bounds, options=options)
 
     logs.logger.info("Inverse kinematic optimisation OK, done in {} iterations".format(res.nit))
 

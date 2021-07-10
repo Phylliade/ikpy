@@ -119,7 +119,7 @@ class Chain:
             * "Y": Target the Y axis
             * "Z": Target the Z axis
             * "all": Target the entire frame (e.g. the three axes) (not currently supported)
-        kwargs
+        kwargs: See ikpy.inverse_kinematics.inverse_kinematic_optimization
 
         Returns
         -------
@@ -159,6 +159,7 @@ class Chain:
             The frame target of the inverse kinematic, in meters. It must be 4x4 transformation matrix
         initial_position: numpy.array
             Optional : the initial position of each joint of the chain. Defaults to 0 for each joint
+        kwargs: See ikpy.inverse_kinematics.inverse_kinematic_optimization
 
         Returns
         -------
