@@ -80,7 +80,11 @@ An extensive documentation of the API can be found [here](http://ikpy.readthedoc
 
 ## Dependencies and compatibility
 
-The library can work with both versions of Python \(2.7 and 3.x\). It requires `numpy` and `scipy`.
+Starting with IKPy v3.1, only Python 3 is supported. 
+For versions before v3.1, the library can work with both versions of Python \(2.7 and 3.x\).
+
+In terms of dependencies, it requires `numpy` and `scipy`.
+
 
 `sympy` is highly recommended, for fast hybrid computations, that's why it is installed by default.
 
