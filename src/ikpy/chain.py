@@ -45,16 +45,19 @@ class Chain:
             if len(active_links_mask) != len(self.links):
                 raise ValueError("Your active links mask length of {} is different from the number of your links, which is {}".format(len(active_links_mask), len(self.links)))
             self.active_links_mask = np.array(active_links_mask)
-            # Always set the last link to True
-            self.active_links_mask[-1] = False
 
         else:
             self.active_links_mask = np.array([True] * len(links))
 
+        # Always set the last link to True
+        if self.active_links_mask[-1] is True:
+            warnings.warn("active_link_mask[-1] is True, but it should be set to False. Overriding and setting to False")
+            self.active_links_mask[-1] = False
+
         # Check that none of the active links are fixed
         for link_index, (link_active, link) in enumerate(zip(self.active_links_mask, self.links)):
             if link.joint_type == "fixed" and link_active:
-                warnings.warn("Link {} (index: {}) is of type 'fixed' but set as active in the active_link_mask. In practice, this fixed link doesn't provide any transformation so is as it were inactive".format(link.name, link_index))
+                warnings.warn("Link {} (index: {}) is of type 'fixed' but set as active in the active_links_mask. In practice, this fixed link doesn't provide any transformation so is as it were inactive".format(link.name, link_index))
 
     def __repr__(self):
         return "Kinematic chain name={} links={} active_links={}".format(self.name, [link.name for link in self.links], self.active_links_mask)

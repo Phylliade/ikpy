@@ -1,0 +1,35 @@
+{
+  "elements": [
+    "base_link",
+    "base_link_base_slider_joint",
+    "base_slider",
+    "linear_actuator",
+    "robot_base",
+    "arm2",
+    "link_2",
+    "arm3",
+    "link_3",
+    "arm4",
+    "link_4",
+    "arm5",
+    "link_5"
+  ],
+  "urdf_file": "prismatic_mixed_robot.URDF",
+  "active_links_mask": [
+    false,
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false
+  ],
+  "last_link_vector": [
+    0,
+    0.18,
+    0
+  ],
+  "name": "prismatic_mixed_robot",
+  "version": "v1"
+}

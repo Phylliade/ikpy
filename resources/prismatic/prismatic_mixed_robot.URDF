@@ -1,0 +1,124 @@
+<?xml version="1.0"?>
+<robot name="robot" xmlns:xacro="http://ros.org/wiki/xacro">
+  <link name="base_link">
+  </link>
+  <link name="base_slider">
+  </link>
+  <joint name="base_link_base_slider_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="base_slider"/>
+    <origin xyz="0 0 0" rpy="0 -1.5707953 0"/>
+  </joint>
+  <joint name="linear_actuator" type="prismatic">
+    <parent link="base_slider"/>
+    <child link="robot_base"/>
+    <axis xyz="-1 -2.368514e-06 4.1005696e-06"/>
+    <origin xyz="0 0 0" rpy="-0.5237906 1.5707916 1.0470034"/>
+    <limit effort="10" lower="0" upper="0.4" velocity="10"/>
+  </joint>
+  <link name="robot_base">
+    <visual>
+      <origin xyz="0.032 0.023 0.07" rpy="1.5707963 0 0"/>
+      <geometry>
+        <cylinder radius="0.036" length="0.046"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.032 0.023 0.07" rpy="1.5707963 0 0"/>
+      <geometry>
+        <cylinder radius="0.036" length="0.046"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="arm2" type="revolute">
+    <parent link="robot_base"/>
+    <child link="link_2"/>
+    <axis xyz="0 -1 0"/>
+    <limit effort="9.5" lower="-1.13446" upper="1.5708" velocity="1.5708"/>
+    <origin xyz="0.033 0 0.07" rpy="0 0 0"/>
+  </joint>
+  <link name="link_2">
+    <visual>
+      <origin xyz="0 -0.03 0.078" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.07 0.06 0.21"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 -0.03 0.078" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.07 0.06 0.21"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="arm3" type="revolute">
+    <parent link="link_2"/>
+    <child link="link_3"/>
+    <axis xyz="0 -1 0"/>
+    <limit effort="6" lower="-2.63545" upper="2.54818" velocity="1.5708"/>
+    <origin xyz="0 0 0.155" rpy="0 0 0"/>
+  </joint>
+  <link name="link_3">
+    <visual>
+      <origin xyz="0 0.0225 0.065" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.06 0.045 0.19"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0.0225 0.065" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.06 0.045 0.19"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="arm4" type="revolute">
+    <parent link="link_3"/>
+    <child link="link_4"/>
+    <axis xyz="0 -1 0"/>
+    <limit effort="2" lower="-1.78024" upper="1.78024" velocity="1.5708"/>
+    <origin xyz="0 0 0.135" rpy="0 0 0"/>
+  </joint>
+  <link name="link_4">
+    <visual>
+      <origin xyz="0 0 0.056" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.05 0.095 0.05"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.056" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.05 0.095 0.05"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 -0.024 0.003" rpy="1.5707963 0 0"/>
+      <geometry>
+        <cylinder radius="0.027" length="0.047"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 -0.024 0.003" rpy="1.5707963 0 0"/>
+      <geometry>
+        <cylinder radius="0.027" length="0.047"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="arm5" type="revolute">
+    <parent link="link_4"/>
+    <child link="link_5"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="1" lower="-2.92343" upper="2.92343" velocity="1.5708"/>
+    <origin xyz="0 0 0.081" rpy="0 0 0"/>
+  </joint>
+  <link name="link_5">
+  </link>
+  <link name="platform">
+  </link>
+  <joint name="base_link_platform_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="platform"/>
+    <origin xyz="-0.24 -0.01 0" rpy="3.1415927 -1.5707927 3.1415927"/>
+  </joint>
+</robot>

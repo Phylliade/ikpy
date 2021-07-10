@@ -75,13 +75,12 @@ def _create_robot_tree_aux(dot, root, current_link, current_robot_link):
         next_link_id = "link_" + next_link.attrib["name"]
         dot.node(next_link_id, label=next_link.attrib["name"], shape="box", color=LINK_COLOR, fillcolor="lightgrey", style="filled")
         dot.edge(next_joint_id, next_link_id)
-        # print("{} is son of {} ".format(next_link.attrib["name"], current_link.attrib["name"]))
 
         if next_link is not None:
             _create_robot_tree_aux(dot, root, next_link, next_robot_link)
 
 
-def get_urdf_tree(urdf_path, out_image_path=None, root_element="base", legend=False):
+def get_urdf_tree(urdf_path, root_element, out_image_path=None, legend=False):
     """
     Parse an URDF file into a tree of links
 
@@ -108,6 +107,8 @@ def get_urdf_tree(urdf_path, out_image_path=None, root_element="base", legend=Fa
     root = tree.getroot()
 
     base_link = root.find("link[@name='{}']".format(root_element))
+    if base_link is None:
+        raise ValueError("{} not found in the URDF".format(root_element))
     urdf_tree = URDFTree(root_element)
 
     # Initialize the rec

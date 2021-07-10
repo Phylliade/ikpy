@@ -25,21 +25,28 @@ def _find_next_joint(root, current_link, next_joint_name):
         The current URDF link
     next_joint_name: str
         Optional : The name of the next joint. If not provided, find it automatically as the first child of the link.
+
+    Returns
+    -------
+    has_next: bool
+        True if the next joint has been found. Otherwise, the next joint will be None
+    next_joint: Optional[Element]
+        The next joint
     """
     # Find the joint attached to the link
     has_next = False
     next_joint = None
-    search_by_name = True
+    search_by_name = (next_joint_name is not None)
     current_link_name = None
 
-    if next_joint_name is None:
+    if not search_by_name:
         # If no next joint is provided, find it automatically
-        search_by_name = False
         current_link_name = current_link.attrib["name"]
 
+    # FIXME: Use a filter expression directly in the findall statement, instead of filtering by hand
     for joint in root.findall("joint"):
         # Only use joints and links defined at the root.
-        # There may be other joints and links elsewhere, but there are just metadata
+        # There may be other joints and links elsewhere, but they are just metadata
         if joint is not None:
             # Iterate through all joints to find the good one
             if search_by_name:
@@ -47,6 +54,8 @@ def _find_next_joint(root, current_link, next_joint_name):
                 if joint.attrib["name"] == next_joint_name:
                     has_next = True
                     next_joint = joint
+                    break
+
             else:
                 # Find the first joint whose parent is the current_link
                 # FIXME: We are not sending a warning when we have two children for the same link
@@ -55,6 +64,9 @@ def _find_next_joint(root, current_link, next_joint_name):
                     has_next = True
                     next_joint = joint
                     break
+
+    if search_by_name and not has_next:
+        raise ValueError("Error: joint {} given but not found in the URDF".format(next_joint_name))
 
     return has_next, next_joint
 
@@ -70,19 +82,33 @@ def _find_next_link(root, current_joint, next_link_name):
         The current URDF joint
     next_link_name: str
         Optional : The name of the next link. If not provided, find it automatically as the first child of the joint.
+
+    Returns
+    -------
+    has_next: bool
+        True if the next link has been found. Otherwise, the next link will be None
+    next_link: Optional[Element]
+        The next link
     """
     has_next = False
     next_link = None
+
+    given_next_link = (next_link_name is not None)
 
     # If no next link, find it automatically
     if next_link_name is None:
         # If the name of the next link is not provided, find it
         next_link_name = current_joint.find("child").attrib["link"]
 
+    # FIXME: Directly find the link using a regex and a filter
     for urdf_link in root.findall("link"):
         if urdf_link.attrib["name"] == next_link_name:
             next_link = urdf_link
             has_next = True
+
+    if given_next_link and not has_next:
+        raise ValueError("Error: link {} given but not found in the URDF".format(next_link_name))
+
     return has_next, next_link
 
 
@@ -101,7 +127,7 @@ def _find_parent_link(root, joint_name):
 def get_chain_from_joints(urdf_file, joints):
     """
     Return a complete URDF chain (e.g. links + joints) from a list of joints.
-    This function is notably used by PyPot, which considers only joints, but needs to create the chain in order to use them as the `base_elements` of the `get_urdf_parameters`
+    This function is notafbly used by PyPot, which considers only joints, but needs to create the chain in order to use them as the `base_elements` of the `get_urdf_parameters`
 
     Parameters
     ----------

@@ -1,10 +1,5 @@
-from graphviz import Digraph
-import numpy as np
-import json
-
 # IKPy imports
 from ikpy import chain
-from ikpy.utils import plot
 from ikpy.urdf.utils import get_urdf_tree
 
 # Generate the pdf
