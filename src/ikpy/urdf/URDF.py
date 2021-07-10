@@ -7,6 +7,7 @@ import xml.etree.ElementTree as ET
 import json
 import numpy as np
 import itertools
+import warnings
 
 # Ikpy imports
 from ikpy import link as lib_link
@@ -24,21 +25,28 @@ def _find_next_joint(root, current_link, next_joint_name):
         The current URDF link
     next_joint_name: str
         Optional : The name of the next joint. If not provided, find it automatically as the first child of the link.
+
+    Returns
+    -------
+    has_next: bool
+        True if the next joint has been found. Otherwise, the next joint will be None
+    next_joint: Optional[Element]
+        The next joint
     """
     # Find the joint attached to the link
     has_next = False
     next_joint = None
-    search_by_name = True
+    search_by_name = (next_joint_name is not None)
     current_link_name = None
 
-    if next_joint_name is None:
+    if not search_by_name:
         # If no next joint is provided, find it automatically
-        search_by_name = False
         current_link_name = current_link.attrib["name"]
 
+    # FIXME: Use a filter expression directly in the findall statement, instead of filtering by hand
     for joint in root.findall("joint"):
         # Only use joints and links defined at the root.
-        # There may be other joints and links elsewhere, but there are just metadata
+        # There may be other joints and links elsewhere, but they are just metadata
         if joint is not None:
             # Iterate through all joints to find the good one
             if search_by_name:
@@ -46,6 +54,8 @@ def _find_next_joint(root, current_link, next_joint_name):
                 if joint.attrib["name"] == next_joint_name:
                     has_next = True
                     next_joint = joint
+                    break
+
             else:
                 # Find the first joint whose parent is the current_link
                 # FIXME: We are not sending a warning when we have two children for the same link
@@ -54,6 +64,9 @@ def _find_next_joint(root, current_link, next_joint_name):
                     has_next = True
                     next_joint = joint
                     break
+
+    if search_by_name and not has_next:
+        raise ValueError("Error: joint {} given but not found in the URDF".format(next_joint_name))
 
     return has_next, next_joint
 
@@ -69,19 +82,33 @@ def _find_next_link(root, current_joint, next_link_name):
         The current URDF joint
     next_link_name: str
         Optional : The name of the next link. If not provided, find it automatically as the first child of the joint.
+
+    Returns
+    -------
+    has_next: bool
+        True if the next link has been found. Otherwise, the next link will be None
+    next_link: Optional[Element]
+        The next link
     """
     has_next = False
     next_link = None
+
+    given_next_link = (next_link_name is not None)
 
     # If no next link, find it automatically
     if next_link_name is None:
         # If the name of the next link is not provided, find it
         next_link_name = current_joint.find("child").attrib["link"]
 
+    # FIXME: Directly find the link using a regex and a filter
     for urdf_link in root.findall("link"):
         if urdf_link.attrib["name"] == next_link_name:
             next_link = urdf_link
             has_next = True
+
+    if given_next_link and not has_next:
+        raise ValueError("Error: link {} given but not found in the URDF".format(next_link_name))
+
     return has_next, next_link
 
 
@@ -100,7 +127,7 @@ def _find_parent_link(root, joint_name):
 def get_chain_from_joints(urdf_file, joints):
     """
     Return a complete URDF chain (e.g. links + joints) from a list of joints.
-    This function is notably used by PyPot, which considers only joints, but needs to create the chain in order to use them as the `base_elements` of the `get_urdf_parameters`
+    This function is notafbly used by PyPot, which considers only joints, but needs to create the chain in order to use them as the `base_elements` of the `get_urdf_parameters`
 
     Parameters
     ----------
@@ -205,21 +232,35 @@ def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, ba
 
     # Save the joints in the good format
     for joint in joints:
-        translation = [0, 0, 0]
-        orientation = [0, 0, 0]
-        rotation = [1, 0, 0]
+        origin_translation = [0, 0, 0]
+        origin_orientation = [0, 0, 0]
+        rotation = None
+        translation = None
         bounds = [None, None]
 
         origin = joint.find("origin")
         if origin is not None:
-            if origin.attrib["xyz"]:
-                translation = [float(x) for x in origin.attrib["xyz"].split()]
-            if origin.attrib["rpy"]:
-                orientation = [float(x) for x in origin.attrib["rpy"].split()]
+            if "xyz" in origin.attrib.keys():
+                origin_translation = [float(x) for x in origin.attrib["xyz"].split()]
+            if "rpy" in origin.attrib.keys():
+                origin_orientation = [float(x) for x in origin.attrib["rpy"].split()]
+
+        joint_type = joint.attrib["type"]
+        if joint_type not in ["revolute", "prismatic", "fixed"]:
+            raise ValueError("Unknown joint type: {}".format(joint_type))
 
         axis = joint.find("axis")
         if axis is not None:
-            rotation = [float(x) for x in axis.attrib["xyz"].split()]
+            if joint_type == "revolute":
+                rotation = [float(x) for x in axis.attrib["xyz"].split()]
+                translation = None
+            elif joint_type == "prismatic":
+                rotation = None
+                translation = [float(x) for x in axis.attrib["xyz"].split()]
+            elif joint_type == "fixed":
+                warnings.warn("Joint {} is of type: fixed, but has an 'axis' attribute defined. This is not in the URDF spec and thus this axis is ignored".format(joint.attrib["name"]))
+            else:
+                raise ValueError("Unknown joint type with an axis: {}, {}".format(joint_type, axis))
 
         limit = joint.find("limit")
         if limit is not None:
@@ -231,21 +272,25 @@ def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, ba
         parameters.append(lib_link.URDFLink(
             name=joint.attrib["name"],
             bounds=tuple(bounds),
-            translation_vector=translation,
-            orientation=orientation,
+            origin_translation=origin_translation,
+            origin_orientation=origin_orientation,
             rotation=rotation,
-            use_symbolic_matrix=symbolic
+            translation=translation,
+            use_symbolic_matrix=symbolic,
+            joint_type=joint_type
         ))
 
     # Add last_link_vector to parameters
     if last_link_vector is not None:
         # The last link doesn't provide a rotation
         parameters.append(lib_link.URDFLink(
-            translation_vector=last_link_vector,
-            orientation=[0, 0, 0],
+            origin_translation=last_link_vector,
+            origin_orientation=[0, 0, 0],
             rotation=None,
+            translation=None,
             name="last_joint",
-            use_symbolic_matrix=symbolic
+            use_symbolic_matrix=symbolic,
+            joint_type="fixed"
         ))
 
     return parameters

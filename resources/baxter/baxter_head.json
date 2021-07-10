@@ -12,12 +12,12 @@
   ],
   "urdf_file": "baxter.urdf",
   "active_links_mask": [
+    false,
+    false,
     true,
-    true,
-    true,
-    true,
-    true,
-    true
+    false,
+    false,
+    false
   ],
   "last_link_vector": [
     0,

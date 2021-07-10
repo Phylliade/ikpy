@@ -6,6 +6,8 @@ This module implements the Chain class.
 import numpy as np
 import json
 import os
+from typing import List
+import warnings
 
 # IKPY imports
 from .urdf import URDF
@@ -43,18 +45,27 @@ class Chain:
             if len(active_links_mask) != len(self.links):
                 raise ValueError("Your active links mask length of {} is different from the number of your links, which is {}".format(len(active_links_mask), len(self.links)))
             self.active_links_mask = np.array(active_links_mask)
-            # Always set the last link to True
-            self.active_links_mask[-1] = False
+
         else:
             self.active_links_mask = np.array([True] * len(links))
 
+        # Always set the last link to True
+        if self.active_links_mask[-1] is True:
+            warnings.warn("active_link_mask[-1] is True, but it should be set to False. Overriding and setting to False")
+            self.active_links_mask[-1] = False
+
+        # Check that none of the active links are fixed
+        for link_index, (link_active, link) in enumerate(zip(self.active_links_mask, self.links)):
+            if link.joint_type == "fixed" and link_active:
+                warnings.warn("Link {} (index: {}) is of type 'fixed' but set as active in the active_links_mask. In practice, this fixed link doesn't provide any transformation so is as it were inactive".format(link.name, link_index))
+
     def __repr__(self):
-        return "Kinematic chain name={} links={} active_links={}".format(self.name, self.links, self.active_links_mask)
+        return "Kinematic chain name={} links={} active_links={}".format(self.name, [link.name for link in self.links], self.active_links_mask)
 
     def __len__(self):
         return len(self.links)
 
-    def forward_kinematics(self, joints, full_kinematics=False):
+    def forward_kinematics(self, joints: List, full_kinematics=False):
         """Returns the transformation matrix of the forward kinematics
 
         Parameters
@@ -77,10 +88,11 @@ class Chain:
         if len(self.links) != len(joints):
             raise ValueError("Your joints vector length is {} but you have {} links".format(len(joints), len(self.links)))
 
-        for index, (link, joint_angle) in enumerate(zip(self.links, joints)):
+        for index, (link, joint_parameters) in enumerate(zip(self.links, joints)):
             # Compute iteratively the position
             # NB : Use asarray to avoid old sympy problems
-            frame_matrix = np.dot(frame_matrix, np.asarray(link.get_link_frame_matrix({"theta": joint_angle})))
+            # FIXME: The casting to array is a loss of time
+            frame_matrix = np.dot(frame_matrix, np.asarray(link.get_link_frame_matrix(joint_parameters)))
             if full_kinematics:
                 # rotation_axe = np.dot(frame_matrix, link.rotation)
                 frame_matrixes.append(frame_matrix)
@@ -107,7 +119,7 @@ class Chain:
             * "Y": Target the Y axis
             * "Z": Target the Z axis
             * "all": Target the entire frame (e.g. the three axes) (not currently supported)
-        kwargs
+        kwargs: See ikpy.inverse_kinematics.inverse_kinematic_optimization
 
         Returns
         -------
@@ -147,6 +159,7 @@ class Chain:
             The frame target of the inverse kinematic, in meters. It must be 4x4 transformation matrix
         initial_position: numpy.array
             Optional : the initial position of each joint of the chain. Defaults to 0 for each joint
+        kwargs: See ikpy.inverse_kinematics.inverse_kinematic_optimization
 
         Returns
         -------

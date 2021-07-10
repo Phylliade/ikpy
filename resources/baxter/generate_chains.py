@@ -1,14 +1,9 @@
-from graphviz import Digraph
-import numpy as np
-import json
-
 # IKPy imports
 from ikpy import chain
-from ikpy.utils import plot
 from ikpy.urdf.utils import get_urdf_tree
 
 # Generate the pdf
-dot, urdf_tree = get_urdf_tree("./baxter.urdf", out_image_path="./baxter")
+dot, urdf_tree = get_urdf_tree("./baxter.urdf", out_image_path="./baxter", root_element="base")
 
 
 ########################## Left arm ##########################
@@ -49,7 +44,7 @@ baxter_left_arm_chain = chain.Chain.from_urdf_file(
     "./baxter.urdf",
     base_elements=baxter_left_arm_elements,
     last_link_vector=[0, 0.18, 0],
-    active_links_mask=3 * [False] + 11 * [True],
+    active_links_mask=3 * [False] + 7 * [True] + 4 * [False],
     symbolic=False,
     name="baxter_left_arm")
 baxter_left_arm_chain.to_json_file(force=True)
@@ -62,7 +57,7 @@ baxter_right_arm_chain = chain.Chain.from_urdf_file(
     "./baxter.urdf",
     base_elements=baxter_right_arm_elements,
     last_link_vector=[0, 0.18, 0],
-    active_links_mask=3 * [False] + 11 * [True],
+    active_links_mask=3 * [False] + 7 * [True] + 4 * [False],
     symbolic=False,
     name="baxter_right_arm")
 baxter_right_arm_chain.to_json_file(force=True)
@@ -84,7 +79,9 @@ baxter_head_chain = chain.Chain.from_urdf_file(
     base_elements=baxter_head_elements,
     last_link_vector=[0, 0.18, 0],
     symbolic=False,
-    name="baxter_head")
+    name="baxter_head",
+    active_links_mask=[False, False, True, False, False, False]
+)
 baxter_head_chain.to_json_file(force=True)
 
 ########################## Pedestal ###############################
@@ -100,5 +97,6 @@ baxter_pedestal_chain = chain.Chain.from_urdf_file(
     base_elements=baxter_pedestal_elements,
     last_link_vector=[0, 0.18, 0],
     symbolic=False,
-    name="baxter_pedestal")
+    name="baxter_pedestal",
+    active_links_mask=[False, False, False, True])
 baxter_pedestal_chain.to_json_file(force=True)

@@ -34,8 +34,9 @@ def plot_chain(chain, joints, ax, name="chain"):
     """Plot the chain"""
     # List of nodes
     nodes = []
-    # And rotation axes, as pairs of points
+    # And rotation/translation axes, as pairs of points
     rotation_axes = []
+    translation_axes = []
 
     transformation_matrixes = chain.forward_kinematics(joints, full_kinematics=True)
 
@@ -54,6 +55,14 @@ def plot_chain(chain, joints, ax, name="chain"):
             else:
                 rotation_axes.append((node, geometry.homogeneous_to_cartesian_vectors(np.dot(transformation_matrixes[index - 1], rotation_axis))))
 
+        # Add translation axis if present
+        if link.has_translation:
+            translation_axis = link.get_translation_axis()
+            if index == 0:
+                translation_axes.append((node, translation_axis))
+            else:
+                translation_axes.append((node, geometry.homogeneous_to_cartesian_vectors(np.dot(transformation_matrixes[index - 1], translation_axis))))
+
     # Plot the chain
     lines = ax.plot([x[0] for x in nodes], [x[1] for x in nodes], [x[2] for x in nodes], linewidth=5, label=name)
     # Plot of the nodes of the chain
@@ -65,6 +74,12 @@ def plot_chain(chain, joints, ax, name="chain"):
         # The last link doesn't need a rotation axe
         # Note: Be sure that the rotation axes have the same color as the chain
         ax.plot([node[0], axe[0]], [node[1], axe[1]], [node[2], axe[2]], c=lines[0].get_color())
+
+    # Plot the translation axes
+    for (node, axe) in translation_axes:
+        # The last link doesn't need a rotation axe
+        # Note: Be sure that the rotation axes have the same color as the chain
+        ax.plot([node[0], axe[0]], [node[1], axe[1]], [node[2], axe[2]], c=lines[0].get_color(), linestyle='dotted', linewidth=2.5)
 
     # Plot the frame of the last joint
     plot_frame(transformation_matrixes[-1], ax, length=chain.links[-1].length)
@@ -79,9 +94,6 @@ def plot_frame(frame_matrix, ax, length=1):
         geometry.homogeneous_to_cartesian_vectors(np.dot(frame_matrix, [0, 0, length, 1]))
     ]
 
-    # Plot the rotation axes
-    # NOTE: Could be interesting to plot arrows instead of lines,
-    # as in https://stackoverflow.com/questions/22867620/putting-arrowheads-on-vectors-in-matplotlibs-3d-plot
     for index, axe in enumerate(axes):
         ax.plot([node[0], axe[0]], [node[1], axe[1]], [node[2], axe[2]], linestyle='dashed', c=directions_colors[index])
 

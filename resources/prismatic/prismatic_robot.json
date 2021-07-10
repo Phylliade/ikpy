@@ -1,0 +1,20 @@
+{
+  "elements": [
+    "baseLink",
+    "joint_baseLink_childA",
+    "childA"
+  ],
+  "urdf_file": "prismatic_robot.URDF",
+  "active_links_mask": [
+    false,
+    true,
+    false
+  ],
+  "last_link_vector": [
+    0,
+    1,
+    0
+  ],
+  "name": "prismatic_robot",
+  "version": "v1"
+}
