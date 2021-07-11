@@ -53,12 +53,7 @@ You have three options:
    pip install 'ikpy[plot]'
    ```
 
-2. If you work with Anaconda, there's also a Conda package of IKPy:
-  ```bash
-  conda install -c https://conda.anaconda.org/phylliade ikpy
-  ```
-
-3. From source - first download and extract the archive, then run:
+2. From source - first download and extract the archive, then run:
 
    ```bash
    pip install ./
