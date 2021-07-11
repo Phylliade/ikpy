@@ -317,6 +317,7 @@ class Chain:
             "last_link_vector": last_link_vector
         }
 
+        # TODO: Remove this default and force the user to provide something
         if base_elements is None:
             base_elements = ["base_link"]
 
