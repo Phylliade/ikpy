@@ -1,6 +1,5 @@
 # IKPy
 
-![Travis-CI](https://travis-ci.org/Phylliade/ikpy.svg?branch=master)
 [![PyPI](https://img.shields.io/pypi/v/ikpy.svg)](https://pypi.python.org/pypi/ikpy/)
 
 
