@@ -40,7 +40,7 @@ def plot_chain(chain, joints, ax, name="chain"):
 
     transformation_matrixes = chain.forward_kinematics(joints, full_kinematics=True)
 
-    # Get the nodes and the orientation from the tranformation matrix
+    # Get the nodes and the orientation from the transformation matrix
     for (index, link) in enumerate(chain.links):
         (node, orientation) = geometry.from_transformation_matrix(transformation_matrixes[index])
 
