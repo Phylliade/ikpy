@@ -124,7 +124,7 @@ def to_transformation_matrix(translation, orientation_matrix=np.zeros((3, 3))):
 
 
 def cartesian_to_homogeneous(cartesian_matrix, matrix_type="numpy"):
-    """Converts a cartesian matrix to an homogenous matrix"""
+    """Converts a cartesian matrix to an homogeneous matrix"""
     dimension_x, dimension_y = cartesian_matrix.shape
     # Square matrix
     # Manage different types fo input matrixes
@@ -141,7 +141,7 @@ def cartesian_to_homogeneous(cartesian_matrix, matrix_type="numpy"):
 
 
 def cartesian_to_homogeneous_vectors(cartesian_vector, matrix_type="numpy"):
-    """Converts a cartesian vector to an homogenous vector"""
+    """Converts a cartesian vector to an homogeneous vector"""
     dimension_x = cartesian_vector.shape[0]
     # Vector
     if matrix_type == "numpy":
