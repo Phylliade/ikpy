@@ -333,7 +333,7 @@ class Chain:
         return chain
 
     def active_to_full(self, active_joints, initial_position):
-        full_joints = np.array(initial_position, copy=True, dtype=np.float)
+        full_joints = np.array(initial_position, copy=True, dtype=np.float64)
         np.place(full_joints, self.active_links_mask, active_joints)
         return full_joints
 
