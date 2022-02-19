@@ -18,9 +18,9 @@ def test_orientation(baxter_left_arm):
 
         # Check
         ## Note: could be put to 5 decimals, since it works with 5 on local machines and the CI with python > 3.6
-        ## However in order to support 3.6, we put 3 decimals here...
+        ## However in order to support 3.6, we put 3 and 4 decimals here...
         np.testing.assert_almost_equal(position, target_position, decimal=3)
-        np.testing.assert_almost_equal(orientation, target_orientation, decimal=5)
+        np.testing.assert_almost_equal(orientation, target_orientation, decimal=4)
 
 
 def test_orientation_full_frame(baxter_left_arm):
