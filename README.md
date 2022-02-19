@@ -5,7 +5,7 @@
 
 ![demo](two_arms.png)
 
-![IKPy on the bacter robot](baxter.png)
+![IKPy on the baxter robot](baxter.png)
 
 ## Demo
 

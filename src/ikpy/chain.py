@@ -194,7 +194,7 @@ class Chain:
 
         if ax is None:
             # If ax is not given, create one
-            ax = plot.init_3d_figure()
+            _, ax = plot.init_3d_figure()
         plot.plot_chain(self, joints, ax, name=self.name)
 
         # Plot the goal position
