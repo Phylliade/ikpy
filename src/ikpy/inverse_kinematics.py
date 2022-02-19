@@ -46,13 +46,13 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
 
         return fk
 
-    # Compute squared distance to target
+    # Compute error to target
     def optimize_target_function(fk):
-        squared_distance_to_target = fk[:3, -1] - target
+        target_error = fk[:3, -1] - target
 
         # We need to return the fk, it will be used in a later function
         # This way, we don't have to recompute it
-        return squared_distance_to_target
+        return target_error
 
     if orientation_mode is None:
         if no_position:
@@ -61,8 +61,8 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
         else:
             def optimize_function(x):
                 fk = optimize_basis(x)
-                squared_distance_to_target = optimize_target_function(fk)
-                return squared_distance_to_target
+                target_error = optimize_target_function(fk)
+                return target_error
     else:
         # Only get the first orientation vector
         if orientation_mode == "X":
@@ -93,23 +93,24 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
 
         if not no_position:
             def optimize_function(x):
+                # Note: We have to 
                 fk = optimize_basis(x)
 
-                squared_distance_to_target = optimize_target_function(fk)
-                squared_distance_to_orientation = (get_orientation(fk) - target_orientation).ravel()
+                target_error = optimize_target_function(fk)
+                orientation_error = (get_orientation(fk) - target_orientation).ravel()
 
                 # Put more pressure on optimizing the distance to target, to avoid being stuck in a local minimum where the orientation is perfectly reached, but the target is nowhere to be reached
-                squared_distance = np.concatenate([squared_distance_to_target, ORIENTATION_COEFF * squared_distance_to_orientation])
+                total_error = np.concatenate([target_error, ORIENTATION_COEFF * orientation_error])
 
-                return squared_distance
+                return total_error
         else:
             def optimize_function(x):
                 fk = optimize_basis(x)
 
-                squared_distance_to_orientation = (get_orientation(fk) - target_orientation).ravel()
-                squared_distance = squared_distance_to_orientation
+                orientation_error = (get_orientation(fk) - target_orientation).ravel()
+                total_error = orientation_error
 
-                return squared_distance
+                return total_error
 
     if starting_nodes_angles is None:
         raise ValueError("starting_nodes_angles must be specified")
@@ -125,18 +126,19 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
     # Compute bounds
     real_bounds = [link.bounds for link in chain.links]
     # real_bounds = real_bounds[chain.first_active_joint:]
-    real_bounds = chain.active_from_full(real_bounds)
+    real_bounds = np.moveaxis(chain.active_from_full(real_bounds), -1, 0)
 
-    options = {}
-    # Manage iterations maximum
+    logs.logger.warning("Bounds: {}".format(real_bounds))
+
     if max_iter is not None:
-        options["maxiter"] = max_iter
+        logs.logger.info("max_iter is not used anymore in the IK, using it as a parameter will raise an exception in the future")
 
-    # Utilisation d'une optimisation L-BFGS-B
-    #res = scipy.optimize.minimize(optimize_total, chain.active_from_full(starting_nodes_angles), method=optimization_method, bounds=real_bounds, options=options)
-    res = scipy.optimize.least_squares(optimize_total, chain.active_from_full(starting_nodes_angles))
+    # least squares optimization
+    res = scipy.optimize.least_squares(optimize_total, chain.active_from_full(starting_nodes_angles), bounds=real_bounds)
 
-    #logs.logger.info("Inverse kinematic optimisation OK, done in {} iterations".format(res.nit))
+    if res.status != -1:
+        logs.logger.warning("Inverse kinematic optimisation OK, termination status: {}".format(res.status))
+    else:
+        logs.logger.warning("Inverse kinematic optimisation returned an error: termination status: {}".format(res.status))
 
     return chain.active_to_full(res.x, starting_nodes_angles)
-    # return(np.append(starting_nodes_angles[:chain.first_active_joint], res.x))

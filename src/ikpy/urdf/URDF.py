@@ -236,7 +236,7 @@ def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, ba
         origin_orientation = [0, 0, 0]
         rotation = None
         translation = None
-        bounds = [None, None]
+        bounds = [-np.inf, np.inf]
 
         origin = joint.find("origin")
         if origin is not None:

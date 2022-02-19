@@ -30,8 +30,11 @@ class Link:
         Length of the link
     """
 
-    def __init__(self, name, length, bounds=(None, None), is_final=False):
-        self.bounds = bounds
+    def __init__(self, name, length, bounds=None, is_final=False):
+        if bounds is None:
+            self.bounds = (-np.inf, np.inf)
+        else:
+            self.bounds = bounds
         self.name = name
         self.length = length
         self.axis_length = length
@@ -109,7 +112,7 @@ class URDFLink(Link):
                  origin_orientation: np.ndarray,
                  rotation: Optional[np.ndarray] = None,
                  translation: Optional[np.ndarray] = None,
-                 bounds=(None, None),
+                 bounds=None,
                  angle_representation="rpy",
                  use_symbolic_matrix=True,
                  joint_type: str = "revolute"

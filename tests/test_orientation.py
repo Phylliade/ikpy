@@ -23,8 +23,8 @@ def test_orientation(baxter_left_arm):
 
 def test_orientation_full_frame(baxter_left_arm):
     # Found by exploring the reachable values
-    target_position = [0,  0.4, 0.2]
-    target_orientation = np.eye(3)
+    target_position = [0.1, 0.5, -0.1]
+    target_orientation = [[0,0,1], [1,0,0], [0,1,0]]
 
     # Begin to place the arm in the right position
     ik = baxter_left_arm.inverse_kinematics(target_position)
@@ -34,8 +34,9 @@ def test_orientation_full_frame(baxter_left_arm):
     orientation = baxter_left_arm.forward_kinematics(ik)[:3, :3]
 
     # Check
-    np.testing.assert_almost_equal(position, target_position, decimal=5)
     np.testing.assert_almost_equal(orientation, target_orientation, decimal=5)
+    np.testing.assert_almost_equal(position, target_position, decimal=5)
+
 
 
 def test_orientation_only(baxter_left_arm):

@@ -64,7 +64,7 @@ def test_ik_optimization(torso_right_arm):
     """Tests the IK optimization-based method"""
     # Objectives
     target = [0.1, -0.2, 0.1]
-    joints = [0] * len(torso_right_arm.links)
+    joints = [1] * len(torso_right_arm.links)
     joints[-4] = 0
     frame_target = np.eye(4)
     frame_target[:3, 3] = target
@@ -74,7 +74,7 @@ def test_ik_optimization(torso_right_arm):
         frame_target, initial_position=joints, **args)
     # Check whether the results are almost equal
     np.testing.assert_almost_equal(
-        torso_right_arm.forward_kinematics(ik)[:3, 3], target, decimal=1)
+        torso_right_arm.forward_kinematics(ik)[:3, 3], target, decimal=3)
 
 
 def test_chain_serialization(torso_right_arm):
