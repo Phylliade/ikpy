@@ -35,7 +35,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: |
-          # We need to install numpy by hand, to prevent manual compilation on py3.5n which fails...
+          # We need to install numpy by hand, to prevent manual compilation on py3.5 which fails...
           pip install numpy
           pip install .[plot] pytest
           sudo apt-get update --yes && sudo apt-get install graphviz

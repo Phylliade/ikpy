@@ -48,7 +48,7 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
 
     # Compute squared distance to target
     def optimize_target_function(fk):
-        squared_distance_to_target = np.linalg.norm(fk[:3, -1] - target)
+        squared_distance_to_target = fk[:3, -1] - target
 
         # We need to return the fk, it will be used in a later function
         # This way, we don't have to recompute it
@@ -96,17 +96,17 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
                 fk = optimize_basis(x)
 
                 squared_distance_to_target = optimize_target_function(fk)
-                squared_distance_to_orientation = np.linalg.norm(get_orientation(fk) - target_orientation)
+                squared_distance_to_orientation = (get_orientation(fk) - target_orientation).ravel()
 
                 # Put more pressure on optimizing the distance to target, to avoid being stuck in a local minimum where the orientation is perfectly reached, but the target is nowhere to be reached
-                squared_distance = squared_distance_to_target + ORIENTATION_COEFF * squared_distance_to_orientation
+                squared_distance = np.concatenate([squared_distance_to_target, ORIENTATION_COEFF * squared_distance_to_orientation])
 
                 return squared_distance
         else:
             def optimize_function(x):
                 fk = optimize_basis(x)
 
-                squared_distance_to_orientation = np.linalg.norm(get_orientation(fk) - target_orientation)
+                squared_distance_to_orientation = (get_orientation(fk) - target_orientation).ravel()
                 squared_distance = squared_distance_to_orientation
 
                 return squared_distance
@@ -133,9 +133,10 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
         options["maxiter"] = max_iter
 
     # Utilisation d'une optimisation L-BFGS-B
-    res = scipy.optimize.minimize(optimize_total, chain.active_from_full(starting_nodes_angles), method=optimization_method, bounds=real_bounds, options=options)
+    #res = scipy.optimize.minimize(optimize_total, chain.active_from_full(starting_nodes_angles), method=optimization_method, bounds=real_bounds, options=options)
+    res = scipy.optimize.least_squares(optimize_total, chain.active_from_full(starting_nodes_angles))
 
-    logs.logger.info("Inverse kinematic optimisation OK, done in {} iterations".format(res.nit))
+    #logs.logger.info("Inverse kinematic optimisation OK, done in {} iterations".format(res.nit))
 
     return chain.active_to_full(res.x, starting_nodes_angles)
     # return(np.append(starting_nodes_angles[:chain.first_active_joint], res.x))
