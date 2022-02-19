@@ -93,7 +93,7 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
 
         if not no_position:
             def optimize_function(x):
-                # Note: We have to 
+                # Note: This function casts x into a np.float64 array, to have good precision in the computation of the gradients
                 fk = optimize_basis(x)
 
                 target_error = optimize_target_function(fk)
@@ -128,7 +128,7 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
     # real_bounds = real_bounds[chain.first_active_joint:]
     real_bounds = np.moveaxis(chain.active_from_full(real_bounds), -1, 0)
 
-    logs.logger.warning("Bounds: {}".format(real_bounds))
+    logs.logger.info("Bounds: {}".format(real_bounds))
 
     if max_iter is not None:
         logs.logger.info("max_iter is not used anymore in the IK, using it as a parameter will raise an exception in the future")
@@ -137,7 +137,7 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
     res = scipy.optimize.least_squares(optimize_total, chain.active_from_full(starting_nodes_angles), bounds=real_bounds)
 
     if res.status != -1:
-        logs.logger.warning("Inverse kinematic optimisation OK, termination status: {}".format(res.status))
+        logs.logger.info("Inverse kinematic optimisation OK, termination status: {}".format(res.status))
     else:
         logs.logger.warning("Inverse kinematic optimisation returned an error: termination status: {}".format(res.status))
 
