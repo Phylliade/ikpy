@@ -299,7 +299,7 @@ class Chain:
         base_element_type: str
         active_links_mask: list[bool]
         symbolic: bool
-            Use symoblic computations
+            Use symbolic computations
 
 
         Note

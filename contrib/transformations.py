@@ -82,8 +82,8 @@ def list_to_pose(poselist, frame_id="", stamp=rospy.Time(0)):
     """
     Convert a pose in the form of a list in PoseStamped
     :param poselist: a pose on the form [[x, y, z], [x, y, z, w]]
-    :param frame_id: the frame_id on the outputed pose (facultative, empty otherwise)
-    :param stamp: the stamp of the outputed pose (facultative, 0 otherwise)
+    :param frame_id: the frame_id on the outputted pose (facultative, empty otherwise)
+    :param stamp: the stamp of the outputted pose (facultative, 0 otherwise)
     :return: the converted geometry_msgs/PoseStampted object
     """
     p = PoseStamped()
@@ -209,7 +209,7 @@ def inverse_m4x4_transform(mat):
     """
     Return the inverse transformation of a m4x4 transformation
     :param mat: A m4x4 transform
-    :return: inv_transform inverse of the tranformation
+    :return: inv_transform inverse of the transformation
     """
     inv_transform = zeros((4, 4))
     rot = mat[:-1, :-1].T
