@@ -7,9 +7,9 @@ from . import logs
 ORIENTATION_COEFF = 1.
 
 
-def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, regularization_parameter=None, max_iter=None, orientation_mode=None, no_position=False, optimization_method='L-BFGS-B'):
+def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, regularization_parameter=None, max_iter=None, orientation_mode=None, no_position=False):
     """
-    Computes the inverse kinematic on the specified target with an optimization method
+    Computes the inverse kinematic on the specified target
 
     Parameters
     ----------
@@ -32,8 +32,6 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
         * "all": Target the three axes
     no_position: bool
         Do not optimize against position
-    optimization_method: str
-        Optimization method to use. Defaults to 'L-BFGS-B'
     """
     # Begin with the position
     target = target_frame[:3, -1]
