@@ -14,6 +14,8 @@ authors:
 identifiers:
   - type: url
     value: 'https://github.com/Phylliade/ikpy'
+  - type: doi
+    value: 10.5281/zenodo.6551105
 url: 'https://github.com/Phylliade/ikpy'
 abstract: >-
   An Inverse Kinematics library aiming performance

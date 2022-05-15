@@ -93,3 +93,17 @@ Contributions are welcome: if you have an awesome patented \(but also open-sourc
 ## Links
 
 * If performance is your main concern, `aversive++` has an inverse kinematics [module](https://github.com/AversivePlusPlus/ik) written in C++, which works the same way IKPy does.
+
+## Citation
+
+If you use IKPy as part of a publication, please use the Bibtex below as a citation:
+
+```bibtex
+@software{Manceron_IKPy,
+doi = {10.5281/ZENODO.6551105},
+author = {Manceron, Pierre},
+license = {GPL-2.0},
+title = {{IKPy}},
+url = {https://github.com/Phylliade/ikpy}
+}
+```
