@@ -4,10 +4,28 @@
 cff-version: 1.2.0
 title: IKPy
 message: >-
-  An Inverse Kinematics library aiming performance
-  and modularity 
+  If you use this software, please cite it using the
+  metadata from this file.
 type: software
 authors:
   - given-names: Pierre
     family-names: Manceron
     orcid: 'https://orcid.org/0000-0002-2970-973X'
+identifiers:
+  - type: url
+    value: 'https://github.com/Phylliade/ikpy'
+url: 'https://github.com/Phylliade/ikpy'
+abstract: >-
+  An Inverse Kinematics library aiming performance
+  and modularity 
+
+  IKPy is a fast, easy to install and use Inverse
+  Kinematics library written in pure Python, that
+  works on every robot. 
+keywords:
+  - inverse-kinematics
+  - robotics
+  - python
+  - urdf
+  - poppy
+license: GPL-2.0
