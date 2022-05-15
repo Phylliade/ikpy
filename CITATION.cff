@@ -1,0 +1,13 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: IKPy
+message: >-
+  An Inverse Kinematics library aiming performance
+  and modularity 
+type: software
+authors:
+  - given-names: Pierre
+    family-names: Manceron
+    orcid: 'https://orcid.org/0000-0002-2970-973X'
