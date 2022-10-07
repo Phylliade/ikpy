@@ -137,13 +137,13 @@ class URDFLink(Link):
 
         # Check that the given joint type matches the given parameters
         if joint_type == "revolute":
-            if not(self.has_rotation and not self.has_translation):
+            if not (self.has_rotation and not self.has_translation):
                 raise ValueError("Joint type is 'revolute' but rotation axis = {} and translation axis = {}".format(self.has_rotation, self.has_translation))
         elif joint_type == "prismatic":
-            if not(not self.has_rotation and self.has_translation):
+            if not (not self.has_rotation and self.has_translation):
                 raise ValueError("Joint type is 'prismatic' but rotation axis = {} and translation axis = {}".format(self.has_rotation, self.has_translation))
         elif joint_type == "fixed":
-            if not(not self.has_rotation and not self.has_translation):
+            if not (not self.has_rotation and not self.has_translation):
                 raise ValueError("Joint type is 'fixed' but rotation axis = {} and translation axis = {}".format(self.has_rotation, self.has_translation))
 
         else:
@@ -157,7 +157,7 @@ class URDFLink(Link):
             self.symbolic_transformation_matrix = self._apply_geometric_transformations(theta=theta, mu=mu, symbolic=True)
 
     def __repr__(self):
-        return("""URDF Link {} :
+        return ("""URDF Link {} :
     Type : {}
     Bounds : {}
     Origin Translation : {}
