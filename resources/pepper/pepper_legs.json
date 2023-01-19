@@ -1,0 +1,32 @@
+{
+  "elements": [
+    "base_link",
+    "base_link_fixedjoint",
+    "torso",
+    "HipRoll",
+    "Hip",
+    "HipPitch",
+    "Pelvis",
+    "KneePitch",
+    "Tibia",
+    "base_footprint_joint",
+    "base_footprint"
+  ],
+  "urdf_file": "pepper.urdf",
+  "active_links_mask": [
+    false,
+    false,
+    true,
+    true,
+    true,
+    false,
+    false
+  ],
+  "last_link_vector": [
+    0,
+    0.0,
+    0
+  ],
+  "name": "pepper_legs",
+  "version": "v1"
+}
