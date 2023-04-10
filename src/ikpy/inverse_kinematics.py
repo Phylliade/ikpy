@@ -53,11 +53,11 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
 
     # Compute error to target
     def optimize_target_function(fk):
-        target_error = (fk[:3, -1] - target)**2
+        target_error = (fk[:3, -1] - target)
 
         # We need to return the fk, it will be used in a later function
         # This way, we don't have to recompute it
-        return target_error.sum()
+        return target_error
 
     if orientation_mode is None:
         if no_position:
