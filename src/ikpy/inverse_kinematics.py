@@ -33,7 +33,7 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
     no_position: bool
         Do not optimize against position
     optimizer: str
-        The solver to use. Choices: 
+        The solver to use. Choices:
         * "least_squares": Use scipy.optimize.least_squares
         * "scalar": Use scipy.optimize.minimize
     """
@@ -132,7 +132,6 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
     real_bounds = [link.bounds for link in chain.links]
     # real_bounds = real_bounds[chain.first_active_joint:]
     real_bounds = chain.active_from_full(real_bounds)
-
 
     logs.logger.info("Bounds: {}".format(real_bounds))
 
