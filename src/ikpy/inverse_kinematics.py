@@ -139,7 +139,6 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
         logs.logger.info("max_iter is not used anymore in the IK, using it as a parameter will raise an exception in the future")
 
     # least squares optimization
-  
     if optimizer == "scalar":
         def optimize_scalar(x):
             return np.linalg.norm(optimize_total(x))
