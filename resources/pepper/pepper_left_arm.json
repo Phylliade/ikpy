@@ -1,0 +1,38 @@
+{
+  "elements": [
+    "base_link",
+    "base_link_fixedjoint",
+    "torso",
+    "LShoulderPitch",
+    "LShoulder",
+    "LShoulderRoll",
+    "LBicep",
+    "LElbowYaw",
+    "LElbow",
+    "LElbowRoll",
+    "LForeArm",
+    "LWristYaw",
+    "l_wrist",
+    "LHand",
+    "l_gripper"
+  ],
+  "urdf_file": "pepper.urdf",
+  "active_links_mask": [
+    false,
+    false,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false
+  ],
+  "last_link_vector": [
+    0,
+    0.0,
+    0
+  ],
+  "name": "pepper_left_arm",
+  "version": "v1"
+}

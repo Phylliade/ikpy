@@ -1,0 +1,335 @@
+digraph robot {
+	link_base_link [label=base_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_base_link_fixedjoint [label=base_link_fixedjoint color=green fillcolor=lightgrey style=filled]
+	link_base_link -> joint_base_link_fixedjoint
+	link_torso [label=torso color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_base_link_fixedjoint -> link_torso
+	joint_HeadYaw [label=HeadYaw color=green fillcolor=lightgrey style=filled]
+	link_torso -> joint_HeadYaw
+	link_Neck [label=Neck color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_HeadYaw -> link_Neck
+	joint_HeadPitch [label=HeadPitch color=green fillcolor=lightgrey style=filled]
+	link_Neck -> joint_HeadPitch
+	link_Head [label=Head color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_HeadPitch -> link_Head
+	joint_CameraTop_sensor_fixedjoint [label=CameraTop_sensor_fixedjoint color=green fillcolor=lightgrey style=filled]
+	link_Head -> joint_CameraTop_sensor_fixedjoint
+	link_CameraTop_frame [label=CameraTop_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_CameraTop_sensor_fixedjoint -> link_CameraTop_frame
+	joint_CameraTop_optical_frame_fixedjoint [label=CameraTop_optical_frame_fixedjoint color=green fillcolor=lightgrey style=filled]
+	link_CameraTop_frame -> joint_CameraTop_optical_frame_fixedjoint
+	link_CameraTop_optical_frame [label=CameraTop_optical_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_CameraTop_optical_frame_fixedjoint -> link_CameraTop_optical_frame
+	joint_SpeakerLeft_sensor_fixedjoint [label=SpeakerLeft_sensor_fixedjoint color=green fillcolor=lightgrey style=filled]
+	link_Head -> joint_SpeakerLeft_sensor_fixedjoint
+	link_LSpeaker_frame [label=LSpeaker_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_SpeakerLeft_sensor_fixedjoint -> link_LSpeaker_frame
+	joint_CameraDepth_sensor_fixedjoint [label=CameraDepth_sensor_fixedjoint color=green fillcolor=lightgrey style=filled]
+	link_Head -> joint_CameraDepth_sensor_fixedjoint
+	link_CameraDepth_frame [label=CameraDepth_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_CameraDepth_sensor_fixedjoint -> link_CameraDepth_frame
+	joint_CameraDepth_optical_frame_fixedjoint [label=CameraDepth_optical_frame_fixedjoint color=green fillcolor=lightgrey style=filled]
+	link_CameraDepth_frame -> joint_CameraDepth_optical_frame_fixedjoint
+	link_CameraDepth_optical_frame [label=CameraDepth_optical_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_CameraDepth_optical_frame_fixedjoint -> link_CameraDepth_optical_frame
+	"joint_Head/Touch/Front_sensor_fixedjoint" [label="Head/Touch/Front_sensor_fixedjoint" color=green fillcolor=lightgrey style=filled]
+	link_Head -> "joint_Head/Touch/Front_sensor_fixedjoint"
+	link_HeadTouchFront_frame [label=HeadTouchFront_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	"joint_Head/Touch/Front_sensor_fixedjoint" -> link_HeadTouchFront_frame
+	joint_CameraBottom_sensor_fixedjoint [label=CameraBottom_sensor_fixedjoint color=green fillcolor=lightgrey style=filled]
+	link_Head -> joint_CameraBottom_sensor_fixedjoint
+	link_CameraBottom_frame [label=CameraBottom_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_CameraBottom_sensor_fixedjoint -> link_CameraBottom_frame
+	joint_CameraBottom_optical_frame_fixedjoint [label=CameraBottom_optical_frame_fixedjoint color=green fillcolor=lightgrey style=filled]
+	link_CameraBottom_frame -> joint_CameraBottom_optical_frame_fixedjoint
+	link_CameraBottom_optical_frame [label=CameraBottom_optical_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_CameraBottom_optical_frame_fixedjoint -> link_CameraBottom_optical_frame
+	"joint_Head/Touch/Rear_sensor_fixedjoint" [label="Head/Touch/Rear_sensor_fixedjoint" color=green fillcolor=lightgrey style=filled]
+	link_Head -> "joint_Head/Touch/Rear_sensor_fixedjoint"
+	link_HeadTouchRear_frame [label=HeadTouchRear_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	"joint_Head/Touch/Rear_sensor_fixedjoint" -> link_HeadTouchRear_frame
+	joint_SpeakerRight_sensor_fixedjoint [label=SpeakerRight_sensor_fixedjoint color=green fillcolor=lightgrey style=filled]
+	link_Head -> joint_SpeakerRight_sensor_fixedjoint
+	link_RSpeaker_frame [label=RSpeaker_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_SpeakerRight_sensor_fixedjoint -> link_RSpeaker_frame
+	"joint_Head/Touch/Middle_sensor_fixedjoint" [label="Head/Touch/Middle_sensor_fixedjoint" color=green fillcolor=lightgrey style=filled]
+	link_Head -> "joint_Head/Touch/Middle_sensor_fixedjoint"
+	link_HeadTouchMiddle_frame [label=HeadTouchMiddle_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	"joint_Head/Touch/Middle_sensor_fixedjoint" -> link_HeadTouchMiddle_frame
+	joint_HipRoll [label=HipRoll color=green fillcolor=lightgrey style=filled]
+	link_torso -> joint_HipRoll
+	link_Hip [label=Hip color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_HipRoll -> link_Hip
+	joint_HipPitch [label=HipPitch color=green fillcolor=lightgrey style=filled]
+	link_Hip -> joint_HipPitch
+	link_Pelvis [label=Pelvis color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_HipPitch -> link_Pelvis
+	joint_KneePitch [label=KneePitch color=green fillcolor=lightgrey style=filled]
+	link_Pelvis -> joint_KneePitch
+	link_Tibia [label=Tibia color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_KneePitch -> link_Tibia
+	joint_base_footprint_joint [label=base_footprint_joint color=green fillcolor=lightgrey style=filled]
+	link_Tibia -> joint_base_footprint_joint
+	link_base_footprint [label=base_footprint color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_base_footprint_joint -> link_base_footprint
+	"joint_Sonar/Back_sensor_fixedjoint" [label="Sonar/Back_sensor_fixedjoint" color=green fillcolor=lightgrey style=filled]
+	link_Tibia -> "joint_Sonar/Back_sensor_fixedjoint"
+	link_SonarBack_frame [label=SonarBack_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	"joint_Sonar/Back_sensor_fixedjoint" -> link_SonarBack_frame
+	"joint_LaserSensor/VerticalLeft_sensor_fixedjoint" [label="LaserSensor/VerticalLeft_sensor_fixedjoint" color=green fillcolor=lightgrey style=filled]
+	link_Tibia -> "joint_LaserSensor/VerticalLeft_sensor_fixedjoint"
+	link_VerticalLeftLaser_frame [label=VerticalLeftLaser_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	"joint_LaserSensor/VerticalLeft_sensor_fixedjoint" -> link_VerticalLeftLaser_frame
+	"joint_LaserSensor/Front_sensor_fixedjoint" [label="LaserSensor/Front_sensor_fixedjoint" color=green fillcolor=lightgrey style=filled]
+	link_Tibia -> "joint_LaserSensor/Front_sensor_fixedjoint"
+	link_SurroundingFrontLaser_device_frame [label=SurroundingFrontLaser_device_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	"joint_LaserSensor/Front_sensor_fixedjoint" -> link_SurroundingFrontLaser_device_frame
+	"joint_Bumper/Back_sensor_fixedjoint" [label="Bumper/Back_sensor_fixedjoint" color=green fillcolor=lightgrey style=filled]
+	link_Tibia -> "joint_Bumper/Back_sensor_fixedjoint"
+	link_BumperB_frame [label=BumperB_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	"joint_Bumper/Back_sensor_fixedjoint" -> link_BumperB_frame
+	"joint_LaserSensor/Left_projected_sensor_fixedjoint" [label="LaserSensor/Left_projected_sensor_fixedjoint" color=green fillcolor=lightgrey style=filled]
+	link_Tibia -> "joint_LaserSensor/Left_projected_sensor_fixedjoint"
+	link_SurroundingLeftLaser_frame [label=SurroundingLeftLaser_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	"joint_LaserSensor/Left_projected_sensor_fixedjoint" -> link_SurroundingLeftLaser_frame
+	"joint_LaserSensor/Shovel_sensor_fixedjoint" [label="LaserSensor/Shovel_sensor_fixedjoint" color=green fillcolor=lightgrey style=filled]
+	link_Tibia -> "joint_LaserSensor/Shovel_sensor_fixedjoint"
+	link_ShovelLaser_frame [label=ShovelLaser_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	"joint_LaserSensor/Shovel_sensor_fixedjoint" -> link_ShovelLaser_frame
+	"joint_LaserSensor/Right_sensor_fixedjoint" [label="LaserSensor/Right_sensor_fixedjoint" color=green fillcolor=lightgrey style=filled]
+	link_Tibia -> "joint_LaserSensor/Right_sensor_fixedjoint"
+	link_SurroundingRightLaser_device_frame [label=SurroundingRightLaser_device_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	"joint_LaserSensor/Right_sensor_fixedjoint" -> link_SurroundingRightLaser_device_frame
+	joint_GyrometerBase_sensor_fixedjoint [label=GyrometerBase_sensor_fixedjoint color=green fillcolor=lightgrey style=filled]
+	link_Tibia -> joint_GyrometerBase_sensor_fixedjoint
+	link_ImuBaseGyrometer_frame [label=ImuBaseGyrometer_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_GyrometerBase_sensor_fixedjoint -> link_ImuBaseGyrometer_frame
+	"joint_LaserSensor/Left_sensor_fixedjoint" [label="LaserSensor/Left_sensor_fixedjoint" color=green fillcolor=lightgrey style=filled]
+	link_Tibia -> "joint_LaserSensor/Left_sensor_fixedjoint"
+	link_SurroundingLeftLaser_device_frame [label=SurroundingLeftLaser_device_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	"joint_LaserSensor/Left_sensor_fixedjoint" -> link_SurroundingLeftLaser_device_frame
+	"joint_LaserSensor/Right_projected_sensor_fixedjoint" [label="LaserSensor/Right_projected_sensor_fixedjoint" color=green fillcolor=lightgrey style=filled]
+	link_Tibia -> "joint_LaserSensor/Right_projected_sensor_fixedjoint"
+	link_SurroundingRightLaser_frame [label=SurroundingRightLaser_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	"joint_LaserSensor/Right_projected_sensor_fixedjoint" -> link_SurroundingRightLaser_frame
+	"joint_LaserSensor/VerticalRight_sensor_fixedjoint" [label="LaserSensor/VerticalRight_sensor_fixedjoint" color=green fillcolor=lightgrey style=filled]
+	link_Tibia -> "joint_LaserSensor/VerticalRight_sensor_fixedjoint"
+	link_VerticalRightLaser_frame [label=VerticalRightLaser_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	"joint_LaserSensor/VerticalRight_sensor_fixedjoint" -> link_VerticalRightLaser_frame
+	"joint_Sonar/Front_sensor_fixedjoint" [label="Sonar/Front_sensor_fixedjoint" color=green fillcolor=lightgrey style=filled]
+	link_Tibia -> "joint_Sonar/Front_sensor_fixedjoint"
+	link_SonarFront_frame [label=SonarFront_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	"joint_Sonar/Front_sensor_fixedjoint" -> link_SonarFront_frame
+	"joint_Bumper/FrontLeft_sensor_fixedjoint" [label="Bumper/FrontLeft_sensor_fixedjoint" color=green fillcolor=lightgrey style=filled]
+	link_Tibia -> "joint_Bumper/FrontLeft_sensor_fixedjoint"
+	link_BumperFL_frame [label=BumperFL_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	"joint_Bumper/FrontLeft_sensor_fixedjoint" -> link_BumperFL_frame
+	joint_AccelerometerBase_sensor_fixedjoint [label=AccelerometerBase_sensor_fixedjoint color=green fillcolor=lightgrey style=filled]
+	link_Tibia -> joint_AccelerometerBase_sensor_fixedjoint
+	link_ImuBaseAccelerometer_frame [label=ImuBaseAccelerometer_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_AccelerometerBase_sensor_fixedjoint -> link_ImuBaseAccelerometer_frame
+	"joint_Bumper/FrontRight_sensor_fixedjoint" [label="Bumper/FrontRight_sensor_fixedjoint" color=green fillcolor=lightgrey style=filled]
+	link_Tibia -> "joint_Bumper/FrontRight_sensor_fixedjoint"
+	link_BumperFR_frame [label=BumperFR_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	"joint_Bumper/FrontRight_sensor_fixedjoint" -> link_BumperFR_frame
+	"joint_LaserSensor/Front_projected_sensor_fixedjoint" [label="LaserSensor/Front_projected_sensor_fixedjoint" color=green fillcolor=lightgrey style=filled]
+	link_Tibia -> "joint_LaserSensor/Front_projected_sensor_fixedjoint"
+	link_SurroundingFrontLaser_frame [label=SurroundingFrontLaser_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	"joint_LaserSensor/Front_projected_sensor_fixedjoint" -> link_SurroundingFrontLaser_frame
+	joint_WheelB [label=WheelB color=green fillcolor=lightgrey style=filled]
+	link_Tibia -> joint_WheelB
+	link_WheelB_link [label=WheelB_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_WheelB -> link_WheelB_link
+	joint_WheelFL [label=WheelFL color=green fillcolor=lightgrey style=filled]
+	link_Tibia -> joint_WheelFL
+	link_WheelFL_link [label=WheelFL_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_WheelFL -> link_WheelFL_link
+	joint_WheelFR [label=WheelFR color=green fillcolor=lightgrey style=filled]
+	link_Tibia -> joint_WheelFR
+	link_WheelFR_link [label=WheelFR_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_WheelFR -> link_WheelFR_link
+	joint_LShoulderPitch [label=LShoulderPitch color=green fillcolor=lightgrey style=filled]
+	link_torso -> joint_LShoulderPitch
+	link_LShoulder [label=LShoulder color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_LShoulderPitch -> link_LShoulder
+	joint_LShoulderRoll [label=LShoulderRoll color=green fillcolor=lightgrey style=filled]
+	link_LShoulder -> joint_LShoulderRoll
+	link_LBicep [label=LBicep color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_LShoulderRoll -> link_LBicep
+	joint_LElbowYaw [label=LElbowYaw color=green fillcolor=lightgrey style=filled]
+	link_LBicep -> joint_LElbowYaw
+	link_LElbow [label=LElbow color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_LElbowYaw -> link_LElbow
+	joint_LElbowRoll [label=LElbowRoll color=green fillcolor=lightgrey style=filled]
+	link_LElbow -> joint_LElbowRoll
+	link_LForeArm [label=LForeArm color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_LElbowRoll -> link_LForeArm
+	joint_LWristYaw [label=LWristYaw color=green fillcolor=lightgrey style=filled]
+	link_LForeArm -> joint_LWristYaw
+	link_l_wrist [label=l_wrist color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_LWristYaw -> link_l_wrist
+	joint_LHand [label=LHand color=green fillcolor=lightgrey style=filled]
+	link_l_wrist -> joint_LHand
+	link_l_gripper [label=l_gripper color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_LHand -> link_l_gripper
+	"joint_LHand/Touch/Back_sensor_fixedjoint" [label="LHand/Touch/Back_sensor_fixedjoint" color=green fillcolor=lightgrey style=filled]
+	link_l_wrist -> "joint_LHand/Touch/Back_sensor_fixedjoint"
+	link_LHandTouchBack_frame [label=LHandTouchBack_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	"joint_LHand/Touch/Back_sensor_fixedjoint" -> link_LHandTouchBack_frame
+	joint_LFinger21 [label=LFinger21 color=green fillcolor=lightgrey style=filled]
+	link_l_wrist -> joint_LFinger21
+	link_LFinger21_link [label=LFinger21_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_LFinger21 -> link_LFinger21_link
+	joint_LFinger22 [label=LFinger22 color=green fillcolor=lightgrey style=filled]
+	link_LFinger21_link -> joint_LFinger22
+	link_LFinger22_link [label=LFinger22_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_LFinger22 -> link_LFinger22_link
+	joint_LFinger23 [label=LFinger23 color=green fillcolor=lightgrey style=filled]
+	link_LFinger22_link -> joint_LFinger23
+	link_LFinger23_link [label=LFinger23_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_LFinger23 -> link_LFinger23_link
+	joint_LFinger11 [label=LFinger11 color=green fillcolor=lightgrey style=filled]
+	link_l_wrist -> joint_LFinger11
+	link_LFinger11_link [label=LFinger11_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_LFinger11 -> link_LFinger11_link
+	joint_LFinger12 [label=LFinger12 color=green fillcolor=lightgrey style=filled]
+	link_LFinger11_link -> joint_LFinger12
+	link_LFinger12_link [label=LFinger12_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_LFinger12 -> link_LFinger12_link
+	joint_LFinger13 [label=LFinger13 color=green fillcolor=lightgrey style=filled]
+	link_LFinger12_link -> joint_LFinger13
+	link_LFinger13_link [label=LFinger13_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_LFinger13 -> link_LFinger13_link
+	joint_LFinger41 [label=LFinger41 color=green fillcolor=lightgrey style=filled]
+	link_l_wrist -> joint_LFinger41
+	link_LFinger41_link [label=LFinger41_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_LFinger41 -> link_LFinger41_link
+	joint_LFinger42 [label=LFinger42 color=green fillcolor=lightgrey style=filled]
+	link_LFinger41_link -> joint_LFinger42
+	link_LFinger42_link [label=LFinger42_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_LFinger42 -> link_LFinger42_link
+	joint_LFinger43 [label=LFinger43 color=green fillcolor=lightgrey style=filled]
+	link_LFinger42_link -> joint_LFinger43
+	link_LFinger43_link [label=LFinger43_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_LFinger43 -> link_LFinger43_link
+	joint_LFinger31 [label=LFinger31 color=green fillcolor=lightgrey style=filled]
+	link_l_wrist -> joint_LFinger31
+	link_LFinger31_link [label=LFinger31_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_LFinger31 -> link_LFinger31_link
+	joint_LFinger32 [label=LFinger32 color=green fillcolor=lightgrey style=filled]
+	link_LFinger31_link -> joint_LFinger32
+	link_LFinger32_link [label=LFinger32_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_LFinger32 -> link_LFinger32_link
+	joint_LFinger33 [label=LFinger33 color=green fillcolor=lightgrey style=filled]
+	link_LFinger32_link -> joint_LFinger33
+	link_LFinger33_link [label=LFinger33_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_LFinger33 -> link_LFinger33_link
+	joint_LThumb1 [label=LThumb1 color=green fillcolor=lightgrey style=filled]
+	link_l_wrist -> joint_LThumb1
+	link_LThumb1_link [label=LThumb1_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_LThumb1 -> link_LThumb1_link
+	joint_LThumb2 [label=LThumb2 color=green fillcolor=lightgrey style=filled]
+	link_LThumb1_link -> joint_LThumb2
+	link_LThumb2_link [label=LThumb2_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_LThumb2 -> link_LThumb2_link
+	joint_RShoulderPitch [label=RShoulderPitch color=green fillcolor=lightgrey style=filled]
+	link_torso -> joint_RShoulderPitch
+	link_RShoulder [label=RShoulder color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_RShoulderPitch -> link_RShoulder
+	joint_RShoulderRoll [label=RShoulderRoll color=green fillcolor=lightgrey style=filled]
+	link_RShoulder -> joint_RShoulderRoll
+	link_RBicep [label=RBicep color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_RShoulderRoll -> link_RBicep
+	joint_RElbowYaw [label=RElbowYaw color=green fillcolor=lightgrey style=filled]
+	link_RBicep -> joint_RElbowYaw
+	link_RElbow [label=RElbow color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_RElbowYaw -> link_RElbow
+	joint_RElbowRoll [label=RElbowRoll color=green fillcolor=lightgrey style=filled]
+	link_RElbow -> joint_RElbowRoll
+	link_RForeArm [label=RForeArm color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_RElbowRoll -> link_RForeArm
+	joint_RWristYaw [label=RWristYaw color=green fillcolor=lightgrey style=filled]
+	link_RForeArm -> joint_RWristYaw
+	link_r_wrist [label=r_wrist color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_RWristYaw -> link_r_wrist
+	joint_RHand [label=RHand color=green fillcolor=lightgrey style=filled]
+	link_r_wrist -> joint_RHand
+	link_r_gripper [label=r_gripper color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_RHand -> link_r_gripper
+	"joint_RHand/Touch/Back_sensor_fixedjoint" [label="RHand/Touch/Back_sensor_fixedjoint" color=green fillcolor=lightgrey style=filled]
+	link_r_wrist -> "joint_RHand/Touch/Back_sensor_fixedjoint"
+	link_RHandTouchBack_frame [label=RHandTouchBack_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	"joint_RHand/Touch/Back_sensor_fixedjoint" -> link_RHandTouchBack_frame
+	joint_RFinger41 [label=RFinger41 color=green fillcolor=lightgrey style=filled]
+	link_r_wrist -> joint_RFinger41
+	link_RFinger41_link [label=RFinger41_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_RFinger41 -> link_RFinger41_link
+	joint_RFinger42 [label=RFinger42 color=green fillcolor=lightgrey style=filled]
+	link_RFinger41_link -> joint_RFinger42
+	link_RFinger42_link [label=RFinger42_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_RFinger42 -> link_RFinger42_link
+	joint_RFinger43 [label=RFinger43 color=green fillcolor=lightgrey style=filled]
+	link_RFinger42_link -> joint_RFinger43
+	link_RFinger43_link [label=RFinger43_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_RFinger43 -> link_RFinger43_link
+	joint_RFinger11 [label=RFinger11 color=green fillcolor=lightgrey style=filled]
+	link_r_wrist -> joint_RFinger11
+	link_RFinger11_link [label=RFinger11_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_RFinger11 -> link_RFinger11_link
+	joint_RFinger12 [label=RFinger12 color=green fillcolor=lightgrey style=filled]
+	link_RFinger11_link -> joint_RFinger12
+	link_RFinger12_link [label=RFinger12_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_RFinger12 -> link_RFinger12_link
+	joint_RFinger13 [label=RFinger13 color=green fillcolor=lightgrey style=filled]
+	link_RFinger12_link -> joint_RFinger13
+	link_RFinger13_link [label=RFinger13_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_RFinger13 -> link_RFinger13_link
+	joint_RFinger31 [label=RFinger31 color=green fillcolor=lightgrey style=filled]
+	link_r_wrist -> joint_RFinger31
+	link_RFinger31_link [label=RFinger31_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_RFinger31 -> link_RFinger31_link
+	joint_RFinger32 [label=RFinger32 color=green fillcolor=lightgrey style=filled]
+	link_RFinger31_link -> joint_RFinger32
+	link_RFinger32_link [label=RFinger32_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_RFinger32 -> link_RFinger32_link
+	joint_RFinger33 [label=RFinger33 color=green fillcolor=lightgrey style=filled]
+	link_RFinger32_link -> joint_RFinger33
+	link_RFinger33_link [label=RFinger33_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_RFinger33 -> link_RFinger33_link
+	joint_RFinger21 [label=RFinger21 color=green fillcolor=lightgrey style=filled]
+	link_r_wrist -> joint_RFinger21
+	link_RFinger21_link [label=RFinger21_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_RFinger21 -> link_RFinger21_link
+	joint_RFinger22 [label=RFinger22 color=green fillcolor=lightgrey style=filled]
+	link_RFinger21_link -> joint_RFinger22
+	link_RFinger22_link [label=RFinger22_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_RFinger22 -> link_RFinger22_link
+	joint_RFinger23 [label=RFinger23 color=green fillcolor=lightgrey style=filled]
+	link_RFinger22_link -> joint_RFinger23
+	link_RFinger23_link [label=RFinger23_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_RFinger23 -> link_RFinger23_link
+	joint_RThumb1 [label=RThumb1 color=green fillcolor=lightgrey style=filled]
+	link_r_wrist -> joint_RThumb1
+	link_RThumb1_link [label=RThumb1_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_RThumb1 -> link_RThumb1_link
+	joint_RThumb2 [label=RThumb2 color=green fillcolor=lightgrey style=filled]
+	link_RThumb1_link -> joint_RThumb2
+	link_RThumb2_link [label=RThumb2_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_RThumb2 -> link_RThumb2_link
+	joint_Accelerometer_sensor_fixedjoint [label=Accelerometer_sensor_fixedjoint color=green fillcolor=lightgrey style=filled]
+	link_torso -> joint_Accelerometer_sensor_fixedjoint
+	link_ImuTorsoAccelerometer_frame [label=ImuTorsoAccelerometer_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_Accelerometer_sensor_fixedjoint -> link_ImuTorsoAccelerometer_frame
+	joint_Gyrometer_sensor_fixedjoint [label=Gyrometer_sensor_fixedjoint color=green fillcolor=lightgrey style=filled]
+	link_torso -> joint_Gyrometer_sensor_fixedjoint
+	link_ImuTorsoGyrometer_frame [label=ImuTorsoGyrometer_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_Gyrometer_sensor_fixedjoint -> link_ImuTorsoGyrometer_frame
+	joint_Tablet_sensor_fixedjoint [label=Tablet_sensor_fixedjoint color=green fillcolor=lightgrey style=filled]
+	link_torso -> joint_Tablet_sensor_fixedjoint
+	link_Tablet_frame [label=Tablet_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_Tablet_sensor_fixedjoint -> link_Tablet_frame
+	"joint_ChestBoard/Button_sensor_fixedjoint" [label="ChestBoard/Button_sensor_fixedjoint" color=green fillcolor=lightgrey style=filled]
+	link_torso -> "joint_ChestBoard/Button_sensor_fixedjoint"
+	link_ChestButton_frame [label=ChestButton_frame color=blue fillcolor=lightgrey shape=box style=filled]
+	"joint_ChestBoard/Button_sensor_fixedjoint" -> link_ChestButton_frame
+}
