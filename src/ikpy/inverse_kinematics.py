@@ -53,11 +53,11 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
 
     # Compute error to target
     def optimize_target_function(fk):
-        target_error = fk[:3, -1] - target
+        target_error = (fk[:3, -1] - target)**2
 
         # We need to return the fk, it will be used in a later function
         # This way, we don't have to recompute it
-        return target_error
+        return target_error.sum()
 
     if orientation_mode is None:
         if no_position:
@@ -139,6 +139,7 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
         logs.logger.info("max_iter is not used anymore in the IK, using it as a parameter will raise an exception in the future")
 
     # least squares optimization
+  
     if optimizer == "scalar":
         def optimize_scalar(x):
             return np.linalg.norm(optimize_total(x))

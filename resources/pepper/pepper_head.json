@@ -1,0 +1,28 @@
+{
+  "elements": [
+    "base_link",
+    "base_link_fixedjoint",
+    "torso",
+    "HeadYaw",
+    "Neck",
+    "HeadPitch",
+    "Head"
+  ],
+  "urdf_file": "pepper.urdf",
+  "active_links_mask": [
+    false,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false
+  ],
+  "last_link_vector": [
+    0,
+    0.0,
+    0
+  ],
+  "name": "pepper_head",
+  "version": "v1"
+}
