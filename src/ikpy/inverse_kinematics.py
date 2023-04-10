@@ -34,8 +34,8 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
         Do not optimize against position
     optimizer: str
         The optimizer to use. Choices:
-        * "least_squares": Use scipy.optimize.least_squares
-        * "scalar": Use scipy.optimize.minimize
+        * "least_squares": Use scipy.optimize.least_squares (the default)
+        * "scalar": Use scipy.optimize.minimize (the default prior to IKPy 3.3)
     """
     if optimizer not in ["least_squares", "scalar"]:
         raise ValueError("Unknown solver: {}".format(optimizer))
