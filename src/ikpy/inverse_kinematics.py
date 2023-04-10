@@ -33,7 +33,7 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
     no_position: bool
         Do not optimize against position
     optimizer: str
-        The solver to use. Choices:
+        The optimizer to use. Choices:
         * "least_squares": Use scipy.optimize.least_squares
         * "scalar": Use scipy.optimize.minimize
     """
