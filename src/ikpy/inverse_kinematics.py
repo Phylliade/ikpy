@@ -34,8 +34,8 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
         Do not optimize against position
     optimizer: str
         The optimizer to use. Choices:
-        * "least_squares": Use scipy.optimize.least_squares
-        * "scalar": Use scipy.optimize.minimize
+        * "least_squares": Use scipy.optimize.least_squares (the default)
+        * "scalar": Use scipy.optimize.minimize (the default prior to IKPy 3.3)
     """
     if optimizer not in ["least_squares", "scalar"]:
         raise ValueError("Unknown solver: {}".format(optimizer))
@@ -53,7 +53,7 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
 
     # Compute error to target
     def optimize_target_function(fk):
-        target_error = fk[:3, -1] - target
+        target_error = (fk[:3, -1] - target)
 
         # We need to return the fk, it will be used in a later function
         # This way, we don't have to recompute it
