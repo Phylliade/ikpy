@@ -7,7 +7,7 @@ from . import logs
 ORIENTATION_COEFF = 1.
 
 
-def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, regularization_parameter=None, max_iter=None, orientation_mode=None, no_position=False):
+def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, regularization_parameter=None, max_iter=None, orientation_mode=None, no_position=False, optimizer="least_squares"):
     """
     Computes the inverse kinematic on the specified target
 
@@ -32,7 +32,14 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
         * "all": Target the three axes
     no_position: bool
         Do not optimize against position
+    optimizer: str
+        The optimizer to use. Choices:
+        * "least_squares": Use scipy.optimize.least_squares
+        * "scalar": Use scipy.optimize.minimize
     """
+    if optimizer not in ["least_squares", "scalar"]:
+        raise ValueError("Unknown solver: {}".format(optimizer))
+
     # Begin with the position
     target = target_frame[:3, -1]
 
@@ -124,7 +131,7 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
     # Compute bounds
     real_bounds = [link.bounds for link in chain.links]
     # real_bounds = real_bounds[chain.first_active_joint:]
-    real_bounds = np.moveaxis(chain.active_from_full(real_bounds), -1, 0)
+    real_bounds = chain.active_from_full(real_bounds)
 
     logs.logger.info("Bounds: {}".format(real_bounds))
 
@@ -132,7 +139,15 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
         logs.logger.info("max_iter is not used anymore in the IK, using it as a parameter will raise an exception in the future")
 
     # least squares optimization
-    res = scipy.optimize.minimize(optimize_total, chain.active_from_full(starting_nodes_angles), bounds=real_bounds.T, method='L-BFGS-B', jac=None)
+  
+    if optimizer == "scalar":
+        def optimize_scalar(x):
+            return np.linalg.norm(optimize_total(x))
+        res = scipy.optimize.minimize(optimize_scalar, chain.active_from_full(starting_nodes_angles), bounds=real_bounds)
+    elif optimizer == "least_squares":
+        # We need to unzip the bounds
+        real_bounds = np.moveaxis(real_bounds, -1, 0)
+        res = scipy.optimize.least_squares(optimize_total, chain.active_from_full(starting_nodes_angles), bounds=real_bounds)
 
     if res.status != -1:
         logs.logger.info("Inverse kinematic optimisation OK, termination status: {}".format(res.status))
