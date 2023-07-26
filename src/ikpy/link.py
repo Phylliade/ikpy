@@ -283,7 +283,7 @@ class DHLink(Link):
         The link object
     """
 
-    def __init__(self, name, d=0, a=0, alpha=0, theta=0, bounds=None, use_symbolic_matrix=True, length=0):
+    def __init__(self, name=None, d=0, a=0, alpha=0, theta=0, bounds=None, use_symbolic_matrix=True, length=0):
         Link.__init__(self, use_symbolic_matrix, length=length)
         self.d = d
         self.a = a
