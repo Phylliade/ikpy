@@ -1,0 +1,35 @@
+{
+  "elements": [
+    "body_link",
+    "l_hip_yaw",
+    "l_hip_yaw_link",
+    "l_hip_roll",
+    "l_hip_roll_link",
+    "l_hip_pitch",
+    "l_hip_pitch_link",
+    "l_knee",
+    "l_knee_link",
+    "l_ank_pitch",
+    "l_ank_pitch_link",
+    "l_ank_roll",
+    "l_ank_roll_link"
+  ],
+  "urdf_file": "robotis_op3.urdf",
+  "active_links_mask": [
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false
+  ],
+  "last_link_vector": [
+    0,
+    0,
+    0
+  ],
+  "name": "robotis_op3_left_leg",
+  "version": "v1"
+}
