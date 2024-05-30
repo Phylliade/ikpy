@@ -270,17 +270,19 @@ class DHLink(Link):
         offset along previous   to the common normal
     use_symbolic_matrix: bool
         whether the transformation matrix is stored as Numpy array or as a Sympy symbolic matrix.
-
+    modified_dh: bool
+        whether to use the modified DH parameters or not
     Returns
     -------
     DHLink:
         The link object
     """
 
-    def __init__(self, name, d=0, a=0, bounds=None, use_symbolic_matrix=True):
+    def __init__(self, name, d=0, a=0, bounds=None, use_symbolic_matrix=True,modified_dh=True):
         Link.__init__(self, use_symbolic_matrix)
         self.d = d
         self.a = a
+        self.modified_dh = modified_dh
 
     def get_link_frame_matrix(self, parameters):
         """ Computes the homogeneous transformation matrix for this link. """
@@ -289,7 +291,12 @@ class DHLink(Link):
         st = np.sin(theta + self.theta)
         ca = np.cos(self.alpha)
         sa = np.sin(self.alpha)
-
+        if self.modified_dh:
+            return np.matrix(((ct, -st, 0, self.a),
+                              (st * ca, ct * ca, -sa, -self.d * sa),
+                              (st * sa, ct * sa, ca, self.d * ca),
+                              (0, 0, 0, 1)))
+        
         return np.matrix(((ct, -st * ca, st * sa, self.a * ct),
                           (st, ct * ca, -ct * sa, self.a * st),
                           (0, sa, ca, self.d),

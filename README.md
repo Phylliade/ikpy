@@ -31,6 +31,7 @@ With IKPy, you can:
 * IKPy is **precise** (up to 7 digits): the only limitation being your underlying model's precision, and **fast**: from 7 ms to 50 ms (depending on your precision) for a complete IK computation.
 * **Plot** your kinematic chain: no need to use a real robot (or a simulator) to test your algorithms!
 * Define your own Inverse Kinematics methods.
+* Support for both modified and classical Denavit-Hartenberg parameters 
 * Utils to parse and analyze URDF files:
 
 ![](./tutorials/assets/baxter_tree.png)
