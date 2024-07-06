@@ -1,0 +1,91 @@
+digraph robot {
+	link_body_link [label=body_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_l_hip_yaw [label=l_hip_yaw color=green fillcolor=lightgrey style=filled]
+	link_body_link -> joint_l_hip_yaw
+	link_l_hip_yaw_link [label=l_hip_yaw_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_l_hip_yaw -> link_l_hip_yaw_link
+	joint_l_hip_roll [label=l_hip_roll color=green fillcolor=lightgrey style=filled]
+	link_l_hip_yaw_link -> joint_l_hip_roll
+	link_l_hip_roll_link [label=l_hip_roll_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_l_hip_roll -> link_l_hip_roll_link
+	joint_l_hip_pitch [label=l_hip_pitch color=green fillcolor=lightgrey style=filled]
+	link_l_hip_roll_link -> joint_l_hip_pitch
+	link_l_hip_pitch_link [label=l_hip_pitch_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_l_hip_pitch -> link_l_hip_pitch_link
+	joint_l_knee [label=l_knee color=green fillcolor=lightgrey style=filled]
+	link_l_hip_pitch_link -> joint_l_knee
+	link_l_knee_link [label=l_knee_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_l_knee -> link_l_knee_link
+	joint_l_ank_pitch [label=l_ank_pitch color=green fillcolor=lightgrey style=filled]
+	link_l_knee_link -> joint_l_ank_pitch
+	link_l_ank_pitch_link [label=l_ank_pitch_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_l_ank_pitch -> link_l_ank_pitch_link
+	joint_l_ank_roll [label=l_ank_roll color=green fillcolor=lightgrey style=filled]
+	link_l_ank_pitch_link -> joint_l_ank_roll
+	link_l_ank_roll_link [label=l_ank_roll_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_l_ank_roll -> link_l_ank_roll_link
+	joint_r_hip_yaw [label=r_hip_yaw color=green fillcolor=lightgrey style=filled]
+	link_body_link -> joint_r_hip_yaw
+	link_r_hip_yaw_link [label=r_hip_yaw_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_r_hip_yaw -> link_r_hip_yaw_link
+	joint_r_hip_roll [label=r_hip_roll color=green fillcolor=lightgrey style=filled]
+	link_r_hip_yaw_link -> joint_r_hip_roll
+	link_r_hip_roll_link [label=r_hip_roll_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_r_hip_roll -> link_r_hip_roll_link
+	joint_r_hip_pitch [label=r_hip_pitch color=green fillcolor=lightgrey style=filled]
+	link_r_hip_roll_link -> joint_r_hip_pitch
+	link_r_hip_pitch_link [label=r_hip_pitch_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_r_hip_pitch -> link_r_hip_pitch_link
+	joint_r_knee [label=r_knee color=green fillcolor=lightgrey style=filled]
+	link_r_hip_pitch_link -> joint_r_knee
+	link_r_knee_link [label=r_knee_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_r_knee -> link_r_knee_link
+	joint_r_ank_pitch [label=r_ank_pitch color=green fillcolor=lightgrey style=filled]
+	link_r_knee_link -> joint_r_ank_pitch
+	link_r_ank_pitch_link [label=r_ank_pitch_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_r_ank_pitch -> link_r_ank_pitch_link
+	joint_r_ank_roll [label=r_ank_roll color=green fillcolor=lightgrey style=filled]
+	link_r_ank_pitch_link -> joint_r_ank_roll
+	link_r_ank_roll_link [label=r_ank_roll_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_r_ank_roll -> link_r_ank_roll_link
+	joint_l_sho_pitch [label=l_sho_pitch color=green fillcolor=lightgrey style=filled]
+	link_body_link -> joint_l_sho_pitch
+	link_l_sho_pitch_link [label=l_sho_pitch_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_l_sho_pitch -> link_l_sho_pitch_link
+	joint_l_sho_roll [label=l_sho_roll color=green fillcolor=lightgrey style=filled]
+	link_l_sho_pitch_link -> joint_l_sho_roll
+	link_l_sho_roll_link [label=l_sho_roll_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_l_sho_roll -> link_l_sho_roll_link
+	joint_l_el [label=l_el color=green fillcolor=lightgrey style=filled]
+	link_l_sho_roll_link -> joint_l_el
+	link_l_el_link [label=l_el_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_l_el -> link_l_el_link
+	joint_r_sho_pitch [label=r_sho_pitch color=green fillcolor=lightgrey style=filled]
+	link_body_link -> joint_r_sho_pitch
+	link_r_sho_pitch_link [label=r_sho_pitch_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_r_sho_pitch -> link_r_sho_pitch_link
+	joint_r_sho_roll [label=r_sho_roll color=green fillcolor=lightgrey style=filled]
+	link_r_sho_pitch_link -> joint_r_sho_roll
+	link_r_sho_roll_link [label=r_sho_roll_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_r_sho_roll -> link_r_sho_roll_link
+	joint_r_el [label=r_el color=green fillcolor=lightgrey style=filled]
+	link_r_sho_roll_link -> joint_r_el
+	link_r_el_link [label=r_el_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_r_el -> link_r_el_link
+	joint_head_pan [label=head_pan color=green fillcolor=lightgrey style=filled]
+	link_body_link -> joint_head_pan
+	link_head_pan_link [label=head_pan_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_head_pan -> link_head_pan_link
+	joint_head_tilt [label=head_tilt color=green fillcolor=lightgrey style=filled]
+	link_head_pan_link -> joint_head_tilt
+	link_head_tilt_link [label=head_tilt_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_head_tilt -> link_head_tilt_link
+	joint_cam [label=cam color=green fillcolor=lightgrey style=filled]
+	link_head_tilt_link -> joint_cam
+	link_cam_link [label=cam_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_cam -> link_cam_link
+	joint_cam_gazebo [label=cam_gazebo color=green fillcolor=lightgrey style=filled]
+	link_head_tilt_link -> joint_cam_gazebo
+	link_cam_gazebo_link [label=cam_gazebo_link color=blue fillcolor=lightgrey shape=box style=filled]
+	joint_cam_gazebo -> link_cam_gazebo_link
+}

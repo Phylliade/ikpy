@@ -1,0 +1,26 @@
+{
+  "elements": [
+    "body_link",
+    "r_sho_pitch",
+    "r_sho_pitch_link",
+    "r_sho_roll",
+    "r_sho_roll_link",
+    "r_el",
+    "r_el_link"
+  ],
+  "urdf_file": "robotis_op3.urdf",
+  "active_links_mask": [
+    false,
+    true,
+    true,
+    true,
+    false
+  ],
+  "last_link_vector": [
+    0,
+    -0.1,
+    0
+  ],
+  "name": "robotis_op3_right_arm",
+  "version": "v1"
+}
