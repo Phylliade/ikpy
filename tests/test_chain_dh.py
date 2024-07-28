@@ -39,15 +39,17 @@ def create_dh_robot(robot):
     chain = Chain(links, name=robot.robot_name)
     return chain
 
-robot = UR10()
-chain = create_dh_robot(robot)
-frame = [[1.112918581, -0.209413742, 0.19382176], [0.0, 1.0, 0.0]]
-target_position, target_orientation = frame
-joint_angles = chain.inverse_kinematics(target_position=target_position, target_orientation=target_orientation, orientation_mode="Z")
 
-print(joint_angles)
+def test_dh_chain():
+    robot = UR10()
+    chain = create_dh_robot(robot)
+    frame = [[1.112918581, -0.209413742, 0.19382176], [0.0, 1.0, 0.0]]
+    target_position, target_orientation = frame
+    joint_angles = chain.inverse_kinematics(target_position=target_position, target_orientation=target_orientation, orientation_mode="Z")
 
-fig, ax = plot.init_3d_figure()
-chain.plot(robot.home_config, ax)
-chain.plot(joint_angles, ax)
-plt.show()
+    print(joint_angles)
+
+    fig, ax = plot.init_3d_figure()
+    chain.plot(robot.home_config, ax)
+    chain.plot(joint_angles, ax)
+    plt.savefig("out/UR10.png")
