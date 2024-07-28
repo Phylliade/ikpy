@@ -40,6 +40,7 @@ class Link:
         self.axis_length = length
         self.is_final = is_final
         self.has_rotation = False
+        self.has_translation = False
         self.joint_type = None
 
     def __repr__(self):
@@ -267,7 +268,12 @@ class DHLink(Link):
     d: float
         offset along previous z to the common normal
     a: float
-        offset along previous   to the common normal
+        length of the common normal (do not confuse with alpha). 
+        Assuming a revolute joint, this is the radius about previous z.
+    alpha: float
+        angle about common normal, from old z axis to new z axis
+    theta: float
+        angle about previous z, from old x to new x
     use_symbolic_matrix: bool
         whether the transformation matrix is stored as Numpy array or as a Sympy symbolic matrix.
 
@@ -277,10 +283,12 @@ class DHLink(Link):
         The link object
     """
 
-    def __init__(self, name, d=0, a=0, bounds=None, use_symbolic_matrix=True):
-        Link.__init__(self, use_symbolic_matrix)
+    def __init__(self, name=None, d=0, a=0, alpha=0, theta=0, bounds=None, use_symbolic_matrix=True, length=0):
+        Link.__init__(self, use_symbolic_matrix, length=length)
         self.d = d
         self.a = a
+        self.alpha = alpha
+        self.theta = theta
 
     def get_link_frame_matrix(self, parameters):
         """ Computes the homogeneous transformation matrix for this link. """
