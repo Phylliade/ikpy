@@ -50,6 +50,11 @@ jobs:
     needs: test
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
     name: Publish the package to PyPI
+    environment:
+      name: pypi
+      url: https://pypi.org/p/ikpy
+    permissions:
+        id-token: write
     steps:
       - uses: actions/checkout@v1
       - name: Set up Python
@@ -59,6 +64,3 @@ jobs:
       # Pip doesn't support building a sdist when in PEP517 mode, so use a dedicated package for this
       - run: pip install build && python -m build --sdist --wheel
       - uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          user: phylliadebot
-          password: ${{ secrets.phylliadebot_pass }}
