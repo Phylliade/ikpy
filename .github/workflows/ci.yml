@@ -58,7 +58,7 @@ jobs:
           python-version: 3.7
       # Pip doesn't support building a sdist when in PEP517 mode, so use a dedicated package for this
       - run: pip install build && python -m build --sdist --wheel
-      - uses: pypa/gh-action-pypi-publish@master
+      - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: phylliadebot
           password: ${{ secrets.phylliadebot_pass }}
