@@ -268,8 +268,8 @@ class DHLink(Link):
     d: float
         offset along previous z to the common normal
     a: float
-        length of the common normal (do not confuse with alpha). 
-        Assuming a revolute joint, this is the radius about previous z.
+        length of the common normal (do not confuse with alpha)
+        Assuming a revolute joint, this is the radius about previous z
     alpha: float
         angle about common normal, from old z axis to new z axis
     theta: float
