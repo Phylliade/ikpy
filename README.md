@@ -100,16 +100,14 @@ Contributions are welcome: if you have an awesome patented \(but also open-sourc
 If you use IKPy as part of a publication, please use the Bibtex below as a citation:
 
 ```bibtex
-@software{manceron_pierre_2022_6551158,
+@software{manceron_2024_13256291,
   author       = {Manceron, Pierre},
   title        = {IKPy},
-  month        = may,
-  year         = 2022,
-  note         = {{If you use this software, please cite it using the 
-                   metadata from this file.}},
+  month        = aug,
+  year         = 2024,
   publisher    = {Zenodo},
-  version      = {v3.3.3},
-  doi          = {10.5281/zenodo.6551158},
-  url          = {https://doi.org/10.5281/zenodo.6551158}
+  version      = {v3.4},
+  doi          = {10.5281/zenodo.13256291},
+  url          = {https://doi.org/10.5281/zenodo.13256291}
 }
 ```
