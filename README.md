@@ -2,7 +2,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/ikpy.svg)](https://pypi.python.org/pypi/ikpy/)
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6551106.svg)](https://doi.org/10.5281/zenodo.6551106)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6551105.svg)](https://doi.org/10.5281/zenodo.6551105)
 
 ![demo](two_arms.png)
 
