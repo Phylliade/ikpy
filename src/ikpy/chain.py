@@ -146,7 +146,8 @@ class Chain:
             no_position = True
         else:
             no_position = False
-            frame_target[:3, 3] = target_position
+            frame_target[:3, 3] = np.array(target_position).flatten()[:3]
+
 
         return self.inverse_kinematics_frame(target=frame_target, orientation_mode=orientation_mode, no_position=no_position, **kwargs)
 
