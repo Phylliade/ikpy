@@ -104,7 +104,7 @@ If you use IKPy as part of a publication, please use the Bibtex below as a citat
 @software{Manceron_IKPy,
 author = {Manceron, Pierre},
 doi = {10.5281/zenodo.6551105},
-license = {GPL-2.0},
+license = {Apache-2.0},
 title = {{IKPy}},
 url = {https://github.com/Phylliade/ikpy}
 }
