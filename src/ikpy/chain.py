@@ -291,20 +291,42 @@ class Chain:
         urdf_file: str
             The path of the URDF file
         base_elements: list of strings
-            List of the links beginning the chain
+            An ordered list of URDF element names (links and joints) that defines the path to traverse in the URDF tree.
+            The elements must alternate between links and joints, starting with the type specified by ``base_element_type``.
+
+            * If ``base_element_type="link"`` (default): elements should be [link, joint, link, joint, ...]
+            * If ``base_element_type="joint"``: elements should be [joint, link, joint, link, ...]
+
+            When the list is exhausted or empty, the parser will automatically find the next child element.
+            This is useful to specify only the starting point and let the parser follow the chain automatically.
+
+            Example with ``base_element_type="link"`` (default)::
+
+                # URDF structure:
+                #   base_link -> base_torso_joint -> torso_link -> arm_joint -> arm_link
+                #
+                # To start from torso_link and follow the chain:
+                base_elements=["torso_link"]
+                #
+                # To explicitly specify the path:
+                base_elements=["base_link", "base_torso_joint", "torso_link"]
+
         last_link_vector: numpy.array
             Optional : The translation vector of the tip.
         name: str
             The name of the Chain
         base_element_type: str
+            The type of the first element in ``base_elements``. Either "link" (default) or "joint".
+            This determines the alternating pattern expected in ``base_elements``.
         active_links_mask: list[bool]
+            A list of boolean indicating whether or not the corresponding link is active
         symbolic: bool
             Use symbolic computations
 
 
         Note
         ----
-        IKPY works with links, whereras URDF works with joints and links. The mapping is currently misleading:
+        IKPY works with links, whereas URDF works with joints and links. The mapping is currently misleading:
 
         * URDF joints = IKPY links
         * URDF links are not used by IKPY. They are thrown away when parsing
