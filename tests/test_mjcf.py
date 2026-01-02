@@ -3,11 +3,13 @@
 import os
 import numpy as np
 import pytest
+import matplotlib.pyplot as plt
 
 # ikpy imports
 from ikpy import chain
 from ikpy.mjcf import MJCF
 from ikpy.mjcf import utils as mjcf_utils
+from ikpy.utils import plot
 
 
 # Test fixtures
@@ -308,3 +310,69 @@ class TestMJCFIntegration:
         # The end effector should be at positive X (since all links extend in X)
         # This is a sanity check based on the model structure
         assert fk[0, 3] > 0, "End effector should be at positive X"
+
+    def test_ur5e_inverse_kinematics(self, ur5e_mjcf, interactive):
+        """Test inverse kinematics on UR5e robot and plot the result."""
+        # Create UR5e chain with proper active links mask
+        # Links: Origin, base(fixed), shoulder_pan, shoulder_lift, elbow,
+        #        wrist_1, wrist_2, wrist_3
+        ur5e_chain = chain.Chain.from_mjcf_file(
+            ur5e_mjcf,
+            base_elements=["base"],
+            name="ur5e",
+            # Origin and base are fixed, 6 revolute joints active, last inactive
+            active_links_mask=[False, False, True, True, True, True, True, True]
+        )
+
+        print(f"\nUR5e chain has {len(ur5e_chain.links)} links:")
+        for i, link in enumerate(ur5e_chain.links):
+            print(f"  [{i}] {link.name}: {link.joint_type}")
+
+        # Define a target position (reachable point in workspace)
+        target_position = np.array([0.4, 0.2, 0.5])
+
+        # Compute inverse kinematics
+        ik_result = ur5e_chain.inverse_kinematics(target_position=target_position)
+
+        print(f"\nIK result (joint angles in radians):")
+        for i, (link, angle) in enumerate(zip(ur5e_chain.links, ik_result)):
+            if link.joint_type == "revolute":
+                print(f"  {link.name}: {angle:.4f} rad ({np.degrees(angle):.2f} deg)")
+
+        # Verify with forward kinematics
+        fk_result = ur5e_chain.forward_kinematics(ik_result)
+        reached_position = fk_result[:3, 3]
+
+        print(f"\nTarget position: {target_position}")
+        print(f"Reached position: {reached_position}")
+        print(f"Position error: {np.linalg.norm(target_position - reached_position):.6f} m")
+
+        # Assert that we reached close to the target
+        np.testing.assert_array_almost_equal(
+            reached_position,
+            target_position,
+            decimal=2,
+            err_msg="IK did not converge to target position"
+        )
+
+        # Create the plot
+        fig, ax = plot.init_3d_figure()
+
+        # Plot the robot at IK solution
+        ur5e_chain.plot(ik_result, ax)
+
+        # Plot the target
+        ax.scatter(*target_position, c='red', s=100, marker='*', label='Target')
+
+        ax.set_title("UR5e Inverse Kinematics (MJCF)")
+        ax.legend()
+
+        # Ensure output directory exists
+        os.makedirs("out", exist_ok=True)
+        plt.savefig("out/ur5e_ik_test.png", dpi=150, bbox_inches='tight')
+        print("\nPlot saved to out/ur5e_ik_test.png")
+
+        if interactive:
+            plt.show()
+
+        plt.close()
