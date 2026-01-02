@@ -11,6 +11,7 @@ import warnings
 
 # IKPY imports
 from .urdf import URDF
+from .mjcf import MJCF
 from . import inverse_kinematics as ik
 from . import link as link_lib
 
@@ -361,6 +362,78 @@ class Chain:
 
     def active_from_full(self, joints):
         return np.compress(self.active_links_mask, joints, axis=0)
+
+    @classmethod
+    def from_mjcf_file(cls, mjcf_file, base_elements=None, last_link_vector=None, active_links_mask=None, name="chain", symbolic=True):
+        """Creates a chain from a MuJoCo MJCF file
+
+        Parameters
+        ----------
+        mjcf_file: str
+            The path of the MJCF file
+        base_elements: list of strings
+            An ordered list of body names that defines the path to traverse in the MJCF tree.
+            When the list is exhausted or empty, the parser will automatically follow the first child.
+            If None, starts from the first body in worldbody and follows first children.
+
+            Example::
+
+                # MJCF structure:
+                #   worldbody
+                #     body name="base"
+                #       body name="shoulder_link"
+                #         body name="upper_arm_link"
+                #
+                # To start from base and follow the chain:
+                base_elements=["base"]
+                #
+                # To explicitly specify the path:
+                base_elements=["base", "shoulder_link", "upper_arm_link"]
+
+        last_link_vector: numpy.array
+            Optional: The translation vector of the tip (end-effector offset)
+        active_links_mask: list[bool]
+            A list of boolean indicating whether or not the corresponding link is active
+        name: str
+            The name of the Chain
+        symbolic: bool
+            Use symbolic computations
+
+        Returns
+        -------
+        Chain
+            The kinematic chain
+
+        Note
+        ----
+        MJCF uses a hierarchical structure where bodies are nested, unlike URDF which
+        uses a flat structure with separate links and joints.
+
+        For more information on MJCF, see: https://mujoco.readthedocs.io/en/latest/modeling.html
+
+        Example
+        -------
+        >>> from ikpy.chain import Chain
+        >>> # Load UR5e robot from MJCF
+        >>> chain = Chain.from_mjcf_file("ur5e.xml", base_elements=["base"])
+        >>> # Compute forward kinematics
+        >>> chain.forward_kinematics([0] * len(chain.links))
+        """
+        mjcf_metadata = {
+            "base_elements": base_elements,
+            "mjcf_file": mjcf_file,
+            "last_link_vector": last_link_vector
+        }
+
+        links = MJCF.get_mjcf_parameters(mjcf_file, base_elements=base_elements, last_link_vector=last_link_vector, symbolic=symbolic)
+        # Add an origin link at the beginning
+        chain = cls([link_lib.OriginLink()] + links, active_links_mask=active_links_mask, name=name, urdf_metadata=mjcf_metadata)
+
+        # Save some useful metadata
+        chain.mjcf_file = mjcf_file
+        chain.base_elements = base_elements
+
+        return chain
 
     @classmethod
     def concat(cls, chain1, chain2):
