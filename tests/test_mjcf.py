@@ -47,10 +47,10 @@ class TestMJCFUtils:
     def test_quat_to_rpy_rotation_z(self):
         """Test quaternion to RPY for 90 degree rotation around Z."""
         angle = np.pi / 2
-        quat = [np.cos(angle/2), 0, 0, np.sin(angle/2)]  # 90 deg around Z
+        quat = [np.cos(angle / 2), 0, 0, np.sin(angle / 2)]  # 90 deg around Z
         rpy = mjcf_utils.quat_to_rpy(quat)
         # For rotation around Z, yaw should be pi/2
-        np.testing.assert_almost_equal(rpy[2], np.pi/2, decimal=5)
+        np.testing.assert_almost_equal(rpy[2], np.pi / 2, decimal=5)
 
     def test_axisangle_to_rpy(self):
         """Test axis-angle to RPY conversion."""
@@ -58,7 +58,7 @@ class TestMJCFUtils:
         axis = [0, 0, 1]
         angle = np.pi / 2
         rpy = mjcf_utils.axisangle_to_rpy(axis, angle)
-        np.testing.assert_almost_equal(rpy[2], np.pi/2, decimal=5)
+        np.testing.assert_almost_equal(rpy[2], np.pi / 2, decimal=5)
 
     def test_euler_to_rpy(self):
         """Test Euler angles to RPY conversion."""
@@ -334,7 +334,7 @@ class TestMJCFIntegration:
         # Compute inverse kinematics
         ik_result = ur5e_chain.inverse_kinematics(target_position=target_position)
 
-        print(f"\nIK result (joint angles in radians):")
+        print("\nIK result (joint angles in radians):")
         for i, (link, angle) in enumerate(zip(ur5e_chain.links, ik_result)):
             if link.joint_type == "revolute":
                 print(f"  {link.name}: {angle:.4f} rad ({np.degrees(angle):.2f} deg)")
