@@ -31,16 +31,16 @@ def quat_to_rotation_matrix(quat):
     w, x, y, z = quat
 
     # Normalize quaternion
-    norm = np.sqrt(w*w + x*x + y*y + z*z)
+    norm = np.sqrt(w * w + x * x + y * y + z * z)
     if norm < 1e-10:
         return np.eye(3)
-    w, x, y, z = w/norm, x/norm, y/norm, z/norm
+    w, x, y, z = w / norm, x / norm, y / norm, z / norm
 
     # Rotation matrix from quaternion
     return np.array([
-        [1 - 2*(y*y + z*z), 2*(x*y - z*w), 2*(x*z + y*w)],
-        [2*(x*y + z*w), 1 - 2*(x*x + z*z), 2*(y*z - x*w)],
-        [2*(x*z - y*w), 2*(y*z + x*w), 1 - 2*(x*x + y*y)]
+        [1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)],
+        [2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)],
+        [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)]
     ])
 
 
@@ -124,9 +124,9 @@ def axisangle_to_rotation_matrix(axis, angle):
     t = 1 - c
 
     return np.array([
-        [t*x*x + c, t*x*y - s*z, t*x*z + s*y],
-        [t*x*y + s*z, t*y*y + c, t*y*z - s*x],
-        [t*x*z - s*y, t*y*z + s*x, t*z*z + c]
+        [t * x * x + c, t * x * y - s * z, t * x * z + s * y],
+        [t * x * y + s * z, t * y * y + c, t * y * z - s * x],
+        [t * x * z - s * y, t * y * z + s * x, t * z * z + c]
     ])
 
 

@@ -4,4 +4,4 @@ MJCF module for IKPy.
 Provides parsing utilities for MuJoCo MJCF files.
 """
 
-from .MJCF import get_mjcf_parameters
+from . import MJCF  # noqa: F401
