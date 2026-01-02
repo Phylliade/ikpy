@@ -1,0 +1,45 @@
+<mujoco model="ur5e_simplified">
+  <!-- Simplified UR5e robot for testing MJCF parsing -->
+  <!-- Based on https://github.com/google-deepmind/mujoco_menagerie/blob/main/universal_robots_ur5e/ur5e.xml -->
+
+  <compiler angle="radian"/>
+
+  <option integrator="implicitfast"/>
+
+  <default>
+    <default class="ur5e">
+      <joint axis="0 1 0" range="-6.28319 6.28319"/>
+      <default class="size3">
+        <default class="size3_limited">
+          <joint range="-3.1415 3.1415"/>
+        </default>
+      </default>
+      <default class="size1">
+      </default>
+    </default>
+  </default>
+
+  <worldbody>
+    <body name="base" quat="0 0 0 -1" childclass="ur5e">
+      <body name="shoulder_link" pos="0 0 0.163">
+        <joint name="shoulder_pan_joint" class="size3" axis="0 0 1"/>
+        <body name="upper_arm_link" pos="0 0.138 0" quat="1 0 1 0">
+          <joint name="shoulder_lift_joint" class="size3"/>
+          <body name="forearm_link" pos="0 -0.131 0.425">
+            <joint name="elbow_joint" class="size3_limited"/>
+            <body name="wrist_1_link" pos="0 0 0.392" quat="1 0 1 0">
+              <joint name="wrist_1_joint" class="size1"/>
+              <body name="wrist_2_link" pos="0 0.127 0">
+                <joint name="wrist_2_joint" axis="0 0 1" class="size1"/>
+                <body name="wrist_3_link" pos="0 0 0.1">
+                  <joint name="wrist_3_joint" class="size1"/>
+                  <site name="attachment_site" pos="0 0.1 0" quat="-1 1 0 0"/>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+</mujoco>
