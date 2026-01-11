@@ -35,8 +35,11 @@ class Chain:
         The name of the Chain
     urdf_metadata
         Technical attribute
+    jax_precompile: bool
+        If True (default), JAX functions are compiled when the JAX cache is first accessed.
+        If False, compilation is deferred to the first JAX call (faster init, slower first call).
     """
-    def __init__(self, links, active_links_mask=None, name="chain", urdf_metadata=None, **kwargs):
+    def __init__(self, links, active_links_mask=None, name="chain", urdf_metadata=None, jax_precompile=True, **kwargs):
         self.name = name
         self.links = links
         self._length = sum([link.length for link in links])
@@ -49,6 +52,7 @@ class Chain:
 
         # JAX backend cache (lazily initialized)
         self._jax_cache = None
+        self._jax_precompile = jax_precompile
 
         # If the active_links_mask is not given, set it to True for every link
         if active_links_mask is not None:
@@ -94,7 +98,7 @@ class Chain:
             raise ImportError("JAX is not installed. Install it with: pip install jax jaxlib")
 
         if self._jax_cache is None:
-            self._jax_cache = jax_backend.JaxKinematicsCache(self)
+            self._jax_cache = jax_backend.JaxKinematicsCache(self, precompile=self._jax_precompile)
 
         return self._jax_cache
 
@@ -361,7 +365,7 @@ class Chain:
         return self._json_path
 
     @classmethod
-    def from_urdf_file(cls, urdf_file, base_elements=None, last_link_vector=None, base_element_type="link", active_links_mask=None, name="chain", symbolic=True):
+    def from_urdf_file(cls, urdf_file, base_elements=None, last_link_vector=None, base_element_type="link", active_links_mask=None, name="chain", symbolic=True, jax_precompile=True):
         """Creates a chain from an URDF file
 
         Parameters
@@ -400,6 +404,9 @@ class Chain:
             A list of boolean indicating whether or not the corresponding link is active
         symbolic: bool
             Use symbolic computations
+        jax_precompile: bool
+            If True (default), JAX functions are compiled when the JAX cache is first accessed.
+            If False, compilation is deferred to the first JAX call.
 
 
         Note
@@ -423,7 +430,7 @@ class Chain:
 
         links = URDF.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_element_type=base_element_type, symbolic=symbolic)
         # Add an origin link at the beginning
-        chain = cls([link_lib.OriginLink()] + links, active_links_mask=active_links_mask, name=name, urdf_metadata=urdf_metadata)
+        chain = cls([link_lib.OriginLink()] + links, active_links_mask=active_links_mask, name=name, urdf_metadata=urdf_metadata, jax_precompile=jax_precompile)
 
         # Save some useful metadata
         # FIXME: We have attributes specific to objects created in this style, not great...
