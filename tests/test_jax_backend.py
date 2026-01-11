@@ -1,0 +1,148 @@
+"""Tests for the JAX backend"""
+
+import numpy as np
+import pytest
+import os
+
+# Enable JAX float64 mode for better precision
+os.environ['JAX_ENABLE_X64'] = 'True'
+
+from ikpy import chain
+from ikpy import JAX_AVAILABLE
+
+
+# Skip all tests in this module if JAX is not available
+pytestmark = pytest.mark.skipif(not JAX_AVAILABLE, reason="JAX is not installed")
+
+
+@pytest.fixture
+def simple_chain():
+    """Create a simple chain for testing"""
+    return chain.Chain.from_urdf_file(
+        "../resources/poppy_torso/poppy_torso.URDF",
+        base_elements=[
+            "base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x",
+            "chest", "r_shoulder_y"
+        ],
+        last_link_vector=[0, 0.18, 0],
+        active_links_mask=[
+            False, False, False, False, True, True, True, True, False
+        ]
+    )
+
+
+class TestForwardKinematics:
+    """Tests for forward kinematics with JAX backend"""
+    
+    def test_fk_matches_numpy(self, simple_chain):
+        """Test that JAX FK results match NumPy results"""
+        joints = [0.0] * len(simple_chain.links)
+        
+        fk_numpy = simple_chain.forward_kinematics(joints, backend="numpy")
+        fk_jax = simple_chain.forward_kinematics(joints, backend="jax")
+        
+        np.testing.assert_allclose(fk_numpy, fk_jax, rtol=1e-5, atol=1e-5)
+    
+    def test_fk_with_nonzero_joints(self, simple_chain):
+        """Test FK with non-zero joint values"""
+        joints = [0.0] * len(simple_chain.links)
+        joints[4] = 0.5
+        joints[5] = -0.3
+        joints[6] = 0.8
+        
+        fk_numpy = simple_chain.forward_kinematics(joints, backend="numpy")
+        fk_jax = simple_chain.forward_kinematics(joints, backend="jax")
+        
+        np.testing.assert_allclose(fk_numpy, fk_jax, rtol=1e-5, atol=1e-5)
+    
+    def test_fk_full_kinematics(self, simple_chain):
+        """Test full kinematics mode"""
+        joints = [0.0] * len(simple_chain.links)
+        
+        fk_full_numpy = simple_chain.forward_kinematics(joints, full_kinematics=True, backend="numpy")
+        fk_full_jax = simple_chain.forward_kinematics(joints, full_kinematics=True, backend="jax")
+        
+        assert len(fk_full_numpy) == len(fk_full_jax)
+        
+        for i, (fn, fj) in enumerate(zip(fk_full_numpy, fk_full_jax)):
+            np.testing.assert_allclose(fn, fj, rtol=1e-5, atol=1e-5, 
+                                      err_msg=f"Mismatch at link {i}")
+
+
+class TestInverseKinematics:
+    """Tests for inverse kinematics with JAX backend"""
+    
+    def test_ik_lbfgsb(self, simple_chain):
+        """Test IK with L-BFGS-B optimizer"""
+        target = [0.1, -0.2, 0.1]
+        
+        ik_result = simple_chain.inverse_kinematics(
+            target_position=target, 
+            backend="jax",
+            optimizer="L-BFGS-B",
+            max_iter=200
+        )
+        
+        # Verify the result reaches the target
+        fk_result = simple_chain.forward_kinematics(ik_result, backend="jax")[:3, 3]
+        error = np.linalg.norm(fk_result - target)
+        
+        # Allow for some error since JAX optimizer may not converge as well
+        assert error < 0.2, f"IK error too high: {error}"
+    
+    def test_ik_gradient_descent(self, simple_chain):
+        """Test IK with gradient descent optimizer"""
+        target = [0.0, -0.3, 0.2]
+        
+        ik_result = simple_chain.inverse_kinematics(
+            target_position=target, 
+            backend="jax",
+            optimizer="gradient_descent",
+            max_iter=1000,
+            learning_rate=0.1
+        )
+        
+        fk_result = simple_chain.forward_kinematics(ik_result, backend="jax")[:3, 3]
+        error = np.linalg.norm(fk_result - target)
+        
+        # Gradient descent may need more iterations
+        assert error < 0.3, f"IK error too high: {error}"
+    
+    def test_ik_adam(self, simple_chain):
+        """Test IK with Adam optimizer"""
+        target = [0.0, -0.3, 0.2]
+        
+        ik_result = simple_chain.inverse_kinematics(
+            target_position=target, 
+            backend="jax",
+            optimizer="adam",
+            max_iter=500,
+            learning_rate=0.05
+        )
+        
+        fk_result = simple_chain.forward_kinematics(ik_result, backend="jax")[:3, 3]
+        error = np.linalg.norm(fk_result - target)
+        
+        assert error < 0.2, f"IK error too high: {error}"
+
+
+class TestJaxCache:
+    """Tests for the JAX kinematics cache"""
+    
+    def test_cache_creation(self, simple_chain):
+        """Test that the cache is created correctly"""
+        cache = simple_chain.jax_cache
+        
+        assert cache is not None
+        assert cache.chain is simple_chain
+    
+    def test_cache_reuse(self, simple_chain):
+        """Test that the cache is reused on subsequent calls"""
+        cache1 = simple_chain.jax_cache
+        cache2 = simple_chain.jax_cache
+        
+        assert cache1 is cache2
+
+
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])
