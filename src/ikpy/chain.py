@@ -211,8 +211,8 @@ class Chain:
             The computational backend to use: "numpy" (default) or "jax".
             The JAX backend uses automatic differentiation for gradient computation.
             For JAX, additional kwargs are supported:
-            * optimizer: "L-BFGS-B", "gradient_descent", or "adam" (default: "L-BFGS-B")
-            * learning_rate: float (default: 0.01)
+            * optimizer: "scipy" (default), "adam", or "gradient_descent"
+            * learning_rate: float (default: 0.05, for adam/gradient_descent)
             * tol: float (default: 1e-6)
         kwargs: See ikpy.inverse_kinematics.inverse_kinematic_optimization
 
@@ -229,11 +229,8 @@ class Chain:
         if initial_position is None:
             initial_position = [0] * len(self.links)
 
-        # Use JAX backend if requested
+        # Use JAX backend if requested - delegate to jax_cache for pre-compiled functions
         if backend == "jax":
-            if not JAX_AVAILABLE:
-                raise ImportError("JAX is not installed. Install it with: pip install jax jaxlib")
-
             # Extract JAX-specific kwargs
             jax_kwargs = {}
             jax_specific_keys = ['optimizer', 'learning_rate', 'tol']
@@ -251,8 +248,9 @@ class Chain:
             if 'no_position' in kwargs:
                 jax_kwargs['no_position'] = kwargs.pop('no_position')
 
-            return jax_backend.inverse_kinematics_jax(
-                self, target, initial_position, **jax_kwargs
+            # Use the jax_cache which has pre-compiled functions
+            return self.jax_cache.inverse_kinematics(
+                target, initial_position, **jax_kwargs
             )
 
         # Default numpy/scipy implementation

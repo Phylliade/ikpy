@@ -201,329 +201,13 @@ def forward_kinematics_full_jax(joints, chain_params):
     return all_frames
 
 
-def inverse_kinematics_jax(chain, target_frame, starting_nodes_angles,
-                           regularization_parameter=None, max_iter=100,
-                           orientation_mode=None, no_position=False,
-                           optimizer="L-BFGS-B", learning_rate=0.01, tol=1e-6):
-    """
-    Compute inverse kinematics using JAX's automatic differentiation.
-
-    Parameters
-    ----------
-    chain: ikpy.chain.Chain
-        The kinematic chain
-    target_frame: np.ndarray (4, 4)
-        The target pose
-    starting_nodes_angles: np.ndarray
-        Initial joint angles
-    regularization_parameter: float
-        Regularization coefficient
-    max_iter: int
-        Maximum number of iterations
-    orientation_mode: str
-        One of None, "X", "Y", "Z", "all"
-    no_position: bool
-        If True, don't optimize position
-    optimizer: str
-        Optimizer to use: "L-BFGS-B", "gradient_descent", or "adam"
-    learning_rate: float
-        Learning rate for gradient-based optimizers
-    tol: float
-        Tolerance for convergence
-
-    Returns
-    -------
-    np.ndarray
-        Optimal joint angles
-    """
-    # Extract chain parameters
-    chain_params = extract_chain_parameters(chain)
-
-    # Determine dtype based on JAX configuration
-    # Use float64 if x64 mode is enabled, otherwise float32
-    try:
-        from jax import config
-        use_float64 = config.jax_enable_x64
-    except (ImportError, AttributeError):
-        use_float64 = False
-
-    dtype = jnp.float64 if use_float64 else jnp.float32
-
-    # Convert to JAX arrays with consistent dtype
-    target_frame_jax = jnp.array(target_frame, dtype=dtype)
-    starting_nodes_angles_jax = jnp.array(starting_nodes_angles, dtype=dtype)
-    active_links_mask = jnp.array(chain.active_links_mask)
-
-    # Get bounds for active joints
-    bounds_list = [link.bounds for link in chain.links]
-    lower_bounds = []
-    upper_bounds = []
-    for i, (mask, bounds) in enumerate(zip(chain.active_links_mask, bounds_list)):
-        if mask:
-            lower_bounds.append(bounds[0] if np.isfinite(bounds[0]) else -np.pi * 2)
-            upper_bounds.append(bounds[1] if np.isfinite(bounds[1]) else np.pi * 2)
-    lower_bounds = jnp.array(lower_bounds, dtype=dtype)
-    upper_bounds = jnp.array(upper_bounds, dtype=dtype)
-
-    # Extract active joints from full joints
-    def active_from_full(joints):
-        return joints[active_links_mask]
-
-    # More efficient version using index_update
-    active_indices = jnp.where(active_links_mask)[0]
-
-    def active_to_full_v2(active_joints, initial_position):
-        return initial_position.at[active_indices].set(active_joints)
-
-    # Target position
-    target_position = target_frame_jax[:3, 3]
-
-    # Define loss function
-    def compute_loss(active_joints):
-        # Ensure consistent dtype
-        active_joints = active_joints.astype(dtype)
-
-        # Convert to full joints
-        full_joints = active_to_full_v2(active_joints, starting_nodes_angles_jax)
-
-        # Compute FK
-        fk = forward_kinematics_jax(full_joints, chain_params)
-
-        # Position error
-        if not no_position:
-            position_error = fk[:3, 3] - target_position
-            loss = jnp.sum(position_error ** 2)
-        else:
-            loss = jnp.array(0.0, dtype=dtype)
-
-        # Orientation error
-        if orientation_mode == "X":
-            orientation_error = fk[:3, 0] - target_frame_jax[:3, 0]
-            loss = loss + jnp.sum(orientation_error ** 2)
-        elif orientation_mode == "Y":
-            orientation_error = fk[:3, 1] - target_frame_jax[:3, 1]
-            loss = loss + jnp.sum(orientation_error ** 2)
-        elif orientation_mode == "Z":
-            orientation_error = fk[:3, 2] - target_frame_jax[:3, 2]
-            loss = loss + jnp.sum(orientation_error ** 2)
-        elif orientation_mode == "all":
-            orientation_error = (fk[:3, :3] - target_frame_jax[:3, :3]).ravel()
-            loss = loss + jnp.sum(orientation_error ** 2)
-
-        # Regularization
-        if regularization_parameter is not None:
-            reg_term = regularization_parameter * jnp.sum(
-                (active_joints - active_from_full(starting_nodes_angles_jax)) ** 2
-            )
-            loss = loss + reg_term
-
-        return loss
-
-    # Compute gradient
-    grad_loss = jax.grad(compute_loss)
-
-    # Initial active joints
-    x0 = active_from_full(starting_nodes_angles_jax)
-
-    if optimizer == "L-BFGS-B":
-        # Use scipy optimization through JAX value_and_grad
-        from jax.scipy.optimize import minimize as jax_scipy_minimize
-
-        # Use BFGS from JAX (no bounds support, so we clip manually)
-        def loss_clipped(x):
-            x = x.astype(dtype)
-            x_clipped = jnp.clip(x, lower_bounds, upper_bounds)
-            return compute_loss(x_clipped)
-
-        result = jax_scipy_minimize(loss_clipped, x0, method='BFGS',
-                                    options={'maxiter': max_iter})
-        optimal_active = jnp.clip(result.x, lower_bounds, upper_bounds)
-
-    elif optimizer == "gradient_descent":
-        # Simple gradient descent with bounds
-        x = x0
-        for _ in range(max_iter):
-            g = grad_loss(x)
-            x = x - learning_rate * g
-            x = jnp.clip(x, lower_bounds, upper_bounds)
-
-            # Check convergence
-            if jnp.max(jnp.abs(g)) < tol:
-                break
-        optimal_active = x
-
-    elif optimizer == "adam":
-        # Adam optimizer
-        x = x0
-        m = jnp.zeros_like(x)
-        v = jnp.zeros_like(x)
-        beta1, beta2 = 0.9, 0.999
-        eps = jnp.array(1e-8, dtype=dtype)
-
-        for t in range(1, max_iter + 1):
-            g = grad_loss(x)
-            m = beta1 * m + (1 - beta1) * g
-            v = beta2 * v + (1 - beta2) * g ** 2
-            m_hat = m / (1 - beta1 ** t)
-            v_hat = v / (1 - beta2 ** t)
-            x = x - learning_rate * m_hat / (jnp.sqrt(v_hat) + eps)
-            x = jnp.clip(x, lower_bounds, upper_bounds)
-
-            # Check convergence
-            if jnp.max(jnp.abs(g)) < tol:
-                break
-        optimal_active = x
-
-    else:
-        raise ValueError(f"Unknown optimizer: {optimizer}")
-
-    # Convert back to full joints
-    result = active_to_full_v2(optimal_active, starting_nodes_angles_jax)
-
-    # Convert to numpy for compatibility
-    return np.array(result)
-
-
-def inverse_kinematics_scipy_with_jax_grad(chain, target_frame, starting_nodes_angles,
-                                           regularization_parameter=None, max_iter=None,
-                                           orientation_mode=None, no_position=False,
-                                           optimizer="least_squares"):
-    """
-    Compute inverse kinematics using scipy but with JAX-computed gradients.
-    This provides faster gradient computation while maintaining scipy's robust optimizers.
-
-    Parameters
-    ----------
-    chain: ikpy.chain.Chain
-        The kinematic chain
-    target_frame: np.ndarray (4, 4)
-        The target pose
-    starting_nodes_angles: np.ndarray
-        Initial joint angles
-    regularization_parameter: float
-        Regularization coefficient
-    max_iter: int
-        Maximum iterations (deprecated)
-    orientation_mode: str
-        One of None, "X", "Y", "Z", "all"
-    no_position: bool
-        If True, don't optimize position
-    optimizer: str
-        "least_squares" or "scalar"
-
-    Returns
-    -------
-    np.ndarray
-        Optimal joint angles
-    """
-    import scipy.optimize
-
-    # Extract chain parameters
-    chain_params = extract_chain_parameters(chain)
-
-    # Convert to JAX arrays
-    target_frame_jax = jnp.array(target_frame)
-    starting_nodes_angles_jax = jnp.array(starting_nodes_angles, dtype=jnp.float64)
-    active_links_mask = jnp.array(chain.active_links_mask)
-
-    # Get bounds
-    bounds_list = [link.bounds for link in chain.links]
-    active_bounds = []
-    for mask, bounds in zip(chain.active_links_mask, bounds_list):
-        if mask:
-            active_bounds.append(bounds)
-    active_bounds = np.array(active_bounds)
-
-    # Active indices
-    active_indices = jnp.where(active_links_mask)[0]
-
-    def active_to_full(active_joints, initial_position):
-        full = initial_position.copy()
-        return full.at[active_indices].set(active_joints)
-
-    def active_from_full(joints):
-        return joints[active_links_mask]
-
-    # Target
-    target_position = target_frame_jax[:3, 3]
-
-    # Define residual function for least_squares
-    ORIENTATION_COEFF = 1.0
-
-    def compute_residuals(active_joints):
-        active_joints = jnp.array(active_joints)
-        full_joints = active_to_full(active_joints, starting_nodes_angles_jax)
-        fk = forward_kinematics_jax(full_joints, chain_params)
-
-        errors = []
-
-        if not no_position:
-            position_error = fk[:3, 3] - target_position
-            errors.append(position_error)
-
-        if orientation_mode == "X":
-            orientation_error = ORIENTATION_COEFF * (fk[:3, 0] - target_frame_jax[:3, 0])
-            errors.append(orientation_error)
-        elif orientation_mode == "Y":
-            orientation_error = ORIENTATION_COEFF * (fk[:3, 1] - target_frame_jax[:3, 1])
-            errors.append(orientation_error)
-        elif orientation_mode == "Z":
-            orientation_error = ORIENTATION_COEFF * (fk[:3, 2] - target_frame_jax[:3, 2])
-            errors.append(orientation_error)
-        elif orientation_mode == "all":
-            orientation_error = ORIENTATION_COEFF * (fk[:3, :3] - target_frame_jax[:3, :3]).ravel()
-            errors.append(orientation_error)
-
-        return jnp.concatenate(errors) if len(errors) > 1 else errors[0]
-
-    # Wrap for numpy compatibility
-    def residuals_np(x):
-        return np.array(compute_residuals(x))
-
-    # Add regularization if needed
-    if regularization_parameter is not None:
-        starting_active = active_from_full(starting_nodes_angles_jax)
-
-        def residuals_with_reg(x):
-            base_residuals = compute_residuals(jnp.array(x))
-            reg = regularization_parameter * jnp.linalg.norm(jnp.array(x) - starting_active)
-            return np.array(base_residuals + reg)
-
-        optimize_fn = residuals_with_reg
-    else:
-        optimize_fn = residuals_np
-
-    # Compute Jacobian using JAX
-    jac_fn = jax.jacfwd(compute_residuals)
-
-    def jacobian_np(x):
-        return np.array(jac_fn(jnp.array(x)))
-
-    # Initial point
-    x0 = np.array(active_from_full(starting_nodes_angles_jax))
-
-    if optimizer == "least_squares":
-        # Unzip bounds
-        bounds_unzipped = np.moveaxis(active_bounds, -1, 0)
-        result = scipy.optimize.least_squares(
-            optimize_fn, x0, jac=jacobian_np, bounds=bounds_unzipped
-        )
-    elif optimizer == "scalar":
-        def scalar_loss(x):
-            return np.linalg.norm(optimize_fn(x))
-        result = scipy.optimize.minimize(scalar_loss, x0, bounds=active_bounds)
-    else:
-        raise ValueError(f"Unknown optimizer: {optimizer}")
-
-    # Convert back to full joints
-    full_result = np.array(active_to_full(jnp.array(result.x), starting_nodes_angles_jax))
-    return full_result
-
-
 class JaxKinematicsCache:
     """
     Cache for JAX kinematics computations.
-    Stores JIT-compiled functions for a specific chain configuration.
+    Stores AOT-compiled functions for a specific chain configuration.
+    
+    Uses JAX's lower/compile API for explicit ahead-of-time compilation,
+    ensuring compilation happens exactly once at cache creation time.
     """
 
     def __init__(self, chain, precompile=True):
@@ -535,17 +219,23 @@ class JaxKinematicsCache:
         chain: ikpy.chain.Chain
             The kinematic chain
         precompile: bool
-            If True, compile JAX functions immediately (slower init, faster first call).
+            If True, compile JAX functions immediately using AOT compilation (slower init, faster first call).
             If False, compile lazily on first call (faster init, slower first call).
         """
         self.chain = chain
         self.chain_params = extract_chain_parameters(chain)
         self.active_links_mask = jnp.array(chain.active_links_mask)
         self.active_indices = jnp.where(self.active_links_mask)[0]
+        self.n_active = int(jnp.sum(self.active_links_mask))
+        self._precompile = precompile
 
-        # JIT compile the forward kinematics
-        self._fk_jit = jit(partial(forward_kinematics_jax, chain_params=self.chain_params))
-        self._fk_full_jit = jit(partial(forward_kinematics_full_jax, chain_params=self.chain_params))
+        # Determine dtype based on JAX configuration
+        try:
+            from jax import config
+            self._use_float64 = config.jax_enable_x64
+        except (ImportError, AttributeError):
+            self._use_float64 = False
+        self._dtype = jnp.float64 if self._use_float64 else jnp.float32
 
         # Store bounds
         bounds_list = [link.bounds for link in chain.links]
@@ -555,19 +245,190 @@ class JaxKinematicsCache:
             if mask:
                 lower_bounds.append(bounds[0] if np.isfinite(bounds[0]) else -np.pi * 2)
                 upper_bounds.append(bounds[1] if np.isfinite(bounds[1]) else np.pi * 2)
-        self.lower_bounds = jnp.array(lower_bounds)
-        self.upper_bounds = jnp.array(upper_bounds)
+        self.lower_bounds = jnp.array(lower_bounds, dtype=self._dtype)
+        self.upper_bounds = jnp.array(upper_bounds, dtype=self._dtype)
 
-        # Pre-compile by running with dummy data (AOT-like behavior)
+        # Create FK functions with partial application
+        self._fk_fn = partial(forward_kinematics_jax, chain_params=self.chain_params)
+        self._fk_full_fn = partial(forward_kinematics_full_jax, chain_params=self.chain_params)
+
+        # Dummy inputs for AOT compilation
+        self._dummy_joints = jnp.zeros(self.chain_params['n_links'], dtype=self._dtype)
+
         if precompile:
-            dummy_joints = jnp.zeros(self.chain_params['n_links'])
-            # Trigger compilation by calling the functions once
-            _ = self._fk_jit(dummy_joints).block_until_ready()
-            _ = self._fk_full_jit(dummy_joints).block_until_ready()
+            # AOT compilation using lower/compile
+            self._fk_compiled = jax.jit(self._fk_fn).lower(self._dummy_joints).compile()
+            self._fk_full_compiled = jax.jit(self._fk_full_fn).lower(self._dummy_joints).compile()
+            
+            # Compile IK functions for all orientation modes
+            self._compile_ik_functions()
+        else:
+            # Lazy JIT compilation (fallback)
+            self._fk_compiled = None
+            self._fk_full_compiled = None
+            self._fk_jit = jax.jit(self._fk_fn)
+            self._fk_full_jit = jax.jit(self._fk_full_fn)
+            self._ik_compiled = {}
+            self._ik_residuals = {}
+            self._ik_jacobian = {}
+
+    def _create_loss_function(self, orientation_mode, no_position):
+        """
+        Create a loss function for a specific orientation mode.
+        
+        Parameters
+        ----------
+        orientation_mode: str or None
+            One of None, "X", "Y", "Z", "all"
+        no_position: bool
+            If True, don't optimize position
+            
+        Returns
+        -------
+        callable
+            Loss function that takes (active_joints, target_frame, initial_position, reg_param)
+        """
+        chain_params = self.chain_params
+        active_indices = self.active_indices
+        dtype = self._dtype
+
+        def compute_loss(active_joints, target_frame, initial_position, reg_param):
+            # Convert to full joints
+            full_joints = initial_position.at[active_indices].set(active_joints)
+            
+            # Compute FK
+            fk = forward_kinematics_jax(full_joints, chain_params)
+            
+            # Position error
+            if not no_position:
+                position_error = fk[:3, 3] - target_frame[:3, 3]
+                loss = jnp.sum(position_error ** 2)
+            else:
+                loss = jnp.array(0.0, dtype=dtype)
+            
+            # Orientation error based on mode
+            if orientation_mode == "X":
+                orientation_error = fk[:3, 0] - target_frame[:3, 0]
+                loss = loss + jnp.sum(orientation_error ** 2)
+            elif orientation_mode == "Y":
+                orientation_error = fk[:3, 1] - target_frame[:3, 1]
+                loss = loss + jnp.sum(orientation_error ** 2)
+            elif orientation_mode == "Z":
+                orientation_error = fk[:3, 2] - target_frame[:3, 2]
+                loss = loss + jnp.sum(orientation_error ** 2)
+            elif orientation_mode == "all":
+                orientation_error = (fk[:3, :3] - target_frame[:3, :3]).ravel()
+                loss = loss + jnp.sum(orientation_error ** 2)
+            
+            # Regularization (reg_param is traced, so it can vary at runtime)
+            # We regularize against initial position
+            initial_active = initial_position[active_indices]
+            reg_term = reg_param * jnp.sum((active_joints - initial_active) ** 2)
+            loss = loss + reg_term
+            
+            return loss
+        
+        return compute_loss
+
+    def _create_residual_function(self, orientation_mode, no_position):
+        """
+        Create a residual function for scipy least_squares.
+        
+        Parameters
+        ----------
+        orientation_mode: str or None
+            One of None, "X", "Y", "Z", "all"
+        no_position: bool
+            If True, don't optimize position
+            
+        Returns
+        -------
+        callable
+            Residual function that takes (active_joints, target_frame, initial_position)
+            and returns a vector of residuals
+        """
+        chain_params = self.chain_params
+        active_indices = self.active_indices
+
+        def compute_residuals(active_joints, target_frame, initial_position):
+            # Convert to full joints
+            full_joints = initial_position.at[active_indices].set(active_joints)
+            
+            # Compute FK
+            fk = forward_kinematics_jax(full_joints, chain_params)
+            
+            residuals = []
+            
+            # Position error
+            if not no_position:
+                position_error = fk[:3, 3] - target_frame[:3, 3]
+                residuals.append(position_error)
+            
+            # Orientation error based on mode
+            if orientation_mode == "X":
+                orientation_error = fk[:3, 0] - target_frame[:3, 0]
+                residuals.append(orientation_error)
+            elif orientation_mode == "Y":
+                orientation_error = fk[:3, 1] - target_frame[:3, 1]
+                residuals.append(orientation_error)
+            elif orientation_mode == "Z":
+                orientation_error = fk[:3, 2] - target_frame[:3, 2]
+                residuals.append(orientation_error)
+            elif orientation_mode == "all":
+                orientation_error = (fk[:3, :3] - target_frame[:3, :3]).ravel()
+                residuals.append(orientation_error)
+            
+            return jnp.concatenate(residuals) if len(residuals) > 1 else residuals[0]
+        
+        return compute_residuals
+
+    def _compile_ik_functions(self):
+        """
+        Pre-compile IK loss and gradient functions for all orientation mode combinations.
+        This ensures compilation happens only once at cache creation time using AOT compilation.
+        """
+        # Dummy inputs for compilation
+        dummy_active = jnp.zeros(self.n_active, dtype=self._dtype)
+        dummy_target = jnp.eye(4, dtype=self._dtype)
+        dummy_initial = jnp.zeros(self.chain_params['n_links'], dtype=self._dtype)
+        dummy_reg = jnp.array(0.0, dtype=self._dtype)
+        
+        self._ik_compiled = {}  # AOT compiled value_and_grad (for adam/gradient_descent)
+        self._ik_residuals = {}  # AOT compiled residuals (for scipy)
+        self._ik_jacobian = {}   # AOT compiled jacobian (for scipy)
+        
+        # Compile for each orientation mode and position flag combination
+        for orient_mode in [None, "X", "Y", "Z", "all"]:
+            for no_pos in [False, True]:
+                # Skip invalid combination (no position and no orientation)
+                if no_pos and orient_mode is None:
+                    continue
+                    
+                key = (orient_mode, no_pos)
+                
+                # Compile value_and_grad for adam/gradient_descent
+                loss_fn = self._create_loss_function(orient_mode, no_pos)
+                value_and_grad_fn = jax.value_and_grad(loss_fn)
+                lowered = jax.jit(value_and_grad_fn).lower(
+                    dummy_active, dummy_target, dummy_initial, dummy_reg
+                )
+                self._ik_compiled[key] = lowered.compile()
+                
+                # Compile residuals and jacobian for scipy least_squares
+                residual_fn = self._create_residual_function(orient_mode, no_pos)
+                jacobian_fn = jax.jacfwd(residual_fn)  # Jacobian via forward-mode autodiff
+                
+                # AOT compile both
+                self._ik_residuals[key] = jax.jit(residual_fn).lower(
+                    dummy_active, dummy_target, dummy_initial
+                ).compile()
+                self._ik_jacobian[key] = jax.jit(jacobian_fn).lower(
+                    dummy_active, dummy_target, dummy_initial
+                ).compile()
 
     def forward_kinematics(self, joints, full_kinematics=False):
         """
-        Compute forward kinematics.
+        Compute forward kinematics using pre-compiled functions.
 
         Parameters
         ----------
@@ -581,29 +442,35 @@ class JaxKinematicsCache:
         np.ndarray
             Transformation matrix or list of matrices
         """
-        joints = jnp.array(joints)
+        joints = jnp.array(joints, dtype=self._dtype)
 
         if full_kinematics:
-            result = self._fk_full_jit(joints)
+            if self._fk_full_compiled is not None:
+                result = self._fk_full_compiled(joints)
+            else:
+                result = self._fk_full_jit(joints)
             return [np.array(result[i]) for i in range(self.chain_params['n_links'])]
         else:
-            return np.array(self._fk_jit(joints))
+            if self._fk_compiled is not None:
+                return np.array(self._fk_compiled(joints))
+            else:
+                return np.array(self._fk_jit(joints))
 
     def active_to_full(self, active_joints, initial_position):
         """Convert active joints to full joint array"""
-        initial_position = jnp.array(initial_position)
+        initial_position = jnp.array(initial_position, dtype=self._dtype)
         return initial_position.at[self.active_indices].set(active_joints)
 
     def active_from_full(self, joints):
         """Extract active joints from full joint array"""
-        return jnp.array(joints)[self.active_links_mask]
+        return jnp.array(joints, dtype=self._dtype)[self.active_links_mask]
 
     def inverse_kinematics(self, target_frame, initial_position=None,
                            orientation_mode=None, no_position=False,
                            regularization_parameter=None, max_iter=100,
-                           optimizer="L-BFGS-B", learning_rate=0.01, tol=1e-6):
+                           optimizer="scipy", learning_rate=0.05, tol=1e-6):
         """
-        Compute inverse kinematics using JAX optimization.
+        Compute inverse kinematics using pre-compiled JAX functions.
 
         Parameters
         ----------
@@ -612,17 +479,20 @@ class JaxKinematicsCache:
         initial_position: np.ndarray
             Initial joint positions
         orientation_mode: str
-            Orientation constraint mode
+            Orientation constraint mode: None, "X", "Y", "Z", or "all"
         no_position: bool
             Disable position optimization
         regularization_parameter: float
-            Regularization strength
+            Regularization strength (default: 0.0)
         max_iter: int
-            Maximum iterations
+            Maximum iterations (only for adam/gradient_descent)
         optimizer: str
-            Optimizer type
+            Optimizer type: "scipy" (default), "adam", or "gradient_descent"
+            - "scipy": scipy least_squares with JAX jacobian (fast & precise)
+            - "adam": Adam optimizer (good for batched optimization)
+            - "gradient_descent": simple gradient descent
         learning_rate: float
-            Learning rate for gradient-based optimizers
+            Learning rate for adam/gradient_descent (default: 0.05)
         tol: float
             Convergence tolerance
 
@@ -631,16 +501,112 @@ class JaxKinematicsCache:
         np.ndarray
             Optimal joint positions
         """
+        import scipy.optimize
+        
         if initial_position is None:
             initial_position = np.zeros(len(self.chain.links))
 
-        return inverse_kinematics_jax(
-            self.chain, target_frame, initial_position,
-            regularization_parameter=regularization_parameter,
-            max_iter=max_iter,
-            orientation_mode=orientation_mode,
-            no_position=no_position,
-            optimizer=optimizer,
-            learning_rate=learning_rate,
-            tol=tol
-        )
+        # Convert inputs to JAX arrays
+        target_frame_jax = jnp.array(target_frame, dtype=self._dtype)
+        initial_position_jax = jnp.array(initial_position, dtype=self._dtype)
+        reg_param = jnp.array(regularization_parameter or 0.0, dtype=self._dtype)
+        
+        # Get the pre-compiled functions for this configuration
+        key = (orientation_mode, no_position)
+        
+        # Initial active joints
+        x0 = self.active_from_full(initial_position_jax)
+        
+        if optimizer == "scipy":
+            # Use scipy least_squares with JAX-computed jacobian
+            residual_fn = self._ik_residuals.get(key)
+            jacobian_fn = self._ik_jacobian.get(key)
+            
+            if residual_fn is None or jacobian_fn is None:
+                # Fallback: compile on the fly
+                res_fn = self._create_residual_function(orientation_mode, no_position)
+                residual_fn = jax.jit(res_fn)
+                jacobian_fn = jax.jit(jax.jacfwd(res_fn))
+            
+            # Wrapper functions for scipy (convert JAX arrays to numpy)
+            def residuals_np(x):
+                return np.array(residual_fn(
+                    jnp.array(x, dtype=self._dtype),
+                    target_frame_jax,
+                    initial_position_jax
+                ))
+            
+            def jacobian_np(x):
+                return np.array(jacobian_fn(
+                    jnp.array(x, dtype=self._dtype),
+                    target_frame_jax,
+                    initial_position_jax
+                ))
+            
+            # Bounds for scipy
+            bounds = (np.array(self.lower_bounds), np.array(self.upper_bounds))
+            
+            # Run scipy least_squares with JAX jacobian
+            result = scipy.optimize.least_squares(
+                residuals_np,
+                np.array(x0),
+                jac=jacobian_np,
+                bounds=bounds,
+                ftol=tol,
+                xtol=tol
+            )
+            optimal_active = jnp.array(result.x, dtype=self._dtype)
+        
+        elif optimizer == "gradient_descent":
+            # Simple gradient descent with bounds
+            compiled_fn = self._ik_compiled.get(key)
+            if compiled_fn is None:
+                loss_fn = self._create_loss_function(orientation_mode, no_position)
+                compiled_fn = jax.jit(jax.value_and_grad(loss_fn))
+            
+            x = x0
+            for _ in range(max_iter):
+                _, g = compiled_fn(x, target_frame_jax, initial_position_jax, reg_param)
+                x = x - learning_rate * g
+                x = jnp.clip(x, self.lower_bounds, self.upper_bounds)
+                
+                # Check convergence
+                if jnp.max(jnp.abs(g)) < tol:
+                    break
+            optimal_active = x
+            
+        elif optimizer == "adam":
+            # Adam optimizer
+            compiled_fn = self._ik_compiled.get(key)
+            if compiled_fn is None:
+                loss_fn = self._create_loss_function(orientation_mode, no_position)
+                compiled_fn = jax.jit(jax.value_and_grad(loss_fn))
+            
+            x = x0
+            m = jnp.zeros_like(x)
+            v = jnp.zeros_like(x)
+            beta1, beta2 = 0.9, 0.999
+            eps = jnp.array(1e-8, dtype=self._dtype)
+            
+            for t in range(1, max_iter + 1):
+                _, g = compiled_fn(x, target_frame_jax, initial_position_jax, reg_param)
+                m = beta1 * m + (1 - beta1) * g
+                v = beta2 * v + (1 - beta2) * g ** 2
+                m_hat = m / (1 - beta1 ** t)
+                v_hat = v / (1 - beta2 ** t)
+                x = x - learning_rate * m_hat / (jnp.sqrt(v_hat) + eps)
+                x = jnp.clip(x, self.lower_bounds, self.upper_bounds)
+                
+                # Check convergence
+                if jnp.max(jnp.abs(g)) < tol:
+                    break
+            optimal_active = x
+            
+        else:
+            raise ValueError(f"Unknown optimizer: {optimizer}. Choose 'scipy', 'adam', or 'gradient_descent'.")
+        
+        # Convert back to full joints
+        result = self.active_to_full(optimal_active, initial_position_jax)
+        
+        # Convert to numpy for compatibility
+        return np.array(result)
