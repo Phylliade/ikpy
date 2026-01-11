@@ -38,6 +38,81 @@ With IKPy, you can:
 
 Moreover, IKPy is a **pure-Python library**: the install is a matter of seconds, and no compiling is required.
 
+## JAX Backend (Experimental)
+
+IKPy now includes an optional **JAX backend** for accelerated inverse kinematics using automatic differentiation.
+
+### Benefits
+
+| Scenario | Speedup vs NumPy |
+|----------|------------------|
+| Single target (complex chains) | **1.5-4x faster** |
+| Trajectory tracking (warm start) | **2-3x faster** |
+| Cold start | **More robust** (fewer local minima) |
+
+The JAX backend uses an analytical Jacobian computed via autodiff, which provides:
+- Faster convergence on difficult targets
+- Better robustness against local minima
+- Significant speedup on robots with 5+ joints
+
+### Installation
+
+```bash
+pip install ikpy jax jaxlib
+```
+
+### Usage
+
+```python
+from ikpy.chain import Chain
+
+# Load your robot
+chain = Chain.from_urdf_file("my_robot.urdf")
+
+# Use JAX backend for IK
+result = chain.inverse_kinematics(
+    target_position=[0.5, 0.2, 0.3],
+    backend="jax"  # Use JAX instead of NumPy
+)
+
+# Trajectory tracking with warm start (recommended)
+current_joints = None
+for target in trajectory:
+    result = chain.inverse_kinematics(
+        target_position=target,
+        initial_position=current_joints,
+        backend="jax"
+    )
+    current_joints = result  # Use solution as next initial guess
+```
+
+### Configuration
+
+The JAX backend uses `scipy.optimize.least_squares` with an analytical Jacobian. You can configure it:
+
+```python
+chain.inverse_kinematics(
+    target_position=target,
+    backend="jax",
+    # Scipy options
+    scipy_method='trf',      # 'trf', 'dogbox', or 'lm'
+    scipy_x_scale='jac',     # Auto-scaling (default, recommended)
+    use_analytical_jacobian=True,  # Set False for finite differences
+)
+```
+
+### When to use JAX vs NumPy
+
+| Use Case | Recommended Backend |
+|----------|---------------------|
+| Simple chains (≤4 joints), easy targets | NumPy |
+| Complex chains (≥5 joints) | **JAX** |
+| Trajectory tracking | **JAX** |
+| Real-time control | **JAX** (after warmup) |
+| One-off calculations | NumPy (no compilation overhead) |
+
+> **Note**: The first JAX call includes JIT compilation overhead (~1-5s). Subsequent calls are fast.
+
 ## Installation
 
 You have three options:
