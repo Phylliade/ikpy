@@ -308,14 +308,15 @@ class TestPerformance:
             _ = simple_chain.inverse_kinematics(target_position=target, backend="numpy")
         numpy_time = time.perf_counter() - start
 
-        # Benchmark JAX (L-BFGS-B)
+        # Benchmark JAX (gradient_descent)
         start = time.perf_counter()
         for _ in range(n_iterations):
             _ = simple_chain.inverse_kinematics(
                 target_position=target,
                 backend="jax",
-                optimizer="L-BFGS-B",
-                max_iter=100
+                optimizer="gradient_descent",
+                max_iter=200,
+                learning_rate=0.1
             )
         jax_time = time.perf_counter() - start
 
@@ -323,13 +324,16 @@ class TestPerformance:
         print(f"Inverse Kinematics Benchmark ({n_iterations} iterations)")
         print(f"{'='*60}")
         print(f"NumPy (scipy least_squares): {numpy_time*1000:.2f} ms total, {numpy_time/n_iterations*1000:.2f} ms/call")
-        print(f"JAX (L-BFGS-B):              {jax_time*1000:.2f} ms total, {jax_time/n_iterations*1000:.2f} ms/call")
+        print(f"JAX (gradient_descent):      {jax_time*1000:.2f} ms total, {jax_time/n_iterations*1000:.2f} ms/call")
         print(f"Speedup: {numpy_time/jax_time:.2f}x")
         print(f"{'='*60}")
 
         # Verify both reach the target reasonably well
         ik_numpy = simple_chain.inverse_kinematics(target_position=target, backend="numpy")
-        ik_jax = simple_chain.inverse_kinematics(target_position=target, backend="jax", max_iter=100)
+        ik_jax = simple_chain.inverse_kinematics(
+            target_position=target, backend="jax",
+            optimizer="gradient_descent", max_iter=200, learning_rate=0.1
+        )
 
         fk_numpy = simple_chain.forward_kinematics(ik_numpy)[:3, 3]
         fk_jax = simple_chain.forward_kinematics(ik_jax)[:3, 3]
