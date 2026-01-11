@@ -526,7 +526,7 @@ class JaxKinematicsCache:
     Stores JIT-compiled functions for a specific chain configuration.
     """
 
-    def __init__(self, chain):
+    def __init__(self, chain, precompile=True):
         """
         Initialize the cache for a chain.
 
@@ -534,6 +534,9 @@ class JaxKinematicsCache:
         ----------
         chain: ikpy.chain.Chain
             The kinematic chain
+        precompile: bool
+            If True, compile JAX functions immediately (slower init, faster first call).
+            If False, compile lazily on first call (faster init, slower first call).
         """
         self.chain = chain
         self.chain_params = extract_chain_parameters(chain)
@@ -554,6 +557,13 @@ class JaxKinematicsCache:
                 upper_bounds.append(bounds[1] if np.isfinite(bounds[1]) else np.pi * 2)
         self.lower_bounds = jnp.array(lower_bounds)
         self.upper_bounds = jnp.array(upper_bounds)
+
+        # Pre-compile by running with dummy data (AOT-like behavior)
+        if precompile:
+            dummy_joints = jnp.zeros(self.chain_params['n_links'])
+            # Trigger compilation by calling the functions once
+            _ = self._fk_jit(dummy_joints).block_until_ready()
+            _ = self._fk_full_jit(dummy_joints).block_until_ready()
 
     def forward_kinematics(self, joints, full_kinematics=False):
         """
