@@ -209,11 +209,13 @@ class Chain:
             Optional : the initial position of each joint of the chain. Defaults to 0 for each joint
         backend: str
             The computational backend to use: "numpy" (default) or "jax".
-            The JAX backend uses automatic differentiation for gradient computation.
+            The JAX backend uses scipy least_squares with analytical Jacobian via autodiff.
             For JAX, additional kwargs are supported:
-            * optimizer: "scipy" (default), "adam", or "gradient_descent"
-            * learning_rate: float (default: 0.05, for adam/gradient_descent)
             * tol: float (default: 1e-6)
+            * use_analytical_jacobian: bool (default: True)
+            * scipy_method: 'trf' (default), 'dogbox', or 'lm'
+            * scipy_x_scale: 'jac' (default) for auto-scaling
+            * scipy_loss: 'linear' (default), 'soft_l1', 'huber', etc.
         kwargs: See ikpy.inverse_kinematics.inverse_kinematic_optimization
 
         Returns
@@ -233,16 +235,15 @@ class Chain:
         if backend == "jax":
             # Extract JAX-specific kwargs
             jax_kwargs = {}
-            jax_specific_keys = ['optimizer', 'learning_rate', 'tol']
+            jax_specific_keys = ['tol', 'use_analytical_jacobian', 'scipy_method', 
+                                 'scipy_x_scale', 'scipy_loss', 'scipy_gtol', 
+                                 'scipy_max_nfev', 'scipy_tr_solver', 'scipy_tr_options',
+                                 'scipy_verbose']
             for key in jax_specific_keys:
                 if key in kwargs:
                     jax_kwargs[key] = kwargs.pop(key)
 
             # Map common kwargs
-            if 'max_iter' in kwargs:
-                jax_kwargs['max_iter'] = kwargs.pop('max_iter')
-            if 'regularization_parameter' in kwargs:
-                jax_kwargs['regularization_parameter'] = kwargs.pop('regularization_parameter')
             if 'orientation_mode' in kwargs:
                 jax_kwargs['orientation_mode'] = kwargs.pop('orientation_mode')
             if 'no_position' in kwargs:

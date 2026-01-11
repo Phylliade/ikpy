@@ -73,55 +73,49 @@ class TestInverseKinematics:
     """Tests for inverse kinematics with JAX backend"""
     
     def test_ik_default(self, simple_chain):
-        """Test IK with default optimizer (adam)"""
-        target = [0.1, -0.2, 0.1]
+        """Test IK with default settings (scipy + x_scale='jac')"""
+        target = [-0.25, -0.05, 0.25]  # Target in workspace
         
         ik_result = simple_chain.inverse_kinematics(
             target_position=target, 
-            backend="jax",
-            max_iter=500
+            backend="jax"
         )
         
         # Verify the result reaches the target
         fk_result = simple_chain.forward_kinematics(ik_result, backend="jax")[:3, 3]
         error = np.linalg.norm(fk_result - target)
         
-        assert error < 0.2, f"IK error too high: {error}"
+        assert error < 0.01, f"IK error too high: {error}"
     
-    def test_ik_gradient_descent(self, simple_chain):
-        """Test IK with gradient descent optimizer"""
-        target = [0.0, -0.3, 0.2]
+    def test_ik_without_analytical_jacobian(self, simple_chain):
+        """Test IK with finite differences jacobian"""
+        target = [-0.25, -0.05, 0.25]
         
         ik_result = simple_chain.inverse_kinematics(
             target_position=target, 
             backend="jax",
-            optimizer="gradient_descent",
-            max_iter=1000,
-            learning_rate=0.1
+            use_analytical_jacobian=False
         )
         
         fk_result = simple_chain.forward_kinematics(ik_result, backend="jax")[:3, 3]
         error = np.linalg.norm(fk_result - target)
         
-        # Gradient descent may need more iterations
-        assert error < 0.3, f"IK error too high: {error}"
+        assert error < 0.01, f"IK error too high: {error}"
     
-    def test_ik_adam(self, simple_chain):
-        """Test IK with Adam optimizer"""
-        target = [0.0, -0.3, 0.2]
+    def test_ik_dogbox_method(self, simple_chain):
+        """Test IK with dogbox method"""
+        target = [-0.25, -0.05, 0.25]
         
         ik_result = simple_chain.inverse_kinematics(
             target_position=target, 
             backend="jax",
-            optimizer="adam",
-            max_iter=500,
-            learning_rate=0.05
+            scipy_method="dogbox"
         )
         
         fk_result = simple_chain.forward_kinematics(ik_result, backend="jax")[:3, 3]
         error = np.linalg.norm(fk_result - target)
         
-        assert error < 0.2, f"IK error too high: {error}"
+        assert error < 0.01, f"IK error too high: {error}"
 
 
 class TestJaxCache:
@@ -176,12 +170,14 @@ class TestAOTCompilation:
         ]
         
         for key in expected_keys:
-            assert key in cache._ik_compiled, f"Missing compiled IK for {key}"
+            assert key in cache._ik_residuals, f"Missing compiled residuals for {key}"
+            assert key in cache._ik_jacobian, f"Missing compiled jacobian for {key}"
             # Check it's a CompiledFunction (no 'lower' method)
-            assert not hasattr(cache._ik_compiled[key], 'lower')
+            assert not hasattr(cache._ik_residuals[key], 'lower')
+            assert not hasattr(cache._ik_jacobian[key], 'lower')
         
         # The invalid combination should not exist
-        assert (None, True) not in cache._ik_compiled
+        assert (None, True) not in cache._ik_residuals
     
     def test_compilation_happens_once(self, simple_chain):
         """Test that compilation is done once at cache creation, not on each call"""
@@ -192,20 +188,20 @@ class TestAOTCompilation:
         
         # Get references to compiled functions
         fk_compiled_ref = cache._fk_compiled
-        ik_compiled_ref = cache._ik_compiled[(None, False)]
+        ik_residuals_ref = cache._ik_residuals[(None, False)]
         
         # Run multiple FK and IK calls
         joints = [0.0] * len(simple_chain.links)
         target = np.eye(4)
-        target[:3, 3] = [0.1, -0.2, 0.1]
+        target[:3, 3] = [-0.25, -0.05, 0.25]
         
         for _ in range(10):
             _ = cache.forward_kinematics(joints)
-            _ = cache.inverse_kinematics(target, max_iter=10)
+            _ = cache.inverse_kinematics(target)
         
         # Verify the same compiled functions are still being used
         assert cache._fk_compiled is fk_compiled_ref
-        assert cache._ik_compiled[(None, False)] is ik_compiled_ref
+        assert cache._ik_residuals[(None, False)] is ik_residuals_ref
     
     def test_lazy_compilation_fallback(self):
         """Test that lazy compilation works when precompile=False"""
@@ -245,29 +241,27 @@ class TestAOTCompilation:
         cache = simple_chain.jax_cache
         
         # Get the pre-compiled function for position-only mode
-        compiled_fn = cache._ik_compiled[(None, False)]
+        residuals_fn = cache._ik_residuals[(None, False)]
         
         # Run IK
         target = np.eye(4)
-        target[:3, 3] = [0.1, -0.2, 0.1]
+        target[:3, 3] = [-0.25, -0.05, 0.25]
         
         result = simple_chain.inverse_kinematics(
-            target_position=[0.1, -0.2, 0.1],
-            backend="jax",
-            optimizer="gradient_descent",
-            max_iter=50
+            target_position=[-0.25, -0.05, 0.25],
+            backend="jax"
         )
         
         # Verify result is valid
         assert result.shape == (len(simple_chain.links),)
         
         # The compiled function should still be the same object
-        assert cache._ik_compiled[(None, False)] is compiled_fn
+        assert cache._ik_residuals[(None, False)] is residuals_fn
     
     def test_ik_orientation_modes_all_work(self, simple_chain):
         """Test that IK works for all pre-compiled orientation modes"""
         target = np.eye(4)
-        target[:3, 3] = [0.1, -0.2, 0.1]
+        target[:3, 3] = [-0.25, -0.05, 0.25]
         target[:3, 0] = [1, 0, 0]  # X axis
         target[:3, 1] = [0, 1, 0]  # Y axis
         target[:3, 2] = [0, 0, 1]  # Z axis
@@ -275,15 +269,13 @@ class TestAOTCompilation:
         # Test each orientation mode
         for orient_mode in [None, "X", "Y", "Z", "all"]:
             result = simple_chain.inverse_kinematics(
-                target_position=[0.1, -0.2, 0.1],
+                target_position=[-0.25, -0.05, 0.25],
                 target_orientation=target[:3, 0] if orient_mode == "X" else 
                                    target[:3, 1] if orient_mode == "Y" else
                                    target[:3, 2] if orient_mode == "Z" else
                                    target[:3, :3] if orient_mode == "all" else None,
                 orientation_mode=orient_mode,
-                backend="jax",
-                optimizer="gradient_descent",
-                max_iter=50
+                backend="jax"
             )
             assert result.shape == (len(simple_chain.links),), f"Failed for orientation_mode={orient_mode}"
 
@@ -328,6 +320,195 @@ class TestPerformance:
         fk_numpy = simple_chain.forward_kinematics(joints, backend="numpy")
         fk_jax = simple_chain.forward_kinematics(joints, backend="jax")
         np.testing.assert_allclose(fk_numpy, fk_jax, rtol=1e-5, atol=1e-5)
+
+
+class TestTrajectoryTracking:
+    """Test trajectory tracking performance: NumPy+SciPy vs JAX+SciPy"""
+
+    @pytest.fixture
+    def baxter_chain(self):
+        """Load Baxter left arm chain"""
+        import json
+        
+        json_path = os.path.join(os.path.dirname(__file__), "../resources/baxter/baxter_left_arm.json")
+        urdf_path = os.path.join(os.path.dirname(__file__), "../resources/baxter/baxter.urdf")
+        
+        with open(json_path) as f:
+            config = json.load(f)
+        
+        return chain.Chain.from_urdf_file(
+            urdf_path,
+            base_elements=config["elements"],
+            active_links_mask=config["active_links_mask"],
+            last_link_vector=config["last_link_vector"],
+            name=config["name"]
+        )
+
+    def generate_circular_trajectory(self, center, radius, n_points):
+        """Generate a circular trajectory in 3D space"""
+        trajectory = []
+        for i in range(n_points):
+            angle = 2 * np.pi * i / n_points
+            x = center[0] + radius * np.cos(angle)
+            y = center[1] + radius * np.sin(angle)
+            z = center[2]
+            trajectory.append([x, y, z])
+        return trajectory
+
+    def generate_figure8_trajectory(self, center, radius, n_points):
+        """Generate a figure-8 (lemniscate) trajectory"""
+        trajectory = []
+        for i in range(n_points):
+            t = 2 * np.pi * i / n_points
+            # Lemniscate of Bernoulli
+            scale = 1 / (1 + np.sin(t)**2)
+            x = center[0] + radius * np.cos(t) * scale
+            y = center[1] + radius * np.sin(t) * np.cos(t) * scale
+            z = center[2] + 0.05 * np.sin(2*t)  # Small Z variation
+            trajectory.append([x, y, z])
+        return trajectory
+
+    def test_trajectory_numpy_vs_jax_scipy(self, baxter_chain):
+        """
+        Compare trajectory tracking performance between:
+        - NumPy backend with SciPy least_squares (finite differences Jacobian)
+        - JAX backend with SciPy least_squares (analytical Jacobian via JAX)
+        """
+        import time
+        
+        # Generate a challenging figure-8 trajectory
+        # Baxter's workspace is roughly centered around x=0.5-0.8, y=0.2-0.5
+        center = [0.6, 0.3, 0.2]
+        radius = 0.15
+        n_points = 50
+        
+        trajectory = self.generate_figure8_trajectory(center, radius, n_points)
+        
+        print(f"\n{'='*70}")
+        print(f"Trajectory Tracking Benchmark: Baxter ({len(baxter_chain.links)} links, 7 active joints)")
+        print(f"Trajectory: Figure-8 with {n_points} waypoints")
+        print(f"{'='*70}")
+        
+        # Warm-up JAX (ensure AOT compilation is done)
+        initial_position = baxter_chain.inverse_kinematics(
+            target_position=trajectory[0],
+            backend="jax"
+        )
+        
+        # ========== NumPy + SciPy (finite differences) ==========
+        numpy_results = []
+        numpy_errors = []
+        current_joints = None
+        
+        start = time.perf_counter()
+        for target in trajectory:
+            result = baxter_chain.inverse_kinematics(
+                target_position=target,
+                initial_position=current_joints,
+                backend="numpy"  # Uses scipy least_squares with finite diff Jacobian
+            )
+            numpy_results.append(result)
+            current_joints = result
+            
+            # Compute error
+            fk = baxter_chain.forward_kinematics(result)
+            error = np.linalg.norm(fk[:3, 3] - target)
+            numpy_errors.append(error)
+        numpy_time = time.perf_counter() - start
+        
+        # ========== JAX + SciPy (analytical Jacobian) ==========
+        jax_results = []
+        jax_errors = []
+        current_joints = None
+        
+        start = time.perf_counter()
+        for target in trajectory:
+            result = baxter_chain.inverse_kinematics(
+                target_position=target,
+                initial_position=current_joints,
+                backend="jax"  # Uses scipy least_squares with JAX Jacobian
+            )
+            jax_results.append(result)
+            current_joints = result
+            
+            # Compute error
+            fk = baxter_chain.forward_kinematics(result)
+            error = np.linalg.norm(fk[:3, 3] - target)
+            jax_errors.append(error)
+        jax_time = time.perf_counter() - start
+        
+        # ========== Results ==========
+        print(f"\n--- NumPy + SciPy (finite differences Jacobian) ---")
+        print(f"Total time: {numpy_time*1000:.2f} ms")
+        print(f"Time per waypoint: {numpy_time/n_points*1000:.2f} ms")
+        print(f"Mean position error: {np.mean(numpy_errors)*1000:.4f} mm")
+        print(f"Max position error: {np.max(numpy_errors)*1000:.4f} mm")
+        
+        print(f"\n--- JAX + SciPy (analytical Jacobian) ---")
+        print(f"Total time: {jax_time*1000:.2f} ms")
+        print(f"Time per waypoint: {jax_time/n_points*1000:.2f} ms")
+        print(f"Mean position error: {np.mean(jax_errors)*1000:.4f} mm")
+        print(f"Max position error: {np.max(jax_errors)*1000:.4f} mm")
+        
+        speedup = numpy_time / jax_time
+        print(f"\n{'='*70}")
+        print(f"SPEEDUP: JAX+SciPy is {speedup:.2f}x {'faster' if speedup > 1 else 'slower'} than NumPy+SciPy")
+        print(f"{'='*70}")
+        
+        # Verify both methods achieve good precision
+        assert np.mean(numpy_errors) < 0.01, f"NumPy mean error too high: {np.mean(numpy_errors)}"
+        assert np.mean(jax_errors) < 0.01, f"JAX mean error too high: {np.mean(jax_errors)}"
+
+    def test_trajectory_with_warm_start(self, baxter_chain):
+        """
+        Test trajectory tracking with warm start optimization.
+        Shows the benefit of using previous solution as initial guess.
+        """
+        import time
+        
+        center = [0.6, 0.3, 0.2]
+        radius = 0.1
+        n_points = 30
+        
+        trajectory = self.generate_circular_trajectory(center, radius, n_points)
+        
+        print(f"\n{'='*70}")
+        print(f"Warm Start Comparison on Baxter (circular trajectory, {n_points} points)")
+        print(f"{'='*70}")
+        
+        # ========== Without warm start (JAX) ==========
+        jax_cold_results = []
+        start = time.perf_counter()
+        for target in trajectory:
+            result = baxter_chain.inverse_kinematics(
+                target_position=target,
+                initial_position=None,  # No warm start
+                backend="jax"
+            )
+            jax_cold_results.append(result)
+        cold_time = time.perf_counter() - start
+        
+        # ========== With warm start (JAX) ==========
+        jax_warm_results = []
+        current_joints = None
+        start = time.perf_counter()
+        for target in trajectory:
+            result = baxter_chain.inverse_kinematics(
+                target_position=target,
+                initial_position=current_joints,  # Warm start
+                backend="jax"
+            )
+            jax_warm_results.append(result)
+            current_joints = result
+        warm_time = time.perf_counter() - start
+        
+        print(f"\n--- JAX+SciPy without warm start ---")
+        print(f"Total time: {cold_time*1000:.2f} ms ({cold_time/n_points*1000:.2f} ms/point)")
+        
+        print(f"\n--- JAX+SciPy with warm start ---")
+        print(f"Total time: {warm_time*1000:.2f} ms ({warm_time/n_points*1000:.2f} ms/point)")
+        
+        print(f"\nWarm start speedup: {cold_time/warm_time:.2f}x")
 
 
 if __name__ == "__main__":
