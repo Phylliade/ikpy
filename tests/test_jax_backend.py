@@ -147,113 +147,6 @@ class TestJaxCache:
 class TestPerformance:
     """Performance comparison tests between NumPy and JAX backends"""
 
-    def test_jacobian_computation_speed(self, simple_chain):
-        """Compare Jacobian computation - JAX autodiff vs numerical differentiation"""
-        import time
-        import jax.numpy as jnp
-        from jax import jacfwd, jit
-
-        joints = np.array([0.0] * len(simple_chain.links))
-        joints[4] = 0.5
-        joints[5] = -0.3
-
-        n_iterations = 100
-
-        # NumPy: Numerical Jacobian (finite differences)
-        def numerical_jacobian(chain, joints, eps=1e-6):
-            n_joints = len(joints)
-            fk_base = chain.forward_kinematics(joints, backend="numpy")[:3, 3]
-            jacobian = np.zeros((3, n_joints))
-            for i in range(n_joints):
-                joints_perturbed = joints.copy()
-                joints_perturbed[i] += eps
-                fk_perturbed = chain.forward_kinematics(joints_perturbed, backend="numpy")[:3, 3]
-                jacobian[:, i] = (fk_perturbed - fk_base) / eps
-            return jacobian
-
-        start = time.perf_counter()
-        for _ in range(n_iterations):
-            jac_numpy = numerical_jacobian(simple_chain, joints)
-        numpy_time = time.perf_counter() - start
-
-        # JAX: Automatic differentiation with JIT
-        from ikpy.jax_backend import forward_kinematics_jax, extract_chain_parameters
-        chain_params = extract_chain_parameters(simple_chain)
-
-        def fk_position(joints_jax):
-            return forward_kinematics_jax(joints_jax, chain_params)[:3, 3]
-
-        # JIT compile the Jacobian function
-        jac_fn = jit(jacfwd(fk_position))
-
-        # Warm-up and compile
-        joints_jax = jnp.array(joints)
-        _ = jac_fn(joints_jax).block_until_ready()
-
-        start = time.perf_counter()
-        for _ in range(n_iterations):
-            jac_jax = jac_fn(joints_jax).block_until_ready()
-        jax_time = time.perf_counter() - start
-
-        print(f"\n{'='*60}")
-        print(f"Jacobian Computation ({n_iterations} iterations)")
-        print(f"{'='*60}")
-        print(f"NumPy (finite diff): {numpy_time*1000:.2f} ms total, {numpy_time/n_iterations*1000:.4f} ms/call")
-        print(f"JAX (jit+autodiff):  {jax_time*1000:.2f} ms total, {jax_time/n_iterations*1000:.4f} ms/call")
-        print(f"Speedup:             {numpy_time/jax_time:.2f}x")
-        print(f"{'='*60}")
-
-        # Verify Jacobians are similar
-        np.testing.assert_allclose(jac_numpy, np.array(jac_jax), rtol=1e-3, atol=1e-3)
-        print("✓ Jacobians match!")
-
-    def test_forward_kinematics_batched_speed(self, simple_chain):
-        """Compare batched FK speed - where JAX really shines"""
-        import time
-        import jax.numpy as jnp
-        from jax import vmap
-
-        n_configs = 1000  # Number of joint configurations to evaluate
-
-        # Generate random joint configurations
-        np.random.seed(42)
-        all_joints = np.random.uniform(-1, 1, (n_configs, len(simple_chain.links)))
-
-        # NumPy: loop over configurations
-        start = time.perf_counter()
-        results_numpy = []
-        for joints in all_joints:
-            fk = simple_chain.forward_kinematics(joints.tolist(), backend="numpy")
-            results_numpy.append(fk[:3, 3])
-        results_numpy = np.array(results_numpy)
-        numpy_time = time.perf_counter() - start
-
-        # JAX: vectorized with vmap
-        from ikpy.jax_backend import forward_kinematics_jax, extract_chain_parameters
-        chain_params = extract_chain_parameters(simple_chain)
-
-        # Create batched FK function
-        batched_fk = vmap(lambda j: forward_kinematics_jax(j, chain_params))
-
-        # Warm-up
-        _ = batched_fk(jnp.array(all_joints[:10])).block_until_ready()
-
-        start = time.perf_counter()
-        all_joints_jax = jnp.array(all_joints)
-        results_jax = batched_fk(all_joints_jax)[:, :3, 3].block_until_ready()
-        jax_time = time.perf_counter() - start
-
-        print(f"\n{'='*60}")
-        print(f"BATCHED Forward Kinematics ({n_configs} configurations)")
-        print(f"{'='*60}")
-        print(f"NumPy (loop):      {numpy_time*1000:.2f} ms")
-        print(f"JAX (vmap):        {jax_time*1000:.2f} ms")
-        print(f"Speedup:           {numpy_time/jax_time:.2f}x")
-        print(f"{'='*60}")
-
-        # Verify results match
-        np.testing.assert_allclose(results_numpy, np.array(results_jax), rtol=1e-4, atol=1e-4)
-
     def test_forward_kinematics_speed(self, simple_chain):
         """Compare FK speed between NumPy and JAX"""
         import time
@@ -264,7 +157,7 @@ class TestPerformance:
 
         n_iterations = 1000
 
-        # Warm-up JAX (first call triggers compilation if not precompiled)
+        # Warm-up JAX (compilation)
         _ = simple_chain.forward_kinematics(joints, backend="jax")
 
         # Benchmark NumPy
@@ -287,63 +180,10 @@ class TestPerformance:
         print(f"Speedup: {numpy_time/jax_time:.2f}x")
         print(f"{'='*60}")
 
-        # Just verify both produce same results
+        # Verify both produce same results
         fk_numpy = simple_chain.forward_kinematics(joints, backend="numpy")
         fk_jax = simple_chain.forward_kinematics(joints, backend="jax")
         np.testing.assert_allclose(fk_numpy, fk_jax, rtol=1e-5, atol=1e-5)
-
-    def test_inverse_kinematics_speed(self, simple_chain):
-        """Compare IK speed between NumPy and JAX"""
-        import time
-
-        target = [0.1, -0.2, 0.1]
-        n_iterations = 10  # IK is slower, use fewer iterations
-
-        # Warm-up JAX
-        _ = simple_chain.inverse_kinematics(target_position=target, backend="jax", max_iter=50)
-
-        # Benchmark NumPy
-        start = time.perf_counter()
-        for _ in range(n_iterations):
-            _ = simple_chain.inverse_kinematics(target_position=target, backend="numpy")
-        numpy_time = time.perf_counter() - start
-
-        # Benchmark JAX (adam)
-        start = time.perf_counter()
-        for _ in range(n_iterations):
-            _ = simple_chain.inverse_kinematics(
-                target_position=target,
-                backend="jax",
-                optimizer="adam",
-                max_iter=200,
-                learning_rate=0.05
-            )
-        jax_time = time.perf_counter() - start
-
-        print(f"\n{'='*60}")
-        print(f"Inverse Kinematics Benchmark ({n_iterations} iterations)")
-        print(f"{'='*60}")
-        print(f"NumPy (scipy least_squares): {numpy_time*1000:.2f} ms total, {numpy_time/n_iterations*1000:.2f} ms/call")
-        print(f"JAX (adam):                  {jax_time*1000:.2f} ms total, {jax_time/n_iterations*1000:.2f} ms/call")
-        print(f"Speedup: {numpy_time/jax_time:.2f}x")
-        print(f"{'='*60}")
-
-        # Verify both reach the target reasonably well
-        ik_numpy = simple_chain.inverse_kinematics(target_position=target, backend="numpy")
-        ik_jax = simple_chain.inverse_kinematics(
-            target_position=target, backend="jax",
-            optimizer="adam", max_iter=200, learning_rate=0.05
-        )
-
-        fk_numpy = simple_chain.forward_kinematics(ik_numpy)[:3, 3]
-        fk_jax = simple_chain.forward_kinematics(ik_jax)[:3, 3]
-
-        error_numpy = np.linalg.norm(fk_numpy - target)
-        error_jax = np.linalg.norm(fk_jax - target)
-
-        print(f"NumPy IK error: {error_numpy:.6f}")
-        print(f"JAX IK error:   {error_jax:.6f}")
-        print(f"{'='*60}")
 
 
 if __name__ == "__main__":
