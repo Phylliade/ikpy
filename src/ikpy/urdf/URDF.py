@@ -208,7 +208,7 @@ def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, ba
     base_elements = list(base_elements)
     if base_elements is None:
         base_elements = ["base_link"]
-    elif base_elements is []:
+    elif base_elements == []:
         raise ValueError("base_elements can't be the empty list []")
 
     joints = []
