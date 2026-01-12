@@ -5,8 +5,8 @@ from . import logs
 
 # Check for JAX availability
 try:
-    import jax
-    import jax.numpy as jnp
+    import jax  # noqa: F401
+    import jax.numpy as jnp  # noqa: F401
     JAX_AVAILABLE = True
 except ImportError:
     JAX_AVAILABLE = False

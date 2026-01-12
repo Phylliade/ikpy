@@ -235,8 +235,8 @@ class Chain:
         if backend == "jax":
             # Extract JAX-specific kwargs
             jax_kwargs = {}
-            jax_specific_keys = ['tol', 'use_analytical_jacobian', 'scipy_method', 
-                                 'scipy_x_scale', 'scipy_loss', 'scipy_gtol', 
+            jax_specific_keys = ['tol', 'use_analytical_jacobian', 'scipy_method',
+                                 'scipy_x_scale', 'scipy_loss', 'scipy_gtol',
                                  'scipy_max_nfev', 'scipy_tr_solver', 'scipy_tr_options',
                                  'scipy_verbose']
             for key in jax_specific_keys:

@@ -6,7 +6,6 @@ JAX enables automatic differentiation and JIT compilation for faster computation
 """
 import jax
 import jax.numpy as jnp
-from jax import jit
 from functools import partial
 import numpy as np
 
@@ -205,7 +204,7 @@ class JaxKinematicsCache:
     """
     Cache for JAX kinematics computations.
     Stores AOT-compiled functions for a specific chain configuration.
-    
+
     Uses JAX's lower/compile API for explicit ahead-of-time compilation,
     ensuring compilation happens exactly once at cache creation time.
     """
@@ -259,7 +258,7 @@ class JaxKinematicsCache:
             # AOT compilation using lower/compile
             self._fk_compiled = jax.jit(self._fk_fn).lower(self._dummy_joints).compile()
             self._fk_full_compiled = jax.jit(self._fk_full_fn).lower(self._dummy_joints).compile()
-            
+
             # Compile IK functions for all orientation modes
             self._compile_ik_functions()
         else:
@@ -274,14 +273,14 @@ class JaxKinematicsCache:
     def _create_residual_function(self, orientation_mode, no_position):
         """
         Create a residual function for scipy least_squares.
-        
+
         Parameters
         ----------
         orientation_mode: str or None
             One of None, "X", "Y", "Z", "all"
         no_position: bool
             If True, don't optimize position
-            
+
         Returns
         -------
         callable
@@ -294,17 +293,17 @@ class JaxKinematicsCache:
         def compute_residuals(active_joints, target_frame, initial_position):
             # Convert to full joints
             full_joints = initial_position.at[active_indices].set(active_joints)
-            
+
             # Compute FK
             fk = forward_kinematics_jax(full_joints, chain_params)
-            
+
             residuals = []
-            
+
             # Position error
             if not no_position:
                 position_error = fk[:3, 3] - target_frame[:3, 3]
                 residuals.append(position_error)
-            
+
             # Orientation error based on mode
             if orientation_mode == "X":
                 orientation_error = fk[:3, 0] - target_frame[:3, 0]
@@ -318,9 +317,9 @@ class JaxKinematicsCache:
             elif orientation_mode == "all":
                 orientation_error = (fk[:3, :3] - target_frame[:3, :3]).ravel()
                 residuals.append(orientation_error)
-            
+
             return jnp.concatenate(residuals) if len(residuals) > 1 else residuals[0]
-        
+
         return compute_residuals
 
     def _compile_ik_functions(self):
@@ -332,23 +331,23 @@ class JaxKinematicsCache:
         dummy_active = jnp.zeros(self.n_active, dtype=self._dtype)
         dummy_target = jnp.eye(4, dtype=self._dtype)
         dummy_initial = jnp.zeros(self.chain_params['n_links'], dtype=self._dtype)
-        
+
         self._ik_residuals = {}  # AOT compiled residuals
         self._ik_jacobian = {}   # AOT compiled jacobian
-        
+
         # Compile for each orientation mode and position flag combination
         for orient_mode in [None, "X", "Y", "Z", "all"]:
             for no_pos in [False, True]:
                 # Skip invalid combination (no position and no orientation)
                 if no_pos and orient_mode is None:
                     continue
-                    
+
                 key = (orient_mode, no_pos)
-                
+
                 # Compile residuals and jacobian for scipy least_squares
                 residual_fn = self._create_residual_function(orient_mode, no_pos)
                 jacobian_fn = jax.jacfwd(residual_fn)  # Jacobian via forward-mode autodiff
-                
+
                 # AOT compile both
                 self._ik_residuals[key] = jax.jit(residual_fn).lower(
                     dummy_active, dummy_target, dummy_initial
@@ -448,30 +447,30 @@ class JaxKinematicsCache:
             Optimal joint positions
         """
         import scipy.optimize
-        
+
         if initial_position is None:
             initial_position = np.zeros(len(self.chain.links))
 
         # Convert inputs to JAX arrays
         target_frame_jax = jnp.array(target_frame, dtype=self._dtype)
         initial_position_jax = jnp.array(initial_position, dtype=self._dtype)
-        
+
         # Get the pre-compiled functions for this configuration
         key = (orientation_mode, no_position)
-        
+
         # Initial active joints
         x0 = self.active_from_full(initial_position_jax)
-        
+
         # Use scipy least_squares with JAX-computed jacobian
         residual_fn = self._ik_residuals.get(key)
         jacobian_fn = self._ik_jacobian.get(key)
-        
+
         if residual_fn is None or jacobian_fn is None:
             # Fallback: compile on the fly
             res_fn = self._create_residual_function(orientation_mode, no_position)
             residual_fn = jax.jit(res_fn)
             jacobian_fn = jax.jit(jax.jacfwd(res_fn))
-        
+
         # Wrapper functions for scipy (convert JAX arrays to numpy)
         def residuals_np(x):
             return np.array(residual_fn(
@@ -479,17 +478,17 @@ class JaxKinematicsCache:
                 target_frame_jax,
                 initial_position_jax
             ))
-        
+
         def jacobian_np(x):
             return np.array(jacobian_fn(
                 jnp.array(x, dtype=self._dtype),
                 target_frame_jax,
                 initial_position_jax
             ))
-        
+
         # Bounds for scipy (not used with 'lm' method)
         bounds = (np.array(self.lower_bounds), np.array(self.upper_bounds))
-        
+
         # Build kwargs for scipy.optimize.least_squares
         scipy_kwargs = {
             'ftol': tol,
@@ -498,34 +497,34 @@ class JaxKinematicsCache:
             'loss': scipy_loss,
             'verbose': scipy_verbose,
         }
-        
+
         # Add gtol if specified
         if scipy_gtol is not None:
             scipy_kwargs['gtol'] = scipy_gtol
-        
+
         # Add max_nfev if specified
         if scipy_max_nfev is not None:
             scipy_kwargs['max_nfev'] = scipy_max_nfev
-        
+
         # Add bounds only for methods that support them
         if scipy_method != 'lm':
             scipy_kwargs['bounds'] = bounds
-        
+
         # Add x_scale if specified
         if scipy_x_scale is not None:
             scipy_kwargs['x_scale'] = scipy_x_scale
-        
+
         # Add trust-region solver options (only for 'trf' and 'dogbox')
         if scipy_method in ('trf', 'dogbox'):
             if scipy_tr_solver is not None:
                 scipy_kwargs['tr_solver'] = scipy_tr_solver
             if scipy_tr_options is not None:
                 scipy_kwargs['tr_options'] = scipy_tr_options
-        
+
         # Add Jacobian if requested
         if use_analytical_jacobian:
             scipy_kwargs['jac'] = jacobian_np
-        
+
         # Run scipy least_squares
         result = scipy.optimize.least_squares(
             residuals_np,
@@ -533,9 +532,9 @@ class JaxKinematicsCache:
             **scipy_kwargs
         )
         optimal_active = jnp.array(result.x, dtype=self._dtype)
-        
+
         # Convert back to full joints
         result = self.active_to_full(optimal_active, initial_position_jax)
-        
+
         # Convert to numpy for compatibility
         return np.array(result)
