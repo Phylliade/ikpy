@@ -14,6 +14,13 @@ from .urdf import URDF
 from . import inverse_kinematics as ik
 from . import link as link_lib
 
+# Check for JAX availability
+try:
+    from . import jax_backend
+    JAX_AVAILABLE = True
+except ImportError:
+    JAX_AVAILABLE = False
+
 
 class Chain:
     """The base Chain class
@@ -28,8 +35,11 @@ class Chain:
         The name of the Chain
     urdf_metadata
         Technical attribute
+    jax_precompile: bool
+        If True (default), JAX functions are compiled when the JAX cache is first accessed.
+        If False, compilation is deferred to the first JAX call (faster init, slower first call).
     """
-    def __init__(self, links, active_links_mask=None, name="chain", urdf_metadata=None, **kwargs):
+    def __init__(self, links, active_links_mask=None, name="chain", urdf_metadata=None, jax_precompile=True, **kwargs):
         self.name = name
         self.links = links
         self._length = sum([link.length for link in links])
@@ -39,6 +49,10 @@ class Chain:
                 link.axis_length = self.links[index - 1].axis_length
         # Optional argument
         self._urdf_metadata = urdf_metadata
+
+        # JAX backend cache (lazily initialized)
+        self._jax_cache = None
+        self._jax_precompile = jax_precompile
 
         # If the active_links_mask is not given, set it to True for every link
         if active_links_mask is not None:
@@ -65,7 +79,30 @@ class Chain:
     def __len__(self):
         return len(self.links)
 
-    def forward_kinematics(self, joints: List, full_kinematics=False):
+    @property
+    def jax_cache(self):
+        """
+        Get or initialize the JAX kinematics cache.
+
+        Returns
+        -------
+        JaxKinematicsCache
+            The JAX cache for this chain
+
+        Raises
+        ------
+        ImportError
+            If JAX is not installed
+        """
+        if not JAX_AVAILABLE:
+            raise ImportError("JAX is not installed. Install it with: pip install jax jaxlib")
+
+        if self._jax_cache is None:
+            self._jax_cache = jax_backend.JaxKinematicsCache(self, precompile=self._jax_precompile)
+
+        return self._jax_cache
+
+    def forward_kinematics(self, joints: List, full_kinematics=False, backend: str = "numpy"):
         """Returns the transformation matrix of the forward kinematics
 
         Parameters
@@ -74,19 +111,27 @@ class Chain:
             The list of the positions of each joint. Note : Inactive joints must be in the list.
         full_kinematics: bool
             Return the transformation matrices of each joint
+        backend: str
+            The computational backend to use: "numpy" (default) or "jax".
+            The JAX backend provides JIT compilation and automatic differentiation.
 
         Returns
         -------
         frame_matrix:
             The transformation matrix
         """
+        if len(self.links) != len(joints):
+            raise ValueError("Your joints vector length is {} but you have {} links".format(len(joints), len(self.links)))
+
+        # Use JAX backend if requested
+        if backend == "jax":
+            return self.jax_cache.forward_kinematics(joints, full_kinematics=full_kinematics)
+
+        # Default numpy implementation
         frame_matrix = np.eye(4)
 
         if full_kinematics:
             frame_matrixes = []
-
-        if len(self.links) != len(joints):
-            raise ValueError("Your joints vector length is {} but you have {} links".format(len(joints), len(self.links)))
 
         for index, (link, joint_parameters) in enumerate(zip(self.links, joints)):
             # Compute iteratively the position
@@ -103,7 +148,7 @@ class Chain:
         else:
             return frame_matrix
 
-    def inverse_kinematics(self, target_position=None, target_orientation=None, orientation_mode=None, **kwargs):
+    def inverse_kinematics(self, target_position=None, target_orientation=None, orientation_mode=None, backend: str = "numpy", **kwargs):
         """
 
         Parameters
@@ -119,6 +164,9 @@ class Chain:
             * "Y": Target the Y axis
             * "Z": Target the Z axis
             * "all": Target the entire frame (e.g. the three axes) (not currently supported)
+        backend: str
+            The computational backend to use: "numpy" (default) or "jax".
+            The JAX backend uses automatic differentiation for gradient computation.
         kwargs: See ikpy.inverse_kinematics.inverse_kinematic_optimization
 
         Returns
@@ -148,9 +196,9 @@ class Chain:
             no_position = False
             frame_target[:3, 3] = target_position
 
-        return self.inverse_kinematics_frame(target=frame_target, orientation_mode=orientation_mode, no_position=no_position, **kwargs)
+        return self.inverse_kinematics_frame(target=frame_target, orientation_mode=orientation_mode, no_position=no_position, backend=backend, **kwargs)
 
-    def inverse_kinematics_frame(self, target, initial_position=None, **kwargs):
+    def inverse_kinematics_frame(self, target, initial_position=None, backend: str = "numpy", **kwargs):
         """Computes the inverse kinematic on the specified target
 
         Parameters
@@ -159,6 +207,15 @@ class Chain:
             The frame target of the inverse kinematic, in meters. It must be 4x4 transformation matrix
         initial_position: numpy.array
             Optional : the initial position of each joint of the chain. Defaults to 0 for each joint
+        backend: str
+            The computational backend to use: "numpy" (default) or "jax".
+            The JAX backend uses scipy least_squares with analytical Jacobian via autodiff.
+            For JAX, additional kwargs are supported:
+            * tol: float (default: 1e-6)
+            * use_analytical_jacobian: bool (default: True)
+            * scipy_method: 'trf' (default), 'dogbox', or 'lm'
+            * scipy_x_scale: 'jac' (default) for auto-scaling
+            * scipy_loss: 'linear' (default), 'soft_l1', 'huber', etc.
         kwargs: See ikpy.inverse_kinematics.inverse_kinematic_optimization
 
         Returns
@@ -174,6 +231,30 @@ class Chain:
         if initial_position is None:
             initial_position = [0] * len(self.links)
 
+        # Use JAX backend if requested - delegate to jax_cache for pre-compiled functions
+        if backend == "jax":
+            # Extract JAX-specific kwargs
+            jax_kwargs = {}
+            jax_specific_keys = ['tol', 'use_analytical_jacobian', 'scipy_method',
+                                 'scipy_x_scale', 'scipy_loss', 'scipy_gtol',
+                                 'scipy_max_nfev', 'scipy_tr_solver', 'scipy_tr_options',
+                                 'scipy_verbose']
+            for key in jax_specific_keys:
+                if key in kwargs:
+                    jax_kwargs[key] = kwargs.pop(key)
+
+            # Map common kwargs
+            if 'orientation_mode' in kwargs:
+                jax_kwargs['orientation_mode'] = kwargs.pop('orientation_mode')
+            if 'no_position' in kwargs:
+                jax_kwargs['no_position'] = kwargs.pop('no_position')
+
+            # Use the jax_cache which has pre-compiled functions
+            return self.jax_cache.inverse_kinematics(
+                target, initial_position, **jax_kwargs
+            )
+
+        # Default numpy/scipy implementation
         return ik.inverse_kinematic_optimization(self, target, starting_nodes_angles=initial_position, **kwargs)
 
     def plot(self, joints, ax, target=None, show=False):
@@ -283,7 +364,7 @@ class Chain:
         return self._json_path
 
     @classmethod
-    def from_urdf_file(cls, urdf_file, base_elements=None, last_link_vector=None, base_element_type="link", active_links_mask=None, name="chain", symbolic=True):
+    def from_urdf_file(cls, urdf_file, base_elements=None, last_link_vector=None, base_element_type="link", active_links_mask=None, name="chain", symbolic=True, jax_precompile=True):
         """Creates a chain from an URDF file
 
         Parameters
@@ -322,6 +403,9 @@ class Chain:
             A list of boolean indicating whether or not the corresponding link is active
         symbolic: bool
             Use symbolic computations
+        jax_precompile: bool
+            If True (default), JAX functions are compiled when the JAX cache is first accessed.
+            If False, compilation is deferred to the first JAX call.
 
 
         Note
@@ -345,7 +429,7 @@ class Chain:
 
         links = URDF.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_element_type=base_element_type, symbolic=symbolic)
         # Add an origin link at the beginning
-        chain = cls([link_lib.OriginLink()] + links, active_links_mask=active_links_mask, name=name, urdf_metadata=urdf_metadata)
+        chain = cls([link_lib.OriginLink()] + links, active_links_mask=active_links_mask, name=name, urdf_metadata=urdf_metadata, jax_precompile=jax_precompile)
 
         # Save some useful metadata
         # FIXME: We have attributes specific to objects created in this style, not great...
