@@ -34,9 +34,9 @@ def test_urdf_chain(resources_path, interactive):
 def test_urdf_parser(poppy_torso_urdf):
     """Test the correctness of a URDF parser"""
     base_elements = [
-            "base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x",
-            "chest", "r_shoulder_y"
-        ]
+        "base", "abs_z", "spine", "bust_y", "bust_motors", "bust_x",
+        "chest", "r_shoulder_y"
+    ]
     last_link_vector = [0, 0.18, 0]
 
     links = URDF.get_urdf_parameters(poppy_torso_urdf, base_elements=base_elements, last_link_vector=last_link_vector)
@@ -45,7 +45,7 @@ def test_urdf_parser(poppy_torso_urdf):
 
 
 def test_plot_urdf_tree(baxter_urdf):
-    dot = get_urdf_tree(baxter_urdf, root_element="base", out_image_path="./out/baxter")
+    _ = get_urdf_tree(baxter_urdf, root_element="base", out_image_path="./out/baxter")
 
 
 def test_chain_from_joints(poppy_ergo_urdf):

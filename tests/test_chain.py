@@ -1,6 +1,4 @@
-import unittest
 import numpy as np
-import sys
 import matplotlib.pyplot as plt
 
 # IKPy imports
@@ -78,7 +76,7 @@ def test_ik_optimization(torso_right_arm):
 
     # Check using the scalar optimizer
     ik = torso_right_arm.inverse_kinematics_frame(
-    frame_target, initial_position=joints, optimizer="scalar")
+        frame_target, initial_position=joints, optimizer="scalar")
     # Check whether the results are almost equal
     np.testing.assert_almost_equal(
         torso_right_arm.forward_kinematics(ik)[:3, 3], target, decimal=3)
@@ -88,4 +86,3 @@ def test_chain_serialization(torso_right_arm):
 
     chain_json_path = torso_right_arm.to_json_file(force=True)
     chain.Chain.from_json_file(chain_json_path)
-
