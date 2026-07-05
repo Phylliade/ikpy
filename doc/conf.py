@@ -25,7 +25,7 @@ class Mock(MagicMock):
     def __getattr__(cls, name):
             return MagicMock()
 
-MOCK_MODULES = ['numpy', 'sympy', 'scipy', 'scipy.optimize', 'matplotlib']
+MOCK_MODULES = ['numpy', 'sympy', 'scipy', 'scipy.optimize', 'matplotlib', 'jax', 'jax.numpy']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 
@@ -318,5 +318,5 @@ texinfo_documents = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None, 'numpy': ('http://docs.scipy.org/doc/numpy/', None)}
+intersphinx_mapping = {'python': ('https://docs.python.org/3', None), 'numpy': ('https://numpy.org/doc/stable/', None)}
 autodoc_member_order = 'bysource'

@@ -26,7 +26,7 @@ With IKPy, you can:
 * Compute the **Inverse Kinematics** of every existing robot.
 * Compute the Inverse Kinematics in **position, [orientation](./tutorials/Orientation.ipynb)**, or both
 * Define your kinematic chain using **arbitrary representations**: DH (Denavit–Hartenberg), URDF, custom...
-* Automatically import a kinematic chain from a **URDF file**.
+* Automatically import a kinematic chain from a **URDF file** or a **MuJoCo MJCF file**.
 * Support for arbitrary joint types: `revolute`, `prismatic` and more to come in the future 
 * Use pre-configured robots, such as [**baxter**](./tutorials/Baxter%20kinematics.ipynb) or the **poppy-torso**
 * IKPy is **precise** (up to 7 digits): the only limitation being your underlying model's precision, and **fast**: from 7 ms to 50 ms (depending on your precision) for a complete IK computation.
@@ -58,7 +58,7 @@ The JAX backend uses an analytical Jacobian computed via autodiff, which provide
 ### Installation
 
 ```bash
-pip install ikpy jax jaxlib
+pip install 'ikpy[jax]'
 ```
 
 ### Usage
@@ -113,6 +113,18 @@ chain.inverse_kinematics(
 
 > **Note**: The first JAX call includes JIT compilation overhead (~1-5s). Subsequent calls are fast.
 
+## MuJoCo (MJCF) Support
+
+In addition to URDF, IKPy can import kinematic chains directly from **MuJoCo MJCF** XML files:
+
+```python
+from ikpy.chain import Chain
+
+chain = Chain.from_mjcf_file("ur5e.xml", base_elements=["base"])
+```
+
+The parser supports MuJoCo compiler settings, default classes (including `childclass` inheritance), and provides helpers to inspect models (`ikpy.mjcf.get_body_names`, `ikpy.mjcf.get_joint_names`).
+
 ## Installation
 
 You have three options:
@@ -127,6 +139,12 @@ You have three options:
 
    ```bash
    pip install 'ikpy[plot]'
+   ```
+
+   If you want to use the JAX backend, install the JAX dependencies:
+
+   ```bash
+   pip install 'ikpy[jax]'
    ```
 
 2. From source - first download and extract the archive, then run:
@@ -151,6 +169,7 @@ An extensive documentation of the API can be found [here](http://ikpy.readthedoc
 
 ## Dependencies and compatibility
 
+Starting with IKPy v4, Python 3.10 or above is required.
 Starting with IKPy v3.1, only Python 3 is supported. 
 For versions before v3.1, the library can work with both versions of Python \(2.7 and 3.x\).
 
