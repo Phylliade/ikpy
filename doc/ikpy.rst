@@ -10,4 +10,6 @@
    utils/geometry
    urdf/URDF.rst
    urdf/utils
+   mjcf/MJCF.rst
+   mjcf/utils
 

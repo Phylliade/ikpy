@@ -1,0 +1,22 @@
+<mujoco model="prismatic_test">
+  <!-- Test robot with prismatic and revolute joints -->
+  <compiler angle="degree"/>
+
+  <worldbody>
+    <body name="base" pos="0 0 0">
+      <body name="slider" pos="0 0 0.1">
+        <joint name="slide_joint" type="slide" axis="1 0 0" range="-0.5 0.5"/>
+        <geom type="box" size="0.05 0.05 0.05"/>
+        <body name="rotator" pos="0 0 0.1">
+          <joint name="rotate_joint" type="hinge" axis="0 0 1" range="-180 180"/>
+          <geom type="cylinder" size="0.03 0.08"/>
+          <body name="arm" pos="0.1 0 0">
+            <joint name="arm_joint" type="hinge" axis="0 1 0" range="-90 90"/>
+            <geom type="capsule" fromto="0 0 0 0.15 0 0" size="0.02"/>
+            <site name="tip" pos="0.15 0 0"/>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+</mujoco>
