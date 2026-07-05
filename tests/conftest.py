@@ -1,5 +1,4 @@
 import pytest
-import json
 
 # IKPy imports
 from ikpy.chain import Chain
