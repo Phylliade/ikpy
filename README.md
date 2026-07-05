@@ -26,7 +26,7 @@ With IKPy, you can:
 * Compute the **Inverse Kinematics** of every existing robot.
 * Compute the Inverse Kinematics in **position, [orientation](./tutorials/Orientation.ipynb)**, or both
 * Define your kinematic chain using **arbitrary representations**: DH (Denavit–Hartenberg), URDF, custom...
-* Automatically import a kinematic chain from a **URDF file**.
+* Automatically import a kinematic chain from a **URDF file** or a **MuJoCo MJCF file**.
 * Support for arbitrary joint types: `revolute`, `prismatic` and more to come in the future 
 * Use pre-configured robots, such as [**baxter**](./tutorials/Baxter%20kinematics.ipynb) or the **poppy-torso**
 * IKPy is **precise** (up to 7 digits): the only limitation being your underlying model's precision, and **fast**: from 7 ms to 50 ms (depending on your precision) for a complete IK computation.
@@ -37,6 +37,93 @@ With IKPy, you can:
 ![](./tutorials/assets/baxter_tree.png)
 
 Moreover, IKPy is a **pure-Python library**: the install is a matter of seconds, and no compiling is required.
+
+## JAX Backend (Experimental)
+
+IKPy now includes an optional **JAX backend** for accelerated inverse kinematics using automatic differentiation.
+
+### Benefits
+
+| Scenario | Speedup vs NumPy |
+|----------|------------------|
+| Single target (complex chains) | **1.5-4x faster** |
+| Trajectory tracking (warm start) | **2-3x faster** |
+| Cold start | **More robust** (fewer local minima) |
+
+The JAX backend uses an analytical Jacobian computed via autodiff, which provides:
+- Faster convergence on difficult targets
+- Better robustness against local minima
+- Significant speedup on robots with 5+ joints
+
+### Installation
+
+```bash
+pip install 'ikpy[jax]'
+```
+
+### Usage
+
+```python
+from ikpy.chain import Chain
+
+# Load your robot
+chain = Chain.from_urdf_file("my_robot.urdf")
+
+# Use JAX backend for IK
+result = chain.inverse_kinematics(
+    target_position=[0.5, 0.2, 0.3],
+    backend="jax"  # Use JAX instead of NumPy
+)
+
+# Trajectory tracking with warm start (recommended)
+current_joints = None
+for target in trajectory:
+    result = chain.inverse_kinematics(
+        target_position=target,
+        initial_position=current_joints,
+        backend="jax"
+    )
+    current_joints = result  # Use solution as next initial guess
+```
+
+### Configuration
+
+The JAX backend uses `scipy.optimize.least_squares` with an analytical Jacobian. You can configure it:
+
+```python
+chain.inverse_kinematics(
+    target_position=target,
+    backend="jax",
+    # Scipy options
+    scipy_method='trf',      # 'trf', 'dogbox', or 'lm'
+    scipy_x_scale='jac',     # Auto-scaling (default, recommended)
+    use_analytical_jacobian=True,  # Set False for finite differences
+)
+```
+
+### When to use JAX vs NumPy
+
+| Use Case | Recommended Backend |
+|----------|---------------------|
+| Simple chains (≤4 joints), easy targets | NumPy |
+| Complex chains (≥5 joints) | **JAX** |
+| Trajectory tracking | **JAX** |
+| Real-time control | **JAX** (after warmup) |
+| One-off calculations | NumPy (no compilation overhead) |
+
+> **Note**: The first JAX call includes JIT compilation overhead (~1-5s). Subsequent calls are fast.
+
+## MuJoCo (MJCF) Support
+
+In addition to URDF, IKPy can import kinematic chains directly from **MuJoCo MJCF** XML files:
+
+```python
+from ikpy.chain import Chain
+
+chain = Chain.from_mjcf_file("ur5e.xml", base_elements=["base"])
+```
+
+The parser supports MuJoCo compiler settings, default classes (including `childclass` inheritance), and provides helpers to inspect models (`ikpy.mjcf.get_body_names`, `ikpy.mjcf.get_joint_names`).
 
 ## Installation
 
@@ -52,6 +139,12 @@ You have three options:
 
    ```bash
    pip install 'ikpy[plot]'
+   ```
+
+   If you want to use the JAX backend, install the JAX dependencies:
+
+   ```bash
+   pip install 'ikpy[jax]'
    ```
 
 2. From source - first download and extract the archive, then run:
@@ -76,6 +169,7 @@ An extensive documentation of the API can be found [here](http://ikpy.readthedoc
 
 ## Dependencies and compatibility
 
+Starting with IKPy v4, Python 3.10 or above is required.
 Starting with IKPy v3.1, only Python 3 is supported. 
 For versions before v3.1, the library can work with both versions of Python \(2.7 and 3.x\).
 

@@ -1,5 +1,5 @@
 from ikpy.chain import Chain
-from ikpy.link import OriginLink, DHLink
+from ikpy.link import DHLink
 from ikpy.utils import plot
 
 import matplotlib.pyplot as plt
@@ -7,26 +7,28 @@ import matplotlib.pyplot as plt
 import numpy as np
 from math import pi
 
+
 class UR10():
     def __init__(self):
         self.robot_name = 'UR10'
-        self.home_config = [0, -pi/2, 0, -pi/2, 0, 0] 
+        self.home_config = [0, -pi / 2, 0, -pi / 2, 0, 0]
         self.dh_params = np.array([
-            [  0.1273, 0., pi/2, 0.],
-            [  0., -0.612, 0, 0.],
-            [  0., -0.5723, 0, 0.],
-            [  0.163941, 0.,  pi/2, 0.],
-            [  0.1147, 0.,  -pi/2, 0.],
-            [  0.0922, 0., 0, 0.]])   
-        
-        self.joint_limits =  [
-                        (-360, 360),  
-                        (-360, 360),  
-                        (-360, 360),  
-                        (-360, 360),  
-                        (-360, 360),  
-                        (-360, 360)] 
-        
+            [0.1273, 0., pi / 2, 0.],
+            [0., -0.612, 0, 0.],
+            [0., -0.5723, 0, 0.],
+            [0.163941, 0., pi / 2, 0.],
+            [0.1147, 0., -pi / 2, 0.],
+            [0.0922, 0., 0, 0.]])
+
+        self.joint_limits = [
+            (-360, 360),
+            (-360, 360),
+            (-360, 360),
+            (-360, 360),
+            (-360, 360),
+            (-360, 360)]
+
+
 def create_dh_robot(robot):
     # Create a list of links for the robot
     links = []
