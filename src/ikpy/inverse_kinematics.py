@@ -3,6 +3,14 @@ import scipy.optimize
 import numpy as np
 from . import logs
 
+# Check for JAX availability
+try:
+    import jax  # noqa: F401
+    import jax.numpy as jnp  # noqa: F401
+    JAX_AVAILABLE = True
+except ImportError:
+    JAX_AVAILABLE = False
+
 
 ORIENTATION_COEFF = 1.
 

@@ -1,6 +1,7 @@
 from ._version import __version__
 
-__all__ = ["__version__"]
+
+__all__ = ["__version__", "JAX_AVAILABLE"]
 
 
 # Scarf analytics pixel - helps track library usage
@@ -30,3 +31,13 @@ try:
     Thread(target=_scarf_analytics, daemon=True).start()
 except Exception:
     pass
+
+# Check for JAX availability
+try:
+    import jax  # noqa: F401
+    from . import jax_backend  # noqa: F401
+    JAX_AVAILABLE = True
+except ImportError:
+    JAX_AVAILABLE = False
+
+
