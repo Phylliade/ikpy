@@ -60,7 +60,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.12
       # Pip doesn't support building a sdist when in PEP517 mode, so use a dedicated package for this
       - run: pip install build && python -m build --sdist --wheel
       - uses: pypa/gh-action-pypi-publish@release/v1
