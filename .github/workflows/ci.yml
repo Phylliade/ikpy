@@ -45,9 +45,37 @@ jobs:
           cd tests && MATPLOTLIBRC="../ci" pytest ./
         name: "Run the tests"
 
+  test-jax:
+    name: Tests (JAX backend)
+    # The job above installs ikpy without the jax extra, so tests/test_jax_backend.py is skipped
+    # there and the JAX backend goes untested. This job installs it.
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 2
+      matrix:
+        # jax requires Python >= 3.12, so this job cannot follow the matrix of the job above
+        python-version: ['3.12', '3.13']
+    steps:
+      - uses: actions/checkout@v7
+        name: "Checkout branch"
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: |
+          pip install numpy
+          pip install .[plot,jax] pytest
+          sudo apt-get update --yes && sudo apt-get install graphviz
+        name: "Install dependencies"
+      - run: |
+          # The whole suite, not only test_jax_backend.py: having jax installed also changes the
+          # path taken by Chain, so the other tests cover more here than they do above
+          cd tests && MATPLOTLIBRC="../ci" pytest ./
+        name: "Run the tests"
+
   publish:
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test, test-jax]
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
     name: Publish the package to PyPI
     environment:
