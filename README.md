@@ -88,15 +88,40 @@ for target in trajectory:
 
 ### Configuration
 
-The JAX backend uses `scipy.optimize.least_squares` with an analytical Jacobian. You can configure it:
+Two arguments bound the work of the optimizer, and they mean the same thing whichever backend and
+whichever optimizer you use:
+
+```python
+chain.inverse_kinematics(
+    target_position=target,
+    optimizer_budget=10,  # Approximate number of evaluations allowed
+    tol=1e-4,             # Convergence tolerance
+)
+```
+
+`optimizer_budget` is a budget rather than a hard cap: an optimizer finishing a gradient estimation
+can overshoot it slightly. Use it to trade accuracy for speed in real-time loops.
+
+Everything else goes through `optimizer_kwargs`, forwarded as-is to the SciPy optimizer in use
+(`scipy.optimize.least_squares` by default, `scipy.optimize.minimize` for `optimizer="scalar"`):
+
+```python
+chain.inverse_kinematics(target_position=target, optimizer_kwargs={"loss": "soft_l1"})
+```
+
+The bounds are derived from the limits of the links, so they cannot be set there, and neither can an
+option that `optimizer_budget` or `tol` is already setting.
+
+The JAX backend uses `scipy.optimize.least_squares` with an analytical Jacobian, and takes a few
+options of its own on top:
 
 ```python
 chain.inverse_kinematics(
     target_position=target,
     backend="jax",
-    # Scipy options
-    scipy_method='trf',      # 'trf', 'dogbox', or 'lm'
-    scipy_x_scale='jac',     # Auto-scaling (default, recommended)
+    optimizer_budget=10,           # Same argument as above
+    scipy_method='trf',            # 'trf', 'dogbox', or 'lm'
+    scipy_x_scale='jac',           # Auto-scaling (default, recommended)
     use_analytical_jacobian=True,  # Set False for finite differences
 )
 ```

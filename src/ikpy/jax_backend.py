@@ -4,11 +4,14 @@
 This module implements JAX-based forward and inverse kinematics.
 JAX enables automatic differentiation and JIT compilation for faster computation.
 """
+import warnings
+
 import jax
 import jax.numpy as jnp
 from functools import partial
 import numpy as np
 
+from ikpy.inverse_kinematics import resolve_optimizer_options
 from ikpy.utils import jax_geometry as geom
 
 
@@ -397,7 +400,8 @@ class JaxKinematicsCache:
 
     def inverse_kinematics(self, target_frame, initial_position=None,
                            orientation_mode=None, no_position=False,
-                           tol=1e-6, use_analytical_jacobian=True,
+                           tol=1e-6, optimizer_budget=None, optimizer_kwargs=None,
+                           use_analytical_jacobian=True,
                            scipy_method='trf', scipy_x_scale='jac', scipy_loss='linear',
                            scipy_gtol=None, scipy_max_nfev=None,
                            scipy_tr_solver=None, scipy_tr_options=None,
@@ -416,7 +420,13 @@ class JaxKinematicsCache:
         no_position: bool
             Disable position optimization
         tol: float
-            Convergence tolerance (ftol and xtol for scipy)
+            Convergence tolerance (ftol and xtol for scipy). Means the same thing on every backend.
+        optimizer_budget: int
+            Approximate number of evaluations the optimizer is allowed, to trade accuracy for
+            speed. Means the same thing on every backend. Replaces scipy_max_nfev.
+        optimizer_kwargs: dict
+            Escape hatch for the options that have no portable equivalent, forwarded as-is to
+            :func:`scipy.optimize.least_squares`. Takes precedence over the scipy_* arguments.
         use_analytical_jacobian: bool
             If True (default), use JAX's analytical Jacobian.
             If False, let scipy compute Jacobian via finite differences.
@@ -432,6 +442,7 @@ class JaxKinematicsCache:
         scipy_gtol: float
             Tolerance for termination by the norm of the gradient. Default is 1e-8.
         scipy_max_nfev: int
+            Deprecated, use optimizer_budget.
             Maximum number of function evaluations. None means automatic.
         scipy_tr_solver: str
             Trust-region solver: 'exact' or 'lsmr'. Only for 'trf' and 'dogbox'.
@@ -489,37 +500,44 @@ class JaxKinematicsCache:
         # Bounds for scipy (not used with 'lm' method)
         bounds = (np.array(self.lower_bounds), np.array(self.upper_bounds))
 
-        # Build kwargs for scipy.optimize.least_squares
-        scipy_kwargs = {
-            'ftol': tol,
-            'xtol': tol,
-            'method': scipy_method,
-            'loss': scipy_loss,
-            'verbose': scipy_verbose,
-        }
+        # Build kwargs for scipy.optimize.least_squares. The portable arguments are translated by
+        # the same helper as the numpy backend, so optimizer_budget and tol mean the same thing here
+        scipy_kwargs = resolve_optimizer_options("least_squares", optimizer_budget, tol, optimizer_kwargs)
+
+        if scipy_max_nfev is not None:
+            warnings.warn(
+                "scipy_max_nfev is deprecated, use optimizer_budget instead: it bounds the work of the "
+                "optimizer the same way for every optimizer and every backend.",
+                DeprecationWarning,
+                stacklevel=2)
+            scipy_kwargs.setdefault('max_nfev', scipy_max_nfev)
+
+        # The remaining scipy_* arguments have no portable equivalent, so they only fill in what
+        # optimizer_kwargs has not already set
+        scipy_kwargs.setdefault('method', scipy_method)
+        scipy_kwargs.setdefault('loss', scipy_loss)
+        scipy_kwargs.setdefault('verbose', scipy_verbose)
 
         # Add gtol if specified
         if scipy_gtol is not None:
-            scipy_kwargs['gtol'] = scipy_gtol
+            scipy_kwargs.setdefault('gtol', scipy_gtol)
 
-        # Add max_nfev if specified
-        if scipy_max_nfev is not None:
-            scipy_kwargs['max_nfev'] = scipy_max_nfev
+        method = scipy_kwargs['method']
 
         # Add bounds only for methods that support them
-        if scipy_method != 'lm':
+        if method != 'lm':
             scipy_kwargs['bounds'] = bounds
 
         # Add x_scale if specified
         if scipy_x_scale is not None:
-            scipy_kwargs['x_scale'] = scipy_x_scale
+            scipy_kwargs.setdefault('x_scale', scipy_x_scale)
 
         # Add trust-region solver options (only for 'trf' and 'dogbox')
-        if scipy_method in ('trf', 'dogbox'):
+        if method in ('trf', 'dogbox'):
             if scipy_tr_solver is not None:
-                scipy_kwargs['tr_solver'] = scipy_tr_solver
+                scipy_kwargs.setdefault('tr_solver', scipy_tr_solver)
             if scipy_tr_options is not None:
-                scipy_kwargs['tr_options'] = scipy_tr_options
+                scipy_kwargs.setdefault('tr_options', scipy_tr_options)
 
         # Add Jacobian if requested
         if use_analytical_jacobian:
