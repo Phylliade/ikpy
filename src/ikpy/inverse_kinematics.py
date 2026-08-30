@@ -17,7 +17,68 @@ except ImportError:
 ORIENTATION_COEFF = 1.
 
 
-def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, regularization_parameter=None, max_iter=None, orientation_mode=None, no_position=False, optimizer="least_squares", optimizer_kwargs=None):
+def _refuse_duplicate(options, keys, argument):
+    """Refuse to let a portable argument and its raw SciPy equivalent both set the same knob"""
+    clash = [key for key in keys if key in options]
+    if clash:
+        raise ValueError(
+            "{} and optimizer_kwargs={} both set the same option. Pass only one of them.".format(
+                argument, {key: options[key] for key in clash}))
+
+
+def resolve_optimizer_options(optimizer, optimizer_budget=None, tol=None, optimizer_kwargs=None):
+    """
+    Translate the portable optimizer arguments into the keys of the optimizer in use.
+
+    `optimizer_budget` and `tol` mean the same thing whatever the optimizer or the backend, and
+    this is where that promise is kept. Everything else travels through `optimizer_kwargs`, which
+    is passed to SciPy untouched.
+
+    Parameters
+    ----------
+    optimizer: str
+        The optimizer the options are destined for: "least_squares" or "scalar".
+    optimizer_budget: int
+        Approximate number of evaluations the optimizer is allowed.
+    tol: float
+        Convergence tolerance.
+    optimizer_kwargs: dict
+        Raw keyword arguments for the SciPy optimizer.
+
+    Returns
+    -------
+    dict
+        The keyword arguments to give to the SciPy optimizer.
+    """
+    options = dict(optimizer_kwargs) if optimizer_kwargs is not None else {}
+
+    if "bounds" in options:
+        # The bounds come from the limits of the links, so letting them through would silently
+        # detach the solution from the chain it is supposed to describe
+        raise ValueError("The bounds are derived from the chain and cannot be overridden in optimizer_kwargs")
+
+    if optimizer == "scalar":
+        if optimizer_budget is not None:
+            nested = dict(options.get("options") or {})
+            _refuse_duplicate(nested, ["maxfun", "maxiter"], "optimizer_budget")
+            nested["maxfun"] = optimizer_budget
+            options["options"] = nested
+        if tol is not None:
+            _refuse_duplicate(options, ["tol"], "tol")
+            options["tol"] = tol
+    else:
+        if optimizer_budget is not None:
+            _refuse_duplicate(options, ["max_nfev"], "optimizer_budget")
+            options["max_nfev"] = optimizer_budget
+        if tol is not None:
+            _refuse_duplicate(options, ["ftol", "xtol"], "tol")
+            options["ftol"] = tol
+            options["xtol"] = tol
+
+    return options
+
+
+def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, regularization_parameter=None, max_iter=None, orientation_mode=None, no_position=False, optimizer="least_squares", optimizer_budget=None, tol=None, optimizer_kwargs=None):
     """
     Computes the inverse kinematic on the specified target
 
@@ -32,8 +93,7 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
     regularization_parameter: float
         The coefficient of the regularization.
     max_iter: int
-        Deprecated and ignored: capping the iterations of the optimizer can harm the quality of the
-        IK results. Use `optimizer_kwargs` to give the optimizer a stopping criterion of your own.
+        Deprecated and ignored: it never named a real stopping criterion. Use `optimizer_budget`.
     orientation_mode: str
         Orientation to target. Choices:
         * None: No orientation
@@ -47,12 +107,18 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
         The optimizer to use. Choices:
         * "least_squares": Use scipy.optimize.least_squares (the default)
         * "scalar": Use scipy.optimize.minimize (the default prior to IKPy 3.3)
+    optimizer_budget: int
+        Approximate number of evaluations the optimizer is allowed, to trade accuracy for speed.
+        It means the same thing for every optimizer and every backend. It is a budget rather than
+        a hard cap: an optimizer finishing a gradient estimation can overshoot it slightly.
+    tol: float
+        Convergence tolerance. Like `optimizer_budget`, it means the same thing everywhere.
     optimizer_kwargs: dict
-        Optional keyword arguments forwarded as-is to the underlying SciPy optimizer, to trade
-        accuracy for speed. The accepted keys are the ones of the optimizer in use:
-        * "least_squares": :func:`scipy.optimize.least_squares`, e.g. {"max_nfev": 10, "ftol": 1e-4}
-        * "scalar": :func:`scipy.optimize.minimize`, e.g. {"options": {"maxiter": 10}, "tol": 1e-4}
-        The bounds are derived from the chain itself, so they cannot be overridden here.
+        Escape hatch for the options that have no portable equivalent, forwarded as-is to the
+        SciPy optimizer in use: :func:`scipy.optimize.least_squares` for "least_squares",
+        :func:`scipy.optimize.minimize` for "scalar". Prefer `optimizer_budget` and `tol` when
+        they cover your need. The bounds are derived from the chain, so they cannot be set here,
+        and neither can an option a portable argument is already setting.
     """
     if optimizer not in ["least_squares", "scalar"]:
         raise ValueError("Unknown solver: {}".format(optimizer))
@@ -155,30 +221,24 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
     if max_iter is not None:
         warnings.warn(
             "max_iter is not used anymore in the IK, and using it as a parameter will raise an exception in the "
-            "future: capping the iterations can harm the quality of the results. Pass a stopping criterion to the "
-            "optimizer instead, with optimizer_kwargs={'max_nfev': 10} for the \"least_squares\" optimizer or "
-            "optimizer_kwargs={'options': {'maxiter': 10}} for the \"scalar\" one.",
+            "future. Use optimizer_budget instead, which bounds the work of the optimizer the same way for every "
+            "optimizer and every backend.",
             DeprecationWarning,
             stacklevel=2)
 
-    if optimizer_kwargs is None:
-        optimizer_kwargs = {}
-    elif "bounds" in optimizer_kwargs:
-        # The bounds come from the limits of the links, so letting them through would silently
-        # detach the solution from the chain it is supposed to describe
-        raise ValueError("The bounds are derived from the chain and cannot be overridden in optimizer_kwargs")
+    optimizer_options = resolve_optimizer_options(optimizer, optimizer_budget, tol, optimizer_kwargs)
 
     # least squares optimization
     if optimizer == "scalar":
         def optimize_scalar(x):
             return np.linalg.norm(optimize_total(x))
         res = scipy.optimize.minimize(
-            optimize_scalar, chain.active_from_full(starting_nodes_angles), bounds=real_bounds, **optimizer_kwargs)
+            optimize_scalar, chain.active_from_full(starting_nodes_angles), bounds=real_bounds, **optimizer_options)
     elif optimizer == "least_squares":
         # We need to unzip the bounds
         real_bounds = np.moveaxis(real_bounds, -1, 0)
         res = scipy.optimize.least_squares(
-            optimize_total, chain.active_from_full(starting_nodes_angles), bounds=real_bounds, **optimizer_kwargs)
+            optimize_total, chain.active_from_full(starting_nodes_angles), bounds=real_bounds, **optimizer_options)
 
     if res.status != -1:
         logs.logger.info("Inverse kinematic optimisation OK, termination status: {}".format(res.status))

@@ -511,5 +511,51 @@ class TestTrajectoryTracking:
         print(f"\nWarm start speedup: {cold_time/warm_time:.2f}x")
 
 
+def _jax_target_error(chain_, ik, target):
+    """How far the pose reached by the IK ended up from the target"""
+    return np.linalg.norm(chain_.forward_kinematics(ik)[:3, 3] - target)
+
+
+class TestPortableOptimizerArguments:
+    """optimizer_budget and tol have to mean the same thing here as on the numpy backend"""
+
+    target = [0.1, -0.2, 0.1]
+
+    def _solve(self, simple_chain, **kwargs):
+        return simple_chain.inverse_kinematics(
+            target_position=self.target, backend="jax", **kwargs)
+
+    def test_optimizer_budget_reaches_the_solver(self, simple_chain):
+        converged = self._solve(simple_chain)
+        starved = self._solve(simple_chain, optimizer_budget=1)
+
+        assert (_jax_target_error(simple_chain, starved, self.target)
+                > _jax_target_error(simple_chain, converged, self.target))
+
+    def test_optimizer_kwargs_reach_the_solver(self, simple_chain):
+        converged = self._solve(simple_chain)
+        starved = self._solve(simple_chain, optimizer_kwargs={"max_nfev": 1})
+
+        assert (_jax_target_error(simple_chain, starved, self.target)
+                > _jax_target_error(simple_chain, converged, self.target))
+
+    def test_optimizer_kwargs_refuse_to_override_the_bounds(self, simple_chain):
+        with pytest.raises(ValueError):
+            self._solve(simple_chain, optimizer_kwargs={"bounds": (-1, 1)})
+
+    def test_optimizer_budget_refuses_to_be_set_twice(self, simple_chain):
+        with pytest.raises(ValueError, match="optimizer_budget"):
+            self._solve(simple_chain, optimizer_budget=5, optimizer_kwargs={"max_nfev": 5})
+
+    def test_scipy_max_nfev_is_deprecated(self, simple_chain):
+        with pytest.warns(DeprecationWarning, match="optimizer_budget"):
+            self._solve(simple_chain, scipy_max_nfev=1)
+
+    def test_numpy_only_arguments_no_longer_pass_unnoticed(self, simple_chain):
+        """They used to be dropped in silence, which is how max_iter went unnoticed for years"""
+        with pytest.warns(UserWarning, match="regularization_parameter"):
+            self._solve(simple_chain, regularization_parameter=0.1)
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

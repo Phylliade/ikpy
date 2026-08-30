@@ -236,7 +236,8 @@ class Chain:
         if backend == "jax":
             # Extract JAX-specific kwargs
             jax_kwargs = {}
-            jax_specific_keys = ['tol', 'use_analytical_jacobian', 'scipy_method',
+            jax_specific_keys = ['tol', 'optimizer_budget', 'optimizer_kwargs',
+                                 'use_analytical_jacobian', 'scipy_method',
                                  'scipy_x_scale', 'scipy_loss', 'scipy_gtol',
                                  'scipy_max_nfev', 'scipy_tr_solver', 'scipy_tr_options',
                                  'scipy_verbose']
@@ -249,6 +250,17 @@ class Chain:
                 jax_kwargs['orientation_mode'] = kwargs.pop('orientation_mode')
             if 'no_position' in kwargs:
                 jax_kwargs['no_position'] = kwargs.pop('no_position')
+
+            if kwargs:
+                # Anything left over was destined for the numpy optimizer and used to be dropped
+                # here without a word, which is exactly how max_iter went unnoticed for years.
+                # This will raise in the next major version.
+                warnings.warn(
+                    "Ignored by the \"jax\" backend: {}. Use optimizer_budget and tol, which both "
+                    "backends understand. Passing them will raise in a future version.".format(
+                        ", ".join(sorted(kwargs))),
+                    UserWarning,
+                    stacklevel=2)
 
             # Use the jax_cache which has pre-compiled functions
             return self.jax_cache.inverse_kinematics(
