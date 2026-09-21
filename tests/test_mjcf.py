@@ -175,6 +175,43 @@ class TestMJCFParser:
 class TestMJCFChain:
     """Test Chain creation from MJCF files."""
 
+    @pytest.mark.parametrize("symbolic", [True, False])
+    @pytest.mark.parametrize("base_elements", [
+        ["base", "right_arm"],
+        ["base", "right_arm", "tool"],
+    ])
+    def test_chain_from_mjcf_explicit_path(self, tmp_path, base_elements, symbolic):
+        """An explicit path selects a non-first child and keeps its transforms."""
+        mjcf_file = tmp_path / "branched_arm.xml"
+        mjcf_file.write_text("""
+<mujoco model="branched_arm">
+  <worldbody>
+    <body name="base" pos="1 0 0">
+      <body name="left_arm" pos="0 -2 0"/>
+      <body name="right_arm" pos="0 2 0">
+        <joint name="right_shoulder" type="hinge" axis="0 0 1"/>
+        <geom type="sphere" size="0.1"/>
+        <body name="tool" pos="1 0 0"/>
+      </body>
+    </body>
+  </worldbody>
+</mujoco>
+""")
+        original_path = base_elements.copy()
+        my_chain = chain.Chain.from_mjcf_file(
+            mjcf_file,
+            base_elements=base_elements,
+            symbolic=symbolic,
+        )
+
+        assert base_elements == original_path
+        assert [link.name for link in my_chain.links] == [
+            "Base link", "base", "right_shoulder", "tool"
+        ]
+        # A quarter turn moves the one-unit tool offset from +X to +Y.
+        frame = my_chain.forward_kinematics([0, 0, np.pi / 2, 0])
+        np.testing.assert_allclose(frame[:3, 3], [1, 3, 0], atol=1e-12)
+
     def test_chain_from_mjcf_simple(self, simple_arm_mjcf):
         """Test creating a chain from simple MJCF."""
         my_chain = chain.Chain.from_mjcf_file(
