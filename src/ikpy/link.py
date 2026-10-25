@@ -94,7 +94,7 @@ class URDFLink(Link):
     use_symbolic_matrix: bool
         whether the transformation matrix is stored as a Numpy array or as a Sympy symbolic matrix.
     joint_type: str
-        The URDF "type" attribute of the joint. Only support for revolute and prismatic joint for the moment
+        The URDF "type" attribute of the joint. Only support for revolute, continuous and prismatic joint for the moment
 
     Returns
     -------
@@ -137,9 +137,10 @@ class URDFLink(Link):
             self.translation = None
 
         # Check that the given joint type matches the given parameters
-        if joint_type == "revolute":
+        if joint_type in ("revolute", "continuous"):
+            # A continuous joint rotates like a revolute joint, but without limits
             if not (self.has_rotation and not self.has_translation):
-                raise ValueError("Joint type is 'revolute' but rotation axis = {} and translation axis = {}".format(self.has_rotation, self.has_translation))
+                raise ValueError("Joint type is '{}' but rotation axis = {} and translation axis = {}".format(joint_type, self.has_rotation, self.has_translation))
         elif joint_type == "prismatic":
             if not (not self.has_rotation and self.has_translation):
                 raise ValueError("Joint type is 'prismatic' but rotation axis = {} and translation axis = {}".format(self.has_rotation, self.has_translation))
@@ -191,7 +192,7 @@ class URDFLink(Link):
             raise ValueError("This link doesn't provide a translation")
 
     def get_link_frame_matrix(self, parameters):
-        if self.joint_type == "revolute":
+        if self.joint_type in ("revolute", "continuous"):
             theta = parameters
             mu = None
         elif self.joint_type == "prismatic":
