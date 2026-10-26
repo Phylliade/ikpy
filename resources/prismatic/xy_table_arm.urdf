@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!-- XY table carrying a two-link arm, from issue #142 (prismatic joints with lower="0") -->
+<robot name="robot_arm">
+    <link name="base_link"/>
+    <link name="y"/>
+    <joint name="y_to_x" type="prismatic">
+        <parent link="base_link"/>
+        <child link="y"/>
+        <origin xyz="0 0 0.05" rpy="0 0 0"/>
+        <axis xyz="1 0 0"/>
+        <limit lower="0" upper="3"></limit>
+    </joint>
+    <link name="robotbase"/>
+    <joint name="robot_base_to_xy" type="prismatic">
+        <parent link="y"/>
+        <child link="robotbase"/>
+        <origin xyz="0 0 0.05" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <limit lower="0" upper="3"></limit>
+    </joint>
+    <link name="robot_rotation_base"/>
+    <joint name="robot_rotation" type="revolute">
+        <parent link="robotbase"/>
+        <child link="robot_rotation_base"/>
+        <origin xyz="0 0 0.05" rpy="0 0 1"/>
+        <axis xyz="0 0 1"/>
+    </joint>
+    <link name="arm1"/>
+    <joint name="arm1_rotation" type="revolute">
+        <parent link="robot_rotation_base"/>
+        <child link="arm1"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <limit lower="-1.25" upper="1.25"></limit>
+    </joint>
+    <link name="arm2"/>
+    <joint name="arm_to_arm" type="revolute">
+        <parent link="arm1"/>
+        <child link="arm2"/>
+        <origin xyz="0 0 1" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+    </joint>
+</robot>
