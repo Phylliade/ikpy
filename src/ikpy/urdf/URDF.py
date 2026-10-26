@@ -268,12 +268,12 @@ def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, ba
                 origin_orientation = [float(x) for x in origin.attrib["rpy"].split()]
 
         joint_type = joint.attrib["type"]
-        if joint_type not in ["revolute", "prismatic", "fixed"]:
+        if joint_type not in ["revolute", "continuous", "prismatic", "fixed"]:
             raise ValueError("Unknown joint type: {}".format(joint_type))
 
         axis = joint.find("axis")
         if axis is not None:
-            if joint_type == "revolute":
+            if joint_type in ("revolute", "continuous"):
                 rotation = [float(x) for x in axis.attrib["xyz"].split()]
                 translation = None
             elif joint_type == "prismatic":
@@ -285,7 +285,10 @@ def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, ba
                 raise ValueError("Unknown joint type with an axis: {}, {}".format(joint_type, axis))
 
         limit = joint.find("limit")
-        if limit is not None:
+        # Continuous joints have no limits in the URDF specification, so
+        # their bounds always stay unbounded, even if a limit element is
+        # present in the file.
+        if limit is not None and joint_type != "continuous":
             if "lower" in limit.attrib:
                 bounds[0] = float(limit.attrib["lower"])
             if "upper" in limit.attrib:

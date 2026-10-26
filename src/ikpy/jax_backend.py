@@ -63,7 +63,7 @@ def extract_chain_parameters(chain):
             else:
                 translation_axes.append([0.0, 0.0, 0.0])
 
-            if link.joint_type == "revolute":
+            if link.joint_type in ("revolute", "continuous"):
                 joint_types.append(1)
             elif link.joint_type == "prismatic":
                 joint_types.append(2)
