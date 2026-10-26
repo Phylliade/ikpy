@@ -78,6 +78,44 @@ def resolve_optimizer_options(optimizer, optimizer_budget=None, tol=None, optimi
     return options
 
 
+def strictly_inside_bounds(x0, bounds, margin=1e-3):
+    """Return a starting point strictly inside the bounds, for the trust-region optimizers of SciPy
+
+    Parameters
+    ----------
+    x0: numpy.array
+        The starting point, one value per active link
+    bounds: numpy.array
+        The bounds of the active links, of shape (n_links, 2)
+    margin: float
+        The distance kept from each finite bound, shrunk when the range of a link is narrower
+
+    Returns
+    -------
+    numpy.array
+        The starting point, moved inside the bounds where needed
+
+    Notes
+    -----
+    `scipy.optimize.least_squares` only nudges a starting point lying on a bound by about 1e-10, and sets its
+    initial trust radius to the norm of the (scaled) starting point. A chain starting with every joint at zero,
+    one of them on a bound such as a prismatic joint with `lower="0"`, therefore gets a trust radius of 1e-10:
+    the first step is negligible, the relative decrease of the cost falls under `ftol`, and the optimizer stops
+    on its starting point. Keeping a real margin from the bounds avoids that. A starting point outside the
+    bounds is clipped instead of being refused by SciPy.
+    """
+    x0 = np.array(x0, dtype=float)
+    lower, upper = np.asarray(bounds, dtype=float).T
+    finite_range = np.where(np.isfinite(lower) & np.isfinite(upper), upper - lower, np.inf)
+    margins = np.minimum(margin, finite_range / 4)
+    low = np.where(np.isfinite(lower), lower + margins, -np.inf)
+    high = np.where(np.isfinite(upper), upper - margins, np.inf)
+    outside = (x0 < lower) | (x0 > upper)
+    if np.any(outside):
+        warnings.warn("The initial position is outside the bounds of the links {}: it is clipped to the bounds".format(np.flatnonzero(outside).tolist()))
+    return np.clip(x0, low, high)
+
+
 def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, regularization_parameter=None, max_iter=None, orientation_mode=None, no_position=False, optimizer="least_squares", optimizer_budget=None, tol=None, optimizer_kwargs=None):
     """
     Computes the inverse kinematic on the specified target
@@ -228,17 +266,18 @@ def inverse_kinematic_optimization(chain, target_frame, starting_nodes_angles, r
 
     optimizer_options = resolve_optimizer_options(optimizer, optimizer_budget, tol, optimizer_kwargs)
 
+    # The starting point must be strictly inside the bounds, see strictly_inside_bounds
+    x0 = strictly_inside_bounds(chain.active_from_full(starting_nodes_angles), real_bounds)
+
     # least squares optimization
     if optimizer == "scalar":
         def optimize_scalar(x):
             return np.linalg.norm(optimize_total(x))
-        res = scipy.optimize.minimize(
-            optimize_scalar, chain.active_from_full(starting_nodes_angles), bounds=real_bounds, **optimizer_options)
+        res = scipy.optimize.minimize(optimize_scalar, x0, bounds=real_bounds, **optimizer_options)
     elif optimizer == "least_squares":
         # We need to unzip the bounds
         real_bounds = np.moveaxis(real_bounds, -1, 0)
-        res = scipy.optimize.least_squares(
-            optimize_total, chain.active_from_full(starting_nodes_angles), bounds=real_bounds, **optimizer_options)
+        res = scipy.optimize.least_squares(optimize_total, x0, bounds=real_bounds, **optimizer_options)
 
     if res.status != -1:
         logs.logger.info("Inverse kinematic optimisation OK, termination status: {}".format(res.status))

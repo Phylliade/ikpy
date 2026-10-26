@@ -557,5 +557,52 @@ class TestPortableOptimizerArguments:
             self._solve(simple_chain, regularization_parameter=0.1)
 
 
+class TestDHLinks:
+    """DH links used to be dispatched to a joint type without a branch, and were evaluated as fixed links (#183)"""
+
+    @pytest.fixture(params=["classic", "modified"])
+    def dh_chain(self, request):
+        from math import pi
+        from ikpy.link import DHLink, OriginLink
+        convention = request.param
+        # UR10 table (d, a, alpha, theta); the same numbers describe another valid arm in the modified convention
+        table = [
+            (0.1273, 0.0, pi / 2, 0.0),
+            (0.0, -0.612, 0.0, 0.0),
+            (0.0, -0.5723, 0.0, 0.0),
+            (0.163941, 0.0, pi / 2, 0.0),
+            (0.1147, 0.0, -pi / 2, 0.0),
+            (0.0922, 0.0, 0.0, 0.0),
+        ]
+        links = [DHLink(name="joint_{}".format(i), d=d, a=a, alpha=alpha, theta=theta, bounds=(-2 * pi, 2 * pi), convention=convention, length=abs(a))
+                 for i, (d, a, alpha, theta) in enumerate(table)]
+        return chain.Chain([OriginLink()] + links, active_links_mask=[False] + [True] * 5 + [False], name="ur10_" + convention)
+
+    def test_fk_matches_numpy(self, dh_chain):
+        rng = np.random.default_rng(42)
+        for _ in range(5):
+            joints = rng.uniform(-np.pi, np.pi, len(dh_chain.links))
+            fk_numpy = dh_chain.forward_kinematics(joints, backend="numpy")
+            fk_jax = dh_chain.forward_kinematics(joints, backend="jax")
+            np.testing.assert_allclose(fk_jax, fk_numpy, rtol=1e-6, atol=1e-6)
+            # A DH link is not a fixed link: the frame depends on the joint values
+            assert not np.allclose(fk_numpy[:3, 3], dh_chain.forward_kinematics([0] * len(dh_chain.links))[:3, 3], atol=1e-3)
+
+    def test_full_kinematics_matches_numpy(self, dh_chain):
+        joints = [0, 0.3, -1.2, 0.7, 0.4, -0.5, 0]
+        frames_numpy = dh_chain.forward_kinematics(joints, full_kinematics=True, backend="numpy")
+        frames_jax = dh_chain.forward_kinematics(joints, full_kinematics=True, backend="jax")
+        assert len(frames_jax) == len(frames_numpy)
+        for frame_jax, frame_numpy in zip(frames_jax, frames_numpy):
+            np.testing.assert_allclose(frame_jax, frame_numpy, rtol=1e-6, atol=1e-6)
+
+    def test_ik_reaches_a_reachable_frame(self, dh_chain):
+        joints = [0, 0.3, -1.2, 0.7, 0.4, -0.5, 0]
+        target = dh_chain.forward_kinematics(joints)
+        initial = [0, 0.2, -1.0, 0.5, 0.3, -0.4, 0]
+        ik = dh_chain.inverse_kinematics_frame(target, initial_position=initial, orientation_mode="all", backend="jax")
+        np.testing.assert_allclose(dh_chain.forward_kinematics(ik), target, atol=1e-4)
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
