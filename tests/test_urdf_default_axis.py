@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 # ikpy imports
 from ikpy import chain
@@ -90,3 +91,16 @@ def test_fk_matches_explicit_x_axis(tmp_path):
         np.testing.assert_almost_equal(
             implicit.forward_kinematics(joints),
             explicit.forward_kinematics(joints))
+
+
+def test_continuous_without_axis_element_defaults_to_x(tmp_path):
+    """A continuous joint follows the same default as a revolute joint"""
+    link = _single_link(tmp_path, _urdf("continuous", ""))
+    assert link.joint_type == "continuous"
+    np.testing.assert_almost_equal(link.rotation, [1, 0, 0])
+
+
+def test_axis_element_without_xyz_warns(tmp_path):
+    """The xyz attribute is required by the URDF spec: defaulting it is reported"""
+    with pytest.warns(UserWarning, match="without an 'xyz' attribute"):
+        _single_link(tmp_path, _urdf("revolute", "<axis/>"))

@@ -66,7 +66,8 @@ def _find_next_joint(root, current_link, next_joint_name):
                     break
 
     if search_by_name and not has_next:
-        raise ValueError("Error: joint {} given but not found in the URDF".format(next_joint_name))
+        available = [j.attrib["name"] for j in root.findall("joint")]
+        raise ValueError("Error: joint '{}' given but not found in the URDF. Available joints: {}".format(next_joint_name, available))
 
     return has_next, next_joint
 
@@ -107,7 +108,8 @@ def _find_next_link(root, current_joint, next_link_name):
             has_next = True
 
     if given_next_link and not has_next:
-        raise ValueError("Error: link {} given but not found in the URDF".format(next_link_name))
+        available = [lk.attrib["name"] for lk in root.findall("link")]
+        raise ValueError("Error: link '{}' given but not found in the URDF. Available links: {}. If your robot has no 'base_link', pass the name of its root link with base_elements=[...]".format(next_link_name, available))
 
     return has_next, next_link
 
