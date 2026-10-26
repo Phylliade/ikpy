@@ -27,7 +27,7 @@ With IKPy, you can:
 * Compute the Inverse Kinematics in **position, [orientation](./tutorials/Orientation.ipynb)**, or both
 * Define your kinematic chain using **arbitrary representations**: DH (Denavit–Hartenberg), URDF, custom...
 * Automatically import a kinematic chain from a **URDF file** or a **MuJoCo MJCF file**.
-* Support for arbitrary joint types: `revolute`, `prismatic` and more to come in the future 
+* Support for the URDF joint types `revolute`, `continuous` and `prismatic`
 * Use pre-configured robots, such as [**baxter**](./tutorials/Baxter%20kinematics.ipynb) or the **poppy-torso**
 * IKPy is **precise** (up to 7 digits): the only limitation being your underlying model's precision, and **fast**: from 7 ms to 50 ms (depending on your precision) for a complete IK computation.
 * **Plot** your kinematic chain: no need to use a real robot (or a simulator) to test your algorithms!
@@ -55,7 +55,24 @@ The JAX backend uses an analytical Jacobian computed via autodiff, which provide
 - Better robustness against local minima
 - Significant speedup on robots with 5+ joints
 
-### Installation
+### Orientation conversions
+
+IKPy works with homogeneous matrices. To exchange orientations with ROS, Unity or Blender, `ikpy.utils.geometry` converts the rotation part of a frame to and from quaternions, roll-pitch-yaw and arbitrary Euler sequences:
+
+```python
+from ikpy.utils import geometry
+
+frame = chain.forward_kinematics(joints)
+quaternion = geometry.rotation_matrix_to_quaternion(frame)            # (x, y, z, w), as in ROS and Unity
+quaternion = geometry.rotation_matrix_to_quaternion(frame, scalar_first=True)  # (w, x, y, z), as in Blender
+roll, pitch, yaw = geometry.rotation_matrix_to_rpy(frame)             # URDF convention
+
+# And back, as an orientation target for the IK
+target_orientation = geometry.quaternion_to_rotation_matrix(quaternion)
+joints = chain.inverse_kinematics(target_position, target_orientation, orientation_mode="all")
+```
+
+## Installation
 
 ```bash
 pip install 'ikpy[jax]'
