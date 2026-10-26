@@ -12,6 +12,7 @@ import warnings
 # IKPY imports
 from .urdf import URDF
 from .mjcf import MJCF
+from .bvh import BVH
 from . import inverse_kinematics as ik
 from . import link as link_lib
 
@@ -528,6 +529,84 @@ class Chain:
         # Save some useful metadata
         chain.mjcf_file = mjcf_file
         chain.base_elements = base_elements
+
+        return chain
+
+    @classmethod
+    def from_bvh_file(cls, bvh_file, base_elements=None, last_link_vector=None, active_links_mask=None, name="chain", symbolic=True, scale=1.0):
+        """Creates a chain from a BVH (Biovision Hierarchy) motion capture file
+
+        Each channel of a BVH joint becomes a link of the chain, named ``<joint>_<channel>`` (for example
+        ``Hips_Zrotation``), so the chain reproduces exactly the rotation order of the file. The motion of the
+        file can be replayed on the chain with :func:`ikpy.bvh.BVH.get_bvh_motion`.
+
+        Parameters
+        ----------
+        bvh_file: str
+            The path of the BVH file
+        base_elements: list of strings
+            The joints of the chain, from its start to its end, as an ordered list of joint names. The joints
+            between two consecutive names are filled in automatically, so only the branching points need to be
+            given. The chain ends at the last name. If a single name is given, or None, the chain starts at that
+            joint (or at the root) and follows the first child of each joint down to a leaf.
+
+            Example::
+
+                # Skeleton:
+                #   Hips
+                #     Spine
+                #       LeftShoulder
+                #         LeftArm
+                #           LeftHand
+                #     LeftUpLeg
+                #
+                # From the root, following the first children (down to LeftHand here):
+                base_elements=["Hips"]
+                # From the root to the left hand, intermediate joints are filled in:
+                base_elements=["Hips", "LeftHand"]
+
+        last_link_vector: numpy.array
+            Optional: the translation of the tip of the chain, in the frame of its last joint. Defaults to the
+            ``End Site`` of the last joint when it has one.
+        active_links_mask: list[bool]
+            A list of boolean indicating whether or not the corresponding link is active. Note that the position
+            channels of the root (``Hips_Xposition``...) are prismatic links: you may want to deactivate them for
+            the inverse kinematics.
+        name: str
+            The name of the Chain
+        symbolic: bool
+            Use symbolic computations
+        scale: float
+            A factor applied to all the lengths of the file (offsets, end sites and position channels), to
+            convert them to meters: BVH files do not specify their unit, and are often in centimeters or inches.
+
+        Returns
+        -------
+        Chain
+            The kinematic chain
+
+        Example
+        -------
+        >>> from ikpy.chain import Chain
+        >>> from ikpy.bvh import BVH
+        >>> chain = Chain.from_bvh_file("walk.bvh", base_elements=["Hips", "LeftHand"], scale=0.01)
+        >>> trajectory, frame_time = BVH.get_bvh_motion("walk.bvh", base_elements=["Hips", "LeftHand"], scale=0.01)
+        >>> hand_frames = [chain.forward_kinematics(joints) for joints in trajectory]
+        """
+        bvh_metadata = {
+            "base_elements": base_elements,
+            "bvh_file": bvh_file,
+            "last_link_vector": last_link_vector,
+            "scale": scale
+        }
+
+        links = BVH.get_bvh_parameters(bvh_file, base_elements=base_elements, last_link_vector=last_link_vector, symbolic=symbolic, scale=scale)
+        chain = cls([link_lib.OriginLink()] + links, active_links_mask=active_links_mask, name=name, urdf_metadata=bvh_metadata)
+
+        # Save some useful metadata
+        chain.bvh_file = bvh_file
+        chain.base_elements = base_elements
+        chain.scale = scale
 
         return chain
 
