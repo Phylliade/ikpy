@@ -40,7 +40,8 @@ def extract_chain_parameters(chain):
     origin_orientations = []
     rotation_axes = []
     translation_axes = []
-    joint_types = []  # 0=origin, 1=revolute (and continuous), 2=prismatic, 3=fixed
+    joint_types = []  # 0=origin, 1=revolute (and continuous), 2=prismatic, 3=fixed, 4=classic DH, 5=modified DH
+    dh_params = []  # (d, a, alpha, theta) of DH links, zeros otherwise
 
     for link in chain.links:
         if link.__class__.__name__ == "OriginLink":
@@ -49,7 +50,9 @@ def extract_chain_parameters(chain):
             rotation_axes.append([0.0, 0.0, 1.0])
             translation_axes.append([0.0, 0.0, 0.0])
             joint_types.append(0)  # Origin link
+            dh_params.append([0.0, 0.0, 0.0, 0.0])
         elif link.__class__.__name__ == "URDFLink":
+            dh_params.append([0.0, 0.0, 0.0, 0.0])
             origin_translations.append(link.origin_translation.tolist())
             origin_orientations.append(link.origin_orientation.tolist())
 
@@ -70,12 +73,19 @@ def extract_chain_parameters(chain):
             else:  # fixed
                 joint_types.append(3)
         elif link.__class__.__name__ == "DHLink":
-            # DH parameters - will need special handling
+            # The frame of a DH link is a function of its four parameters only
             origin_translations.append([0.0, 0.0, 0.0])
             origin_orientations.append([0.0, 0.0, 0.0])
             rotation_axes.append([0.0, 0.0, 1.0])
             translation_axes.append([0.0, 0.0, 0.0])
-            joint_types.append(4)  # DH link
+            dh_params.append([float(link.d), float(link.a), float(link.alpha), float(link.theta)])
+            convention = getattr(link, "convention", "classic")
+            if convention == "classic":
+                joint_types.append(4)
+            elif convention == "modified":
+                joint_types.append(5)
+            else:
+                raise ValueError(f"Unknown DH convention: {convention}")
         else:
             raise ValueError(f"Unknown link type: {link.__class__.__name__}")
 
@@ -85,12 +95,13 @@ def extract_chain_parameters(chain):
         'rotation_axes': jnp.array(rotation_axes),
         'translation_axes': jnp.array(translation_axes),
         'joint_types': jnp.array(joint_types, dtype=jnp.int32),
+        'dh_params': jnp.array(dh_params),
         'n_links': n_links
     }
 
 
 def compute_single_link_matrix(origin_translation, origin_orientation, rotation_axis,
-                               translation_axis, joint_type, joint_param):
+                               translation_axis, dh_params, joint_type, joint_param):
     """
     Compute a single link's transformation matrix.
 
@@ -100,10 +111,12 @@ def compute_single_link_matrix(origin_translation, origin_orientation, rotation_
     origin_orientation: jnp.ndarray (3,)
     rotation_axis: jnp.ndarray (3,)
     translation_axis: jnp.ndarray (3,)
+    dh_params: jnp.ndarray (4,)
+        (d, a, alpha, theta) for a DH link, ignored otherwise
     joint_type: int
-        0=origin, 1=revolute, 2=prismatic, 3=fixed
+        0=origin, 1=revolute, 2=prismatic, 3=fixed, 4=classic DH, 5=modified DH
     joint_param: float
-        The joint parameter (angle for revolute, displacement for prismatic)
+        The joint parameter (angle for revolute and DH, displacement for prismatic)
 
     Returns
     -------
@@ -130,10 +143,18 @@ def compute_single_link_matrix(origin_translation, origin_orientation, rotation_
     def fixed_link(_):
         return geom.compute_link_frame_matrix_fixed(origin_translation, origin_orientation)
 
+    # Denavit-Hartenberg links
+    def dh_classic_link(theta):
+        return geom.compute_link_frame_matrix_dh_classic(dh_params, theta)
+
+    def dh_modified_link(theta):
+        return geom.compute_link_frame_matrix_dh_modified(dh_params, theta)
+
     # Use lax.switch for conditional selection (JIT-compatible)
+    # Note: lax.switch clamps the index into range, so every joint type must have its branch here
     return jax.lax.switch(
         joint_type,
-        [origin_link, revolute_link, prismatic_link, fixed_link],
+        [origin_link, revolute_link, prismatic_link, fixed_link, dh_classic_link, dh_modified_link],
         joint_param
     )
 
@@ -162,6 +183,7 @@ def forward_kinematics_jax(joints, chain_params):
             chain_params['origin_orientations'][i],
             chain_params['rotation_axes'][i],
             chain_params['translation_axes'][i],
+            chain_params['dh_params'][i],
             chain_params['joint_types'][i],
             joints[i]
         )
@@ -193,6 +215,7 @@ def forward_kinematics_full_jax(joints, chain_params):
             chain_params['origin_orientations'][link_idx],
             chain_params['rotation_axes'][link_idx],
             chain_params['translation_axes'][link_idx],
+            chain_params['dh_params'][link_idx],
             chain_params['joint_types'][link_idx],
             joints[link_idx]
         )
