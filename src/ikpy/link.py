@@ -94,7 +94,7 @@ class URDFLink(Link):
     use_symbolic_matrix: bool
         whether the transformation matrix is stored as a Numpy array or as a Sympy symbolic matrix.
     joint_type: str
-        The URDF "type" attribute of the joint. Only support for revolute and prismatic joint for the moment
+        The URDF "type" attribute of the joint. Only support for revolute, continuous and prismatic joint for the moment
 
     Returns
     -------
@@ -137,9 +137,10 @@ class URDFLink(Link):
             self.translation = None
 
         # Check that the given joint type matches the given parameters
-        if joint_type == "revolute":
+        if joint_type in ("revolute", "continuous"):
+            # A continuous joint rotates like a revolute joint, but without limits
             if not (self.has_rotation and not self.has_translation):
-                raise ValueError("Joint type is 'revolute' but rotation axis = {} and translation axis = {}".format(self.has_rotation, self.has_translation))
+                raise ValueError("Joint type is '{}' but rotation axis = {} and translation axis = {}".format(joint_type, self.has_rotation, self.has_translation))
         elif joint_type == "prismatic":
             if not (not self.has_rotation and self.has_translation):
                 raise ValueError("Joint type is 'prismatic' but rotation axis = {} and translation axis = {}".format(self.has_rotation, self.has_translation))
@@ -191,7 +192,7 @@ class URDFLink(Link):
             raise ValueError("This link doesn't provide a translation")
 
     def get_link_frame_matrix(self, parameters):
-        if self.joint_type == "revolute":
+        if self.joint_type in ("revolute", "continuous"):
             theta = parameters
             mu = None
         elif self.joint_type == "prismatic":
@@ -276,6 +277,10 @@ class DHLink(Link):
         angle about previous z, from old x to new x
     use_symbolic_matrix: bool
         whether the transformation matrix is stored as Numpy array or as a Sympy symbolic matrix.
+    convention: str
+        The DH convention: "classic" (Denavit-Hartenberg, the default) or "modified" (Craig).
+        With the classic convention, the link frame is Rz(theta) Tz(d) Tx(a) Rx(alpha).
+        With the modified convention, the link frame is Rx(alpha) Tx(a) Rz(theta) Tz(d).
 
     Returns
     -------
@@ -283,12 +288,20 @@ class DHLink(Link):
         The link object
     """
 
-    def __init__(self, name=None, d=0, a=0, alpha=0, theta=0, bounds=None, use_symbolic_matrix=True, length=0):
-        Link.__init__(self, use_symbolic_matrix, length=length, bounds=bounds)
+    def __init__(self, name=None, d=0, a=0, alpha=0, theta=0, bounds=None, use_symbolic_matrix=True, length=0, convention="classic"):
+        Link.__init__(self, name=name, length=length, bounds=bounds)
+        self.use_symbolic_matrix = use_symbolic_matrix
         self.d = d
         self.a = a
         self.alpha = alpha
         self.theta = theta
+        if convention not in ("classic", "modified"):
+            raise ValueError("Unknown DH convention: {}. Expected 'classic' or 'modified'".format(convention))
+        self.convention = convention
+        self.joint_type = "revolute"
+
+    def __repr__(self):
+        return "DH Link name={} convention={} d={} a={} alpha={} theta={} bounds={}".format(self.name, self.convention, self.d, self.a, self.alpha, self.theta, self.bounds)
 
     def get_link_frame_matrix(self, parameters):
         """ Computes the homogeneous transformation matrix for this link. """
@@ -298,10 +311,18 @@ class DHLink(Link):
         ca = np.cos(self.alpha)
         sa = np.sin(self.alpha)
 
-        return np.matrix(((ct, -st * ca, st * sa, self.a * ct),
-                          (st, ct * ca, -ct * sa, self.a * st),
-                          (0, sa, ca, self.d),
-                          (0, 0, 0, 1)))
+        if self.convention == "classic":
+            # Rz(theta) Tz(d) Tx(a) Rx(alpha)
+            return np.array(((ct, -st * ca, st * sa, self.a * ct),
+                             (st, ct * ca, -ct * sa, self.a * st),
+                             (0, sa, ca, self.d),
+                             (0, 0, 0, 1)))
+        else:
+            # Rx(alpha) Tx(a) Rz(theta) Tz(d)
+            return np.array(((ct, -st, 0, self.a),
+                             (st * ca, ct * ca, -sa, -sa * self.d),
+                             (st * sa, ct * sa, ca, ca * self.d),
+                             (0, 0, 0, 1)))
 
 
 class OriginLink(Link):

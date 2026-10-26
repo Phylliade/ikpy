@@ -162,3 +162,113 @@ def homogeneous_to_cartesian_vectors(homogeneous_vector):
 def homogeneous_to_cartesian(homogeneous_matrix):
     """Convert an homogeneous matrix to cartesian matrix"""
     return homogeneous_matrix[:-1, :-1]
+
+
+# Conversions between orientation representations
+# The homogeneous matrices used by IKPy are the reference representation; these helpers
+# convert them to and from the representations used by 3D engines and ROS.
+
+def _as_scipy_rotation(matrix):
+    from scipy.spatial.transform import Rotation
+    matrix = np.asarray(matrix, dtype=float)
+    if matrix.shape == (4, 4):
+        matrix = matrix[:3, :3]
+    return Rotation.from_matrix(matrix)
+
+
+def rotation_matrix_to_rpy(matrix):
+    """Return the (roll, pitch, yaw) angles of a rotation matrix.
+
+    This is the inverse of :func:`rpy_matrix`: the angles are extrinsic, applied in the order x, y, z,
+    as in URDF files.
+
+    Parameters
+    ----------
+    matrix: numpy.array
+        A 3x3 rotation matrix, or a 4x4 homogeneous matrix whose rotation part is used
+
+    Returns
+    -------
+    numpy.array
+        The (roll, pitch, yaw) angles, in radians
+    """
+    return _as_scipy_rotation(matrix).as_euler("xyz")
+
+
+def rotation_matrix_to_euler(matrix, seq, degrees=False):
+    """Return the Euler angles of a rotation matrix, for any axis sequence.
+
+    Parameters
+    ----------
+    matrix: numpy.array
+        A 3x3 rotation matrix, or a 4x4 homogeneous matrix whose rotation part is used
+    seq: str
+        The axis sequence, as in :meth:`scipy.spatial.transform.Rotation.as_euler`: lowercase letters
+        ("xyz") for extrinsic rotations, uppercase ("ZYX") for intrinsic rotations
+    degrees: bool
+        Whether to return the angles in degrees instead of radians
+
+    Returns
+    -------
+    numpy.array
+        The three Euler angles
+    """
+    return _as_scipy_rotation(matrix).as_euler(seq, degrees=degrees)
+
+
+def euler_to_rotation_matrix(angles, seq, degrees=False):
+    """Return the 3x3 rotation matrix of three Euler angles, for any axis sequence.
+
+    Parameters
+    ----------
+    angles: numpy.array
+        The three Euler angles
+    seq: str
+        The axis sequence, see :func:`rotation_matrix_to_euler`
+    degrees: bool
+        Whether the angles are given in degrees instead of radians
+    """
+    from scipy.spatial.transform import Rotation
+    return Rotation.from_euler(seq, angles, degrees=degrees).as_matrix()
+
+
+def rotation_matrix_to_quaternion(matrix, scalar_first=False):
+    """Return the unit quaternion of a rotation matrix.
+
+    Parameters
+    ----------
+    matrix: numpy.array
+        A 3x3 rotation matrix, or a 4x4 homogeneous matrix whose rotation part is used
+    scalar_first: bool
+        If False (the default), the quaternion is returned as (x, y, z, w), the convention of Scipy, ROS and Unity.
+        If True, it is returned as (w, x, y, z), the convention of Blender and Eigen.
+
+    Returns
+    -------
+    numpy.array
+        The quaternion, as a 4-vector
+    """
+    quaternion = _as_scipy_rotation(matrix).as_quat()
+    if scalar_first:
+        quaternion = np.roll(quaternion, 1)
+    return quaternion
+
+
+def quaternion_to_rotation_matrix(quaternion, scalar_first=False):
+    """Return the 3x3 rotation matrix of a quaternion.
+
+    The result can be passed as `target_orientation` to the inverse kinematics with `orientation_mode="all"`.
+
+    Parameters
+    ----------
+    quaternion: numpy.array
+        The quaternion, as a 4-vector. It does not need to be normalized.
+    scalar_first: bool
+        Whether the quaternion is given as (w, x, y, z) instead of (x, y, z, w), see
+        :func:`rotation_matrix_to_quaternion`
+    """
+    from scipy.spatial.transform import Rotation
+    quaternion = np.asarray(quaternion, dtype=float)
+    if scalar_first:
+        quaternion = np.roll(quaternion, -1)
+    return Rotation.from_quat(quaternion).as_matrix()

@@ -40,7 +40,7 @@ def extract_chain_parameters(chain):
     origin_orientations = []
     rotation_axes = []
     translation_axes = []
-    joint_types = []  # 0=origin, 1=revolute, 2=prismatic, 3=fixed
+    joint_types = []  # 0=origin, 1=revolute (and continuous), 2=prismatic, 3=fixed
 
     for link in chain.links:
         if link.__class__.__name__ == "OriginLink":
@@ -63,7 +63,7 @@ def extract_chain_parameters(chain):
             else:
                 translation_axes.append([0.0, 0.0, 0.0])
 
-            if link.joint_type == "revolute":
+            if link.joint_type in ("revolute", "continuous"):
                 joint_types.append(1)
             elif link.joint_type == "prismatic":
                 joint_types.append(2)

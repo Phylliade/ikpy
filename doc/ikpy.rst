@@ -14,4 +14,5 @@
    urdf/utils
    mjcf/MJCF.rst
    mjcf/utils
+   bvh/BVH.rst
 

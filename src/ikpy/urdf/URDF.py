@@ -66,7 +66,8 @@ def _find_next_joint(root, current_link, next_joint_name):
                     break
 
     if search_by_name and not has_next:
-        raise ValueError("Error: joint {} given but not found in the URDF".format(next_joint_name))
+        available = [j.attrib["name"] for j in root.findall("joint")]
+        raise ValueError("Error: joint '{}' given but not found in the URDF. Available joints: {}".format(next_joint_name, available))
 
     return has_next, next_joint
 
@@ -107,7 +108,8 @@ def _find_next_link(root, current_joint, next_link_name):
             has_next = True
 
     if given_next_link and not has_next:
-        raise ValueError("Error: link {} given but not found in the URDF".format(next_link_name))
+        available = [lk.attrib["name"] for lk in root.findall("link")]
+        raise ValueError("Error: link '{}' given but not found in the URDF. Available links: {}. If your robot has no 'base_link', pass the name of its root link with base_elements=[...]".format(next_link_name, available))
 
     return has_next, next_link
 
@@ -268,24 +270,42 @@ def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, ba
                 origin_orientation = [float(x) for x in origin.attrib["rpy"].split()]
 
         joint_type = joint.attrib["type"]
-        if joint_type not in ["revolute", "prismatic", "fixed"]:
+        if joint_type not in ["revolute", "continuous", "prismatic", "fixed"]:
             raise ValueError("Unknown joint type: {}".format(joint_type))
 
         axis = joint.find("axis")
         if axis is not None:
-            if joint_type == "revolute":
-                rotation = [float(x) for x in axis.attrib["xyz"].split()]
+            if "xyz" in axis.attrib:
+                axis_xyz = axis.attrib["xyz"]
+            else:
+                # The xyz attribute is required by the URDF specification; fall back on the
+                # same default as a missing axis element, but let the user know
+                warnings.warn("Joint {} has an 'axis' element without an 'xyz' attribute. Defaulting to the URDF default axis (1, 0, 0)".format(joint.attrib["name"]))
+                axis_xyz = "1 0 0"
+            if joint_type in ("revolute", "continuous"):
+                rotation = [float(x) for x in axis_xyz.split()]
                 translation = None
             elif joint_type == "prismatic":
                 rotation = None
-                translation = [float(x) for x in axis.attrib["xyz"].split()]
+                translation = [float(x) for x in axis_xyz.split()]
             elif joint_type == "fixed":
                 warnings.warn("Joint {} is of type: fixed, but has an 'axis' attribute defined. This is not in the URDF spec and thus this axis is ignored".format(joint.attrib["name"]))
             else:
                 raise ValueError("Unknown joint type with an axis: {}, {}".format(joint_type, axis))
+        elif joint_type in ("revolute", "continuous"):
+            # No axis element at all: the URDF specification defaults the
+            # joint axis to (1, 0, 0)
+            rotation = [1, 0, 0]
+            translation = None
+        elif joint_type == "prismatic":
+            translation = [1, 0, 0]
+            rotation = None
 
         limit = joint.find("limit")
-        if limit is not None:
+        # Continuous joints have no limits in the URDF specification, so
+        # their bounds always stay unbounded, even if a limit element is
+        # present in the file.
+        if limit is not None and joint_type != "continuous":
             if "lower" in limit.attrib:
                 bounds[0] = float(limit.attrib["lower"])
             if "upper" in limit.attrib:
