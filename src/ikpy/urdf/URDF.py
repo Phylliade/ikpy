@@ -273,16 +273,31 @@ def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, ba
 
         axis = joint.find("axis")
         if axis is not None:
+            if "xyz" in axis.attrib:
+                axis_xyz = axis.attrib["xyz"]
+            else:
+                # The xyz attribute is required by the URDF specification; fall back on the
+                # same default as a missing axis element, but let the user know
+                warnings.warn("Joint {} has an 'axis' element without an 'xyz' attribute. Defaulting to the URDF default axis (1, 0, 0)".format(joint.attrib["name"]))
+                axis_xyz = "1 0 0"
             if joint_type in ("revolute", "continuous"):
-                rotation = [float(x) for x in axis.attrib["xyz"].split()]
+                rotation = [float(x) for x in axis_xyz.split()]
                 translation = None
             elif joint_type == "prismatic":
                 rotation = None
-                translation = [float(x) for x in axis.attrib["xyz"].split()]
+                translation = [float(x) for x in axis_xyz.split()]
             elif joint_type == "fixed":
                 warnings.warn("Joint {} is of type: fixed, but has an 'axis' attribute defined. This is not in the URDF spec and thus this axis is ignored".format(joint.attrib["name"]))
             else:
                 raise ValueError("Unknown joint type with an axis: {}, {}".format(joint_type, axis))
+        elif joint_type in ("revolute", "continuous"):
+            # No axis element at all: the URDF specification defaults the
+            # joint axis to (1, 0, 0)
+            rotation = [1, 0, 0]
+            translation = None
+        elif joint_type == "prismatic":
+            translation = [1, 0, 0]
+            rotation = None
 
         limit = joint.find("limit")
         # Continuous joints have no limits in the URDF specification, so
