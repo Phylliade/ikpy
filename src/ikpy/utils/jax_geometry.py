@@ -240,3 +240,63 @@ def compute_link_frame_matrix_fixed(origin_translation, origin_orientation):
     frame_matrix = jnp.dot(frame_matrix, orientation)
 
     return frame_matrix
+
+
+def compute_link_frame_matrix_dh_classic(dh_params, theta):
+    """
+    Compute the link frame matrix of a Denavit-Hartenberg link, classic convention:
+    Rz(theta) Tz(d) Tx(a) Rx(alpha), as :class:`ikpy.link.DHLink` with ``convention="classic"``.
+
+    Parameters
+    ----------
+    dh_params: jnp.ndarray
+        The parameters (d, a, alpha, theta_offset) of the link (4,)
+    theta: float
+        The joint angle, added to theta_offset
+
+    Returns
+    -------
+    jnp.ndarray
+        4x4 transformation matrix
+    """
+    d, a, alpha = dh_params[0], dh_params[1], dh_params[2]
+    ct = jnp.cos(theta + dh_params[3])
+    st = jnp.sin(theta + dh_params[3])
+    ca = jnp.cos(alpha)
+    sa = jnp.sin(alpha)
+    return jnp.array([
+        [ct, -st * ca, st * sa, a * ct],
+        [st, ct * ca, -ct * sa, a * st],
+        [0.0, sa, ca, d],
+        [0.0, 0.0, 0.0, 1.0]
+    ])
+
+
+def compute_link_frame_matrix_dh_modified(dh_params, theta):
+    """
+    Compute the link frame matrix of a Denavit-Hartenberg link, modified (Craig) convention:
+    Rx(alpha) Tx(a) Rz(theta) Tz(d), as :class:`ikpy.link.DHLink` with ``convention="modified"``.
+
+    Parameters
+    ----------
+    dh_params: jnp.ndarray
+        The parameters (d, a, alpha, theta_offset) of the link (4,)
+    theta: float
+        The joint angle, added to theta_offset
+
+    Returns
+    -------
+    jnp.ndarray
+        4x4 transformation matrix
+    """
+    d, a, alpha = dh_params[0], dh_params[1], dh_params[2]
+    ct = jnp.cos(theta + dh_params[3])
+    st = jnp.sin(theta + dh_params[3])
+    ca = jnp.cos(alpha)
+    sa = jnp.sin(alpha)
+    return jnp.array([
+        [ct, -st, 0.0, a],
+        [st * ca, ct * ca, -sa, -sa * d],
+        [st * sa, ct * sa, ca, ca * d],
+        [0.0, 0.0, 0.0, 1.0]
+    ])
