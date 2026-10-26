@@ -11,7 +11,7 @@ import jax.numpy as jnp
 from functools import partial
 import numpy as np
 
-from ikpy.inverse_kinematics import resolve_optimizer_options
+from ikpy.inverse_kinematics import resolve_optimizer_options, strictly_inside_bounds
 from ikpy.utils import jax_geometry as geom
 
 
@@ -543,10 +543,13 @@ class JaxKinematicsCache:
         if use_analytical_jacobian:
             scipy_kwargs['jac'] = jacobian_np
 
+        # The starting point must be strictly inside the bounds, see strictly_inside_bounds
+        x0 = strictly_inside_bounds(np.array(x0), np.stack(bounds, axis=1))
+
         # Run scipy least_squares
         result = scipy.optimize.least_squares(
             residuals_np,
-            np.array(x0),
+            x0,
             **scipy_kwargs
         )
         optimal_active = jnp.array(result.x, dtype=self._dtype)
