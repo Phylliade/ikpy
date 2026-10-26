@@ -397,7 +397,6 @@ def get_mjcf_parameters(mjcf_file, base_elements=None, last_link_vector=None, sy
         for body in worldbody.iter("body"):
             if body.get("name") == base_elements[0]:
                 start_body = body
-                base_elements = base_elements[1:]
                 break
 
         if start_body is None:
