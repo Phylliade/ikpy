@@ -27,6 +27,7 @@ import warnings
 # Ikpy imports
 from ikpy import link as lib_link
 from ikpy import logs
+from ikpy import selection
 
 
 _AXES = {"X": [1, 0, 0], "Y": [0, 1, 0], "Z": [0, 0, 1]}
@@ -271,8 +272,30 @@ def get_joint_names(bvh_file):
     return [joint.name for joint in parse_bvh(bvh_file).iter_joints()]
 
 
-def _resolve_path(skeleton, base_elements):
-    """Return the list of joints forming the chain described by base_elements, see get_bvf_parameters"""
+def _resolve_path(skeleton, base, tip):
+    """Return the list of joints of the chain from base to tip"""
+    if base is None:
+        start = selection.unique_root(skeleton.roots, "joints", lambda joint: joint.name)
+    else:
+        start = skeleton.find(base)
+        if start is None:
+            raise ValueError("Joint '{}' not found in the BVH file. Available joints: {}".format(base, [joint.name for joint in skeleton.iter_joints()]))
+    if tip is None:
+        children_of = {joint: joint.children for joint in start.iter_joints()}
+        end = selection.unique_leaf(children_of, start, "joints", lambda joint: joint.name)
+    else:
+        end = start.find(tip)
+        if end is None:
+            if skeleton.find(tip) is None:
+                raise ValueError("Joint '{}' not found in the BVH file. Available joints: {}".format(tip, [joint.name for joint in skeleton.iter_joints()]))
+            raise ValueError("Joint '{}' is not a descendant of joint '{}' in the BVH file".format(tip, start.name))
+    path = start.path_to(end)
+    logs.logger.debug("BVH chain: {}".format([joint.name for joint in path]))
+    return path
+
+
+def _resolve_legacy_path(skeleton, base_elements):
+    """The deprecated selection: waypoints, then the first child of each joint down to a leaf"""
     if base_elements is None or len(base_elements) == 0:
         path = [skeleton.roots[0]]
         stop_at_last = False
@@ -299,13 +322,13 @@ def _resolve_path(skeleton, base_elements):
     return path
 
 
-def _chain_links(skeleton, base_elements, last_link_vector, scale):
+def _chain_links(skeleton, base, tip, tip_offset, scale, legacy=None):
     """Describe the links of a chain: a list of (name, origin_translation, axis, joint_type, channel_index, rest_value)
 
     rest_value is the value of the channel in the rest pose: the offset component for a position channel, 0 otherwise
     """
     specs = []
-    path = _resolve_path(skeleton, base_elements)
+    path = _resolve_legacy_path(skeleton, legacy[0]) if legacy is not None else _resolve_path(skeleton, base, tip)
     for joint in path:
         origin = joint.offset * scale
         if len(joint.channels) == 0:
@@ -321,27 +344,26 @@ def _chain_links(skeleton, base_elements, last_link_vector, scale):
             specs.append(("{}_{}".format(joint.name, channel), origin if k == 0 else np.zeros(3), axis, joint_type, joint.channel_index + k, rest_value))
 
     last_joint = path[-1]
-    if last_link_vector is not None:
-        specs.append(("last_joint", np.array(last_link_vector, dtype=float), None, "fixed", None, 0.0))
+    if tip_offset is not None:
+        specs.append(("last_joint", np.array(tip_offset, dtype=float), None, "fixed", None, 0.0))
     elif last_joint.end_site is not None:
         specs.append(("{}_end_site".format(last_joint.name), last_joint.end_site * scale, None, "fixed", None, 0.0))
     return specs
 
 
-def get_bvh_parameters(bvh_file, base_elements=None, last_link_vector=None, symbolic=True, scale=1.0):
+def get_bvh_parameters(bvh_file, base=None, tip=None, tip_offset=None, symbolic=True, scale=1.0, base_elements=None, last_link_vector=None):
     """Return the links of the chain described by a BVH file
 
     Parameters
     ----------
     bvh_file: str
         The path of the BVH file
-    base_elements: list[str]
-        The joints of the chain, from its start to its end, as an ordered list of joint names. The joints between
-        two consecutive names are filled in automatically, so only the branching points need to be given
-        (for example ``["Hips", "LeftHand"]``). The chain ends at the last name. If a single name is given, or
-        None, the chain starts at that joint (or at the root) and follows the first child of each joint down to
-        a leaf.
-    last_link_vector: numpy.array
+    base: str
+        The name of the joint where the chain starts. Defaults to the root of the skeleton.
+    tip: str
+        The name of the joint where the chain ends; the path from base to tip is found automatically. Defaults
+        to the only leaf under base; when there are several, the error lists them.
+    tip_offset: numpy.array
         Optional: the translation of the tip of the chain, in the frame of its last joint. Defaults to the
         ``End Site`` of the last joint when it has one.
     symbolic: bool
@@ -349,6 +371,11 @@ def get_bvh_parameters(bvh_file, base_elements=None, last_link_vector=None, symb
     scale: float
         A factor applied to all the lengths of the file (offsets, end sites and position channels), to convert
         them to meters: BVH files do not specify their unit, and are often in centimeters or inches.
+    base_elements: list[str]
+        Deprecated, use base and tip. Waypoints of the chain; after the last one the first child of each joint
+        is followed down to a leaf, unless two or more names are given.
+    last_link_vector: numpy.array
+        Deprecated, use tip_offset.
 
     Returns
     -------
@@ -358,9 +385,10 @@ def get_bvh_parameters(bvh_file, base_elements=None, last_link_vector=None, symb
         Rotation channels are revolute links (angles in radians), position channels are prismatic links whose
         value is the displacement from the offset of the joint: all-zero joint values give the rest pose.
     """
+    base, tip, tip_offset, legacy = selection.resolve_selection(base, tip, tip_offset, base_elements, last_link_vector)
     skeleton = parse_bvh(bvh_file)
     links = []
-    for name, origin, axis, joint_type, _, _ in _chain_links(skeleton, base_elements, last_link_vector, scale):
+    for name, origin, axis, joint_type, _, _ in _chain_links(skeleton, base, tip, tip_offset, scale, legacy):
         links.append(lib_link.URDFLink(
             name=name,
             origin_translation=origin,
@@ -373,19 +401,17 @@ def get_bvh_parameters(bvh_file, base_elements=None, last_link_vector=None, symb
     return links
 
 
-def get_bvh_motion(bvh_file, base_elements=None, last_link_vector=None, scale=1.0):
+def get_bvh_motion(bvh_file, base=None, tip=None, tip_offset=None, scale=1.0, base_elements=None, last_link_vector=None):
     """Return the motion of a BVH file as joint values of the chain built with the same parameters
 
     Parameters
     ----------
     bvh_file: str
         The path of the BVH file
-    base_elements: list[str]
-        The same list as the one given to :func:`get_bvh_parameters` or :meth:`ikpy.chain.Chain.from_bvh_file`
-    last_link_vector: numpy.array
-        The same vector as the one given to the chain
-    scale: float
-        The same factor as the one given to the chain
+    base, tip, tip_offset, scale:
+        The same arguments as the ones given to :func:`get_bvh_parameters` or :meth:`ikpy.chain.Chain.from_bvh_file`
+    base_elements, last_link_vector:
+        Deprecated, see :func:`get_bvh_parameters`
 
     Returns
     -------
@@ -396,8 +422,9 @@ def get_bvh_motion(bvh_file, base_elements=None, last_link_vector=None, scale=1.
     frame_time: float
         The duration of a frame, in seconds
     """
+    base, tip, tip_offset, legacy = selection.resolve_selection(base, tip, tip_offset, base_elements, last_link_vector)
     skeleton = parse_bvh(bvh_file)
-    specs = _chain_links(skeleton, base_elements, last_link_vector, scale)
+    specs = _chain_links(skeleton, base, tip, tip_offset, scale, legacy)
     # One leading column for the origin link of the chain
     trajectory = np.zeros((skeleton.n_frames, len(specs) + 1))
     for column, (_, _, _, joint_type, channel_index, rest_value) in enumerate(specs, start=1):

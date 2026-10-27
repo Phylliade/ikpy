@@ -325,24 +325,40 @@ class Chain:
         chain_basedir = os.path.dirname(json_file)
 
         # Get the different attributes
-        urdf_file = chain_config["urdf_file"]
+        urdf_file = chain_basedir + "/" + chain_config["urdf_file"]
+        active_links_mask = chain_config.get("active_links_mask")
+        if active_links_mask == "":
+            active_links_mask = None
+        name = chain_config["name"]
+
+        if "base" in chain_config or "tip" in chain_config:
+            # Format v2: the chain is selected with base and tip
+            return cls.from_urdf_file(
+                urdf_file=urdf_file,
+                base=chain_config.get("base"),
+                tip=chain_config.get("tip"),
+                tip_offset=chain_config.get("tip_offset"),
+                active_links_mask=active_links_mask,
+                name=name
+            )
+
+        # Format v1: the chain is selected with the deprecated base_elements. This is our own file format, so no
+        # deprecation warning for the user: the chain is simply loaded the way it was saved
         elements = chain_config["elements"]
         if elements == "":
             elements = None
-        active_links_mask = chain_config["active_links_mask"]
-        if active_links_mask == "":
-            active_links_mask = None
         last_link_vector = chain_config["last_link_vector"]
         if last_link_vector == "":
             last_link_vector = None
-
-        return cls.from_urdf_file(
-            urdf_file=chain_basedir + "/" + urdf_file,
-            base_elements=elements,
-            active_links_mask=active_links_mask,
-            last_link_vector=last_link_vector,
-            name=chain_config["name"]
-        )
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            return cls.from_urdf_file(
+                urdf_file=urdf_file,
+                base_elements=elements,
+                active_links_mask=active_links_mask,
+                last_link_vector=last_link_vector,
+                name=name
+            )
 
     def to_json_file(self, force=False):
         """
@@ -359,14 +375,28 @@ class Chain:
             Path of the exported JSON
 
         """
-        chain_dict = {
-            "elements": self._urdf_metadata["base_elements"],
-            "urdf_file": os.path.basename(self._urdf_metadata["urdf_file"]),
-            "active_links_mask": [bool(x) for x in self.active_links_mask],
-            "last_link_vector": self._urdf_metadata["last_link_vector"],
-            "name": self.name,
-            "version": "v1"
-        }
+        metadata = self._urdf_metadata
+        if "base_elements" in metadata:
+            # The chain was selected with the deprecated base_elements: keep the v1 format
+            chain_dict = {
+                "elements": metadata["base_elements"],
+                "urdf_file": os.path.basename(metadata["urdf_file"]),
+                "active_links_mask": [bool(x) for x in self.active_links_mask],
+                "last_link_vector": metadata["last_link_vector"],
+                "name": self.name,
+                "version": "v1"
+            }
+        else:
+            tip_offset = metadata.get("tip_offset")
+            chain_dict = {
+                "base": metadata.get("base"),
+                "tip": metadata.get("tip"),
+                "tip_offset": None if tip_offset is None else [float(x) for x in tip_offset],
+                "urdf_file": os.path.basename(metadata["urdf_file"]),
+                "active_links_mask": [bool(x) for x in self.active_links_mask],
+                "name": self.name,
+                "version": "v2"
+            }
 
         if os.path.exists(self._json_path) and not force:
             raise OSError("File {} exists".format(self._json_path))
@@ -378,49 +408,51 @@ class Chain:
         return self._json_path
 
     @classmethod
-    def from_urdf_file(cls, urdf_file, base_elements=None, last_link_vector=None, base_element_type="link", active_links_mask=None, name="chain", symbolic=True, jax_precompile=True):
+    def from_urdf_file(cls, urdf_file, *, base=None, tip=None, tip_offset=None, active_links_mask=None, name="chain", symbolic=True, jax_precompile=True, base_elements=None, last_link_vector=None, base_element_type=None):
         """Creates a chain from an URDF file
+
+        A URDF describes a tree of links connected by joints; the chain is the path from `base` to `tip`, which
+        is unique, so the two names are all it takes to select it.
 
         Parameters
         ----------
         urdf_file: str
             The path of the URDF file
-        base_elements: list of strings
-            An ordered list of URDF element names (links and joints) that defines the path to traverse in the URDF tree.
-            The elements must alternate between links and joints, starting with the type specified by ``base_element_type``.
-
-            * If ``base_element_type="link"`` (default): elements should be [link, joint, link, joint, ...]
-            * If ``base_element_type="joint"``: elements should be [joint, link, joint, link, ...]
-
-            When the list is exhausted or empty, the parser will automatically find the next child element.
-            This is useful to specify only the starting point and let the parser follow the chain automatically.
-
-            Example with ``base_element_type="link"`` (default)::
-
-                # URDF structure:
-                #   base_link -> base_torso_joint -> torso_link -> arm_joint -> arm_link
-                #
-                # To start from torso_link and follow the chain:
-                base_elements=["torso_link"]
-                #
-                # To explicitly specify the path:
-                base_elements=["base_link", "base_torso_joint", "torso_link"]
-
-        last_link_vector: numpy.array
-            Optional : The translation vector of the tip.
-        name: str
-            The name of the Chain
-        base_element_type: str
-            The type of the first element in ``base_elements``. Either "link" (default) or "joint".
-            This determines the alternating pattern expected in ``base_elements``.
+        base: str or dict
+            The name of the link or joint where the chain starts. Defaults to the root link of the file. The
+            chain starts with the joints under a base link, or with a base joint itself. When a link and a joint
+            share a name, the name means the link; ``{"name": ..., "type": "joint"}`` or
+            ``{"name": ..., "type": "link"}`` says which one is meant.
+        tip: str or dict
+            The name of the link or joint where the chain ends, as a string or a dict like base; the path from
+            base to tip is found automatically. Defaults to the only leaf under base; when there are several,
+            the error lists them to choose from.
+        tip_offset: numpy.array
+            Optional : a translation added at the end of the chain, in the frame of its last joint, as a fixed
+            link named ``last_joint``. Typically the tool center point.
         active_links_mask: list[bool]
             A list of boolean indicating whether or not the corresponding link is active
+        name: str
+            The name of the Chain
         symbolic: bool
             Use symbolic computations
         jax_precompile: bool
             If True (default), JAX functions are compiled when the JAX cache is first accessed.
             If False, compilation is deferred to the first JAX call.
+        base_elements: list of strings
+            Deprecated, use base and tip. An ordered list of link and joint names to follow, alternating links
+            and joints; when the list is exhausted, the parser follows the first child of each element down to
+            a leaf.
+        last_link_vector: numpy.array
+            Deprecated, use tip_offset, which means the same thing.
+        base_element_type: str
+            Deprecated. The type of the first element in ``base_elements``, "link" or "joint".
 
+        Example
+        -------
+        >>> from ikpy.chain import Chain
+        >>> chain = Chain.from_urdf_file("baxter.urdf", base="base", tip="left_gripper", tip_offset=[0, 0, 0.1])
+        >>> chain = Chain.from_urdf_file("baxter.urdf", base={"name": "left_hand", "type": "joint"}, tip="left_gripper")
 
         Note
         ----
@@ -429,25 +461,30 @@ class Chain:
         * URDF joints = IKPY links
         * URDF links are not used by IKPY. They are thrown away when parsing
         """
+        links = URDF.get_urdf_parameters(urdf_file, base=base, tip=tip, tip_offset=tip_offset, symbolic=symbolic, base_elements=base_elements, last_link_vector=last_link_vector, base_element_type=base_element_type)
 
-        # FIXME: Rename links to joints, to be coherent with URDF?
-        urdf_metadata = {
-            "base_elements": base_elements,
-            "urdf_file": urdf_file,
-            "last_link_vector": last_link_vector
-        }
+        if base_elements is not None or base_element_type is not None:
+            urdf_metadata = {
+                "base_elements": base_elements,
+                "urdf_file": urdf_file,
+                "last_link_vector": last_link_vector if last_link_vector is not None else tip_offset
+            }
+        else:
+            urdf_metadata = {
+                "base": base,
+                "tip": tip,
+                "tip_offset": tip_offset if tip_offset is not None else last_link_vector,
+                "urdf_file": urdf_file
+            }
 
-        # TODO: Remove this default and force the user to provide something
-        if base_elements is None:
-            base_elements = ["base_link"]
-
-        links = URDF.get_urdf_parameters(urdf_file, base_elements=base_elements, last_link_vector=last_link_vector, base_element_type=base_element_type, symbolic=symbolic)
         # Add an origin link at the beginning
         chain = cls([link_lib.OriginLink()] + links, active_links_mask=active_links_mask, name=name, urdf_metadata=urdf_metadata, jax_precompile=jax_precompile)
 
         # Save some useful metadata
         # FIXME: We have attributes specific to objects created in this style, not great...
         chain.urdf_file = urdf_file
+        chain.base = base
+        chain.tip = tip
         chain.base_elements = base_elements
 
         return chain
@@ -461,79 +498,68 @@ class Chain:
         return np.compress(self.active_links_mask, joints, axis=0)
 
     @classmethod
-    def from_mjcf_file(cls, mjcf_file, base_elements=None, last_link_vector=None, active_links_mask=None, name="chain", symbolic=True):
+    def from_mjcf_file(cls, mjcf_file, *, base=None, tip=None, tip_offset=None, active_links_mask=None, name="chain", symbolic=True, base_elements=None, last_link_vector=None):
         """Creates a chain from a MuJoCo MJCF file
+
+        MJCF nests bodies inside each other; the chain is the path from the `base` body to the `tip` body.
 
         Parameters
         ----------
         mjcf_file: str
             The path of the MJCF file
-        base_elements: list of strings
-            An ordered list of body names that defines the path to traverse in the MJCF tree.
-            When the list is exhausted or empty, the parser will automatically follow the first child.
-            If None, starts from the first body in worldbody and follows first children.
-
-            Example::
-
-                # MJCF structure:
-                #   worldbody
-                #     body name="base"
-                #       body name="shoulder_link"
-                #         body name="upper_arm_link"
-                #
-                # To start from base and follow the chain:
-                base_elements=["base"]
-                #
-                # To explicitly specify the path:
-                base_elements=["base", "shoulder_link", "upper_arm_link"]
-
-        last_link_vector: numpy.array
-            Optional: The translation vector of the tip (end-effector offset)
+        base: str
+            The name of the body where the chain starts. Defaults to the only body under ``worldbody``; when
+            there are several, the error lists them.
+        tip: str
+            The name of the body where the chain ends; the path from base to tip is found automatically.
+            Defaults to the only leaf under base; when there are several, the error lists them to choose from.
+        tip_offset: numpy.array
+            Optional: a translation added at the end of the chain, in the frame of its last joint (the
+            end-effector offset)
         active_links_mask: list[bool]
             A list of boolean indicating whether or not the corresponding link is active
         name: str
             The name of the Chain
         symbolic: bool
             Use symbolic computations
+        base_elements: list of strings
+            Deprecated, use base and tip. An ordered list of body names to follow; when the list is exhausted,
+            the parser follows the first child of each body down to a leaf.
+        last_link_vector: numpy.array
+            Deprecated, use tip_offset.
 
         Returns
         -------
         Chain
             The kinematic chain
 
-        Note
-        ----
-        MJCF uses a hierarchical structure where bodies are nested, unlike URDF which
-        uses a flat structure with separate links and joints.
-
-        For more information on MJCF, see: https://mujoco.readthedocs.io/en/latest/modeling.html
-
         Example
         -------
         >>> from ikpy.chain import Chain
-        >>> # Load UR5e robot from MJCF
-        >>> chain = Chain.from_mjcf_file("ur5e.xml", base_elements=["base"])
-        >>> # Compute forward kinematics
+        >>> chain = Chain.from_mjcf_file("ur5e.xml", base="base", tip="wrist_3_link")
         >>> chain.forward_kinematics([0] * len(chain.links))
         """
+        links = MJCF.get_mjcf_parameters(mjcf_file, base=base, tip=tip, tip_offset=tip_offset, symbolic=symbolic, base_elements=base_elements, last_link_vector=last_link_vector)
         mjcf_metadata = {
+            "base": base,
+            "tip": tip,
+            "tip_offset": tip_offset if tip_offset is not None else last_link_vector,
             "base_elements": base_elements,
-            "mjcf_file": mjcf_file,
-            "last_link_vector": last_link_vector
+            "mjcf_file": mjcf_file
         }
-
-        links = MJCF.get_mjcf_parameters(mjcf_file, base_elements=base_elements, last_link_vector=last_link_vector, symbolic=symbolic)
         # Add an origin link at the beginning
         chain = cls([link_lib.OriginLink()] + links, active_links_mask=active_links_mask, name=name, urdf_metadata=mjcf_metadata)
 
         # Save some useful metadata
         chain.mjcf_file = mjcf_file
+        chain.base = base
+        chain.tip = tip
         chain.base_elements = base_elements
 
         return chain
 
     @classmethod
-    def from_bvh_file(cls, bvh_file, base_elements=None, last_link_vector=None, active_links_mask=None, name="chain", symbolic=True, scale=1.0):
+    def from_bvh_file(cls, bvh_file, *, base=None, tip=None, tip_offset=None, active_links_mask=None, name="chain", symbolic=True, scale=1.0, base_elements=None, last_link_vector=None):
         """Creates a chain from a BVH (Biovision Hierarchy) motion capture file
 
         Each channel of a BVH joint becomes a link of the chain, named ``<joint>_<channel>`` (for example
@@ -544,28 +570,12 @@ class Chain:
         ----------
         bvh_file: str
             The path of the BVH file
-        base_elements: list of strings
-            The joints of the chain, from its start to its end, as an ordered list of joint names. The joints
-            between two consecutive names are filled in automatically, so only the branching points need to be
-            given. The chain ends at the last name. If a single name is given, or None, the chain starts at that
-            joint (or at the root) and follows the first child of each joint down to a leaf.
-
-            Example::
-
-                # Skeleton:
-                #   Hips
-                #     Spine
-                #       LeftShoulder
-                #         LeftArm
-                #           LeftHand
-                #     LeftUpLeg
-                #
-                # From the root, following the first children (down to LeftHand here):
-                base_elements=["Hips"]
-                # From the root to the left hand, intermediate joints are filled in:
-                base_elements=["Hips", "LeftHand"]
-
-        last_link_vector: numpy.array
+        base: str
+            The name of the joint where the chain starts. Defaults to the root of the skeleton.
+        tip: str
+            The name of the joint where the chain ends; the path from base to tip is found automatically.
+            Defaults to the only leaf under base; when there are several, the error lists them to choose from.
+        tip_offset: numpy.array
             Optional: the translation of the tip of the chain, in the frame of its last joint. Defaults to the
             ``End Site`` of the last joint when it has one.
         active_links_mask: list[bool]
@@ -579,6 +589,10 @@ class Chain:
         scale: float
             A factor applied to all the lengths of the file (offsets, end sites and position channels), to
             convert them to meters: BVH files do not specify their unit, and are often in centimeters or inches.
+        base_elements: list of strings
+            Deprecated, use base and tip.
+        last_link_vector: numpy.array
+            Deprecated, use tip_offset.
 
         Returns
         -------
@@ -589,22 +603,25 @@ class Chain:
         -------
         >>> from ikpy.chain import Chain
         >>> from ikpy.bvh import BVH
-        >>> chain = Chain.from_bvh_file("walk.bvh", base_elements=["Hips", "LeftHand"], scale=0.01)
-        >>> trajectory, frame_time = BVH.get_bvh_motion("walk.bvh", base_elements=["Hips", "LeftHand"], scale=0.01)
+        >>> chain = Chain.from_bvh_file("walk.bvh", base="Hips", tip="LeftHand", scale=0.01)
+        >>> trajectory, frame_time = BVH.get_bvh_motion("walk.bvh", base="Hips", tip="LeftHand", scale=0.01)
         >>> hand_frames = [chain.forward_kinematics(joints) for joints in trajectory]
         """
+        links = BVH.get_bvh_parameters(bvh_file, base=base, tip=tip, tip_offset=tip_offset, symbolic=symbolic, scale=scale, base_elements=base_elements, last_link_vector=last_link_vector)
         bvh_metadata = {
+            "base": base,
+            "tip": tip,
+            "tip_offset": tip_offset if tip_offset is not None else last_link_vector,
             "base_elements": base_elements,
             "bvh_file": bvh_file,
-            "last_link_vector": last_link_vector,
             "scale": scale
         }
-
-        links = BVH.get_bvh_parameters(bvh_file, base_elements=base_elements, last_link_vector=last_link_vector, symbolic=symbolic, scale=scale)
         chain = cls([link_lib.OriginLink()] + links, active_links_mask=active_links_mask, name=name, urdf_metadata=bvh_metadata)
 
         # Save some useful metadata
         chain.bvh_file = bvh_file
+        chain.base = base
+        chain.tip = tip
         chain.base_elements = base_elements
         chain.scale = scale
 

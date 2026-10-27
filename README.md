@@ -63,10 +63,10 @@ IKPy also reads **BVH** (Biovision Hierarchy) motion capture files: any path of 
 from ikpy.chain import Chain
 from ikpy.bvh import BVH
 
-# From the hips to the left hand; the joints in between are filled in automatically
-chain = Chain.from_bvh_file("walk.bvh", base_elements=["Hips", "LeftHand"], scale=0.01)
+# From the hips to the left hand; the path in between is found automatically
+chain = Chain.from_bvh_file("walk.bvh", base="Hips", tip="LeftHand", scale=0.01)
 
-trajectory, frame_time = BVH.get_bvh_motion("walk.bvh", base_elements=["Hips", "LeftHand"], scale=0.01)
+trajectory, frame_time = BVH.get_bvh_motion("walk.bvh", base="Hips", tip="LeftHand", scale=0.01)
 hand_frames = [chain.forward_kinematics(joints) for joints in trajectory]
 ```
 
@@ -172,6 +172,20 @@ chain.inverse_kinematics(
 
 > **Note**: The first JAX call includes JIT compilation overhead (~1-5s). Subsequent calls are fast.
 
+## Selecting a chain
+
+A robot description is a tree. A chain is the path from a `base` element to a `tip` element, and that path is unique, so the two names are all it takes, in every format:
+
+```python
+chain = Chain.from_urdf_file("baxter.urdf", base="base", tip="left_gripper", tip_offset=[0, 0, 0.1])
+chain = Chain.from_mjcf_file("ur5e.xml", base="base", tip="wrist_3_link")
+chain = Chain.from_bvh_file("walk.bvh", base="Hips", tip="LeftHand")
+```
+
+`base` defaults to the root of the file and `tip` to the only leaf below `base`; when the tree branches, the error lists the leaves to choose from. In a URDF, `base` and `tip` can name a link or a joint; when a link and a joint share a name, the name means the link, and `{"name": "left_hand", "type": "joint"}` says otherwise. `tip_offset` adds a fixed translation at the end of the chain, in the frame of its last joint, typically the tool center point.
+
+The former `base_elements`, `base_element_type` and `last_link_vector` arguments still work with a `DeprecationWarning`, and will be removed in IKPy 5.0.
+
 ## MuJoCo (MJCF) Support
 
 In addition to URDF, IKPy can import kinematic chains directly from **MuJoCo MJCF** XML files:
@@ -179,7 +193,7 @@ In addition to URDF, IKPy can import kinematic chains directly from **MuJoCo MJC
 ```python
 from ikpy.chain import Chain
 
-chain = Chain.from_mjcf_file("ur5e.xml", base_elements=["base"])
+chain = Chain.from_mjcf_file("ur5e.xml", base="base", tip="wrist_3_link")
 ```
 
 The parser supports MuJoCo compiler settings, default classes (including `childclass` inheritance), and provides helpers to inspect models (`ikpy.mjcf.get_body_names`, `ikpy.mjcf.get_joint_names`).

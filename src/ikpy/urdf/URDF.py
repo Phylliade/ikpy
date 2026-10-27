@@ -12,6 +12,7 @@ import warnings
 # Ikpy imports
 from ikpy import link as lib_link
 from ikpy import logs
+from ikpy import selection
 
 
 def _find_next_joint(root, current_link, next_joint_name):
@@ -163,54 +164,107 @@ def get_chain_from_joints(urdf_file, joints):
     return chain
 
 
-def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, base_element_type="link", symbolic=True):
-    """
-    Returns translated parameters from the given URDF file.
-    Parse the URDF joints into IKPY links, throw away the URDF links.
+def _parse_urdf(urdf_file):
+    """Parse a URDF file, and refuse a xacro file with a clear message"""
+    tree = ET.parse(urdf_file)
+    root = tree.getroot()
+    if root.tag != "robot":
+        raise ValueError("Expected a URDF file (root element 'robot'), got '{}' in {}".format(root.tag, urdf_file))
+    for element in root.iter():
+        unexpanded = "xacro" in element.tag or any("$(" in value or "${" in value for value in element.attrib.values())
+        if unexpanded:
+            raise ValueError(
+                "{} is a xacro file, not a URDF file: it contains macros or expressions that must be expanded "
+                "first, with `xacro {} > robot.urdf` (ROS) or `python -m xacro`".format(urdf_file, urdf_file))
+    return root
 
-    Parameters
-    ----------
-    urdf_file: str
-        The path of the URDF file
-    base_elements: list of strings
-        An ordered list of URDF element names (links and joints) that defines the path to traverse in the URDF tree.
-        The elements must alternate between links and joints, starting with the type specified by ``base_element_type``.
 
-        * If ``base_element_type="link"`` (default): elements should be [link, joint, link, joint, ...]
-        * If ``base_element_type="joint"``: elements should be [joint, link, joint, link, ...]
+def _urdf_tree(root):
+    """Index the links and joints of a URDF
 
-        When the list is exhausted or empty, the parser will automatically find the next child element.
-        This is useful to specify only the starting point and let the parser follow the chain automatically.
-
-        Example with ``base_element_type="link"`` (default)::
-
-            # URDF structure:
-            #   base_link -> base_torso_joint -> torso_link -> arm_joint -> arm_link
-            #
-            # To start from torso_link and follow the chain:
-            base_elements=["torso_link"]
-            #
-            # To explicitly specify the path:
-            base_elements=["base_link", "base_torso_joint", "torso_link"]
-
-    last_link_vector: numpy.array
-        Optional : The translation vector of the tip.
-    base_element_type: str
-        The type of the first element in ``base_elements``. Either "link" (default) or "joint".
-        This determines the alternating pattern expected in ``base_elements``.
-    symbolic: bool
-        Use symbolic matrix computations
+    Links and joints are two namespaces (a joint and its child link often share a name), so the nodes of the tree
+    are keyed by ("link", name) and ("joint", name).
 
     Returns
     -------
-    list[ikpy.link.URDFLink]
+    links: dict
+        name -> link element
+    joints: dict
+        name -> joint element
+    parent_of: dict
+        node -> parent node: the parent link of a joint, the joint leading to a link
+    children_of: dict
+        node -> child nodes: the joints under a link, the child link of a joint
     """
-    tree = ET.parse(urdf_file)
-    root = tree.getroot()
+    links = {link.attrib["name"]: link for link in root.findall("link")}
+    joints = {}
+    parent_of = {}
+    children_of = {("link", name): [] for name in links}
+    for joint in root.findall("joint"):
+        name = joint.attrib["name"]
+        joints[name] = joint
+        node = ("joint", name)
+        parent = ("link", joint.find("parent").attrib["link"])
+        child = ("link", joint.find("child").attrib["link"])
+        parent_of[node] = parent
+        parent_of[child] = node
+        children_of.setdefault(parent, []).append(node)
+        children_of[node] = [child]
+    return links, joints, parent_of, children_of
+
+
+def _urdf_node(element, links, joints):
+    """The node of a base or tip argument
+
+    A string names a link or a joint; when a link and a joint share a name, the name means the link. A dict
+    ``{"name": ..., "type": "link" | "joint"}`` says which of the two is meant.
+    """
+    if isinstance(element, dict):
+        if set(element) != {"name", "type"} or element["type"] not in ("link", "joint"):
+            raise ValueError('A URDF element given as a dict must be {{"name": ..., "type": "link"}} or {{"name": ..., "type": "joint"}}, got {}'.format(element))
+        kind, name = element["type"], element["name"]
+        namespace = links if kind == "link" else joints
+        if name not in namespace:
+            raise ValueError("'{}' is not a {} of the URDF. {}s: {}".format(name, kind, kind.capitalize(), list(namespace)))
+        return (kind, name)
+    if element in links:
+        return ("link", element)
+    if element in joints:
+        return ("joint", element)
+    raise ValueError("'{}' is neither a link nor a joint of the URDF. Links: {}. Joints: {}".format(element, list(links), list(joints)))
+
+
+def _resolve_urdf_chain(root, base, tip):
+    """Return the joint elements of the chain from base to tip
+
+    base and tip are the names of a link or of a joint; when a joint and a link share a name, the link is meant.
+    The chain starts with the joints under a base link, or with a base joint itself; it ends with the joint
+    leading to a tip link, or with a tip joint itself.
+    """
+    links, joints, parent_of, children_of = _urdf_tree(root)
+    display = lambda node: node[1]  # noqa: E731
+
+    if base is None:
+        roots = [node for node in children_of if node[0] == "link" and node not in parent_of]
+        base_node = selection.unique_root(roots, "links", display)
+    else:
+        base_node = _urdf_node(base, links, joints)
+
+    if tip is None:
+        tip_node = selection.unique_leaf(children_of, base_node, "links", display)
+    else:
+        tip_node = _urdf_node(tip, links, joints)
+
+    path = selection.path_between(parent_of, base_node, tip_node, display)
+    chain_joints = [joints[name] for kind, name in path if kind == "joint"]
+    logs.logger.debug("URDF chain from {} to {}: {}".format(display(base_node), display(tip_node), [joint.attrib["name"] for joint in chain_joints]))
+    return chain_joints
+
+
+def _legacy_urdf_chain(root, base_elements, base_element_type):
+    """The deprecated traversal: follow the given names, then the first child of each element down to a leaf"""
     base_elements = list(base_elements)
-    if base_elements is None:
-        base_elements = ["base_link"]
-    elif base_elements == []:
+    if base_elements == []:
         raise ValueError("base_elements can't be the empty list []")
 
     joints = []
@@ -252,81 +306,144 @@ def get_urdf_parameters(urdf_file, base_elements=None, last_link_vector=None, ba
                 links.append(current_link)
                 logs.logger.debug("Next element: link {}".format(current_link.attrib["name"]))
 
-    parameters = []
+    return joints
 
-    # Save the joints in the good format
-    for joint in joints:
-        origin_translation = [0, 0, 0]
-        origin_orientation = [0, 0, 0]
-        rotation = None
-        translation = None
-        bounds = [-np.inf, np.inf]
 
-        origin = joint.find("origin")
-        if origin is not None:
-            if "xyz" in origin.attrib.keys():
-                origin_translation = [float(x) for x in origin.attrib["xyz"].split()]
-            if "rpy" in origin.attrib.keys():
-                origin_orientation = [float(x) for x in origin.attrib["rpy"].split()]
+def _joint_to_link(joint, symbolic):
+    """Build the IKPy link of a URDF joint, with the conventions of ROS (urdfdom and KDL)"""
+    name = joint.attrib["name"]
+    origin_translation = [0, 0, 0]
+    origin_orientation = [0, 0, 0]
+    rotation = None
+    translation = None
+    bounds = [-np.inf, np.inf]
 
-        joint_type = joint.attrib["type"]
-        if joint_type not in ["revolute", "continuous", "prismatic", "fixed"]:
-            raise ValueError("Unknown joint type: {}".format(joint_type))
+    origin = joint.find("origin")
+    if origin is not None:
+        if "xyz" in origin.attrib.keys():
+            origin_translation = [float(x) for x in origin.attrib["xyz"].split()]
+        if "rpy" in origin.attrib.keys():
+            origin_orientation = [float(x) for x in origin.attrib["rpy"].split()]
 
-        axis = joint.find("axis")
-        if axis is not None:
-            if "xyz" in axis.attrib:
-                axis_xyz = axis.attrib["xyz"]
-            else:
-                # The xyz attribute is required by the URDF specification; fall back on the
-                # same default as a missing axis element, but let the user know
-                warnings.warn("Joint {} has an 'axis' element without an 'xyz' attribute. Defaulting to the URDF default axis (1, 0, 0)".format(joint.attrib["name"]))
-                axis_xyz = "1 0 0"
-            if joint_type in ("revolute", "continuous"):
-                rotation = [float(x) for x in axis_xyz.split()]
-                translation = None
-            elif joint_type == "prismatic":
-                rotation = None
-                translation = [float(x) for x in axis_xyz.split()]
-            elif joint_type == "fixed":
-                warnings.warn("Joint {} is of type: fixed, but has an 'axis' attribute defined. This is not in the URDF spec and thus this axis is ignored".format(joint.attrib["name"]))
-            else:
-                raise ValueError("Unknown joint type with an axis: {}, {}".format(joint_type, axis))
-        elif joint_type in ("revolute", "continuous"):
-            # No axis element at all: the URDF specification defaults the
-            # joint axis to (1, 0, 0)
-            rotation = [1, 0, 0]
+    joint_type = joint.attrib["type"]
+    if joint_type in ("floating", "planar"):
+        # Like KDL: these joints have no single joint value, the chain goes through them as through a fixed joint
+        warnings.warn("Joint {} is of type '{}', which has several degrees of freedom: it is treated as a fixed joint, as KDL does".format(name, joint_type))
+        joint_type = "fixed"
+    if joint_type not in ["revolute", "continuous", "prismatic", "fixed"]:
+        raise ValueError("Unknown joint type: {}".format(joint_type))
+
+    axis = joint.find("axis")
+    if axis is not None:
+        if "xyz" in axis.attrib:
+            axis_xyz = axis.attrib["xyz"]
+        else:
+            # The xyz attribute is required by the URDF specification; fall back on the
+            # same default as a missing axis element, but let the user know
+            warnings.warn("Joint {} has an 'axis' element without an 'xyz' attribute. Defaulting to the URDF default axis (1, 0, 0)".format(name))
+            axis_xyz = "1 0 0"
+        axis_vector = np.array([float(x) for x in axis_xyz.split()])
+        if joint_type != "fixed":
+            norm = np.linalg.norm(axis_vector)
+            if norm == 0:
+                raise ValueError("Joint {} has a zero axis".format(name))
+            if not np.isclose(norm, 1.0):
+                # Like KDL: the axis is a direction, its length is meaningless
+                warnings.warn("Joint {} has a non-unit axis {}: it is normalized".format(name, axis_vector.tolist()))
+                axis_vector = axis_vector / norm
+        if joint_type in ("revolute", "continuous"):
+            rotation = axis_vector.tolist()
             translation = None
         elif joint_type == "prismatic":
-            translation = [1, 0, 0]
             rotation = None
+            translation = axis_vector.tolist()
+        elif joint_type == "fixed":
+            warnings.warn("Joint {} is of type: fixed, but has an 'axis' attribute defined. This is not in the URDF spec and thus this axis is ignored".format(name))
+        else:
+            raise ValueError("Unknown joint type with an axis: {}, {}".format(joint_type, axis))
+    elif joint_type in ("revolute", "continuous"):
+        # No axis element at all: the URDF specification defaults the
+        # joint axis to (1, 0, 0)
+        rotation = [1, 0, 0]
+        translation = None
+    elif joint_type == "prismatic":
+        translation = [1, 0, 0]
+        rotation = None
 
-        limit = joint.find("limit")
-        # Continuous joints have no limits in the URDF specification, so
-        # their bounds always stay unbounded, even if a limit element is
-        # present in the file.
-        if limit is not None and joint_type != "continuous":
-            if "lower" in limit.attrib:
-                bounds[0] = float(limit.attrib["lower"])
-            if "upper" in limit.attrib:
-                bounds[1] = float(limit.attrib["upper"])
+    limit = joint.find("limit")
+    # Continuous joints have no limits in the URDF specification, so
+    # their bounds always stay unbounded, even if a limit element is
+    # present in the file.
+    if limit is not None and joint_type != "continuous":
+        if "lower" in limit.attrib:
+            bounds[0] = float(limit.attrib["lower"])
+        if "upper" in limit.attrib:
+            bounds[1] = float(limit.attrib["upper"])
 
-        parameters.append(lib_link.URDFLink(
-            name=joint.attrib["name"],
-            bounds=tuple(bounds),
-            origin_translation=origin_translation,
-            origin_orientation=origin_orientation,
-            rotation=rotation,
-            translation=translation,
-            use_symbolic_matrix=symbolic,
-            joint_type=joint_type
-        ))
+    return lib_link.URDFLink(
+        name=name,
+        bounds=tuple(bounds),
+        origin_translation=origin_translation,
+        origin_orientation=origin_orientation,
+        rotation=rotation,
+        translation=translation,
+        use_symbolic_matrix=symbolic,
+        joint_type=joint_type
+    )
 
-    # Add last_link_vector to parameters
-    if last_link_vector is not None:
+
+def get_urdf_parameters(urdf_file, base=None, tip=None, tip_offset=None, symbolic=True, base_elements=None, last_link_vector=None, base_element_type=None):
+    """
+    Returns translated parameters from the given URDF file.
+    Parse the URDF joints into IKPY links, throw away the URDF links.
+
+    Parameters
+    ----------
+    urdf_file: str
+        The path of the URDF file
+    base: str or dict
+        The name of the link or joint where the chain starts. Defaults to the root link of the file. The chain
+        starts with the joints under a link, or with the joint itself. When a link and a joint share a name, the
+        name means the link; ``{"name": ..., "type": "joint"}`` or ``{"name": ..., "type": "link"}`` says which one is meant.
+    tip: str or dict
+        The name of the link or joint where the chain ends, as a string or a dict like base. The path from base
+        to tip is found automatically. Defaults to the only leaf under base; when there are several, the error
+        lists them.
+    tip_offset: numpy.array
+        Optional : a translation added at the end of the chain, in the frame of its last joint, as a fixed
+        link named ``last_joint``
+    symbolic: bool
+        Use symbolic matrix computations
+    base_elements: list of strings
+        Deprecated, use base and tip. An ordered list of link and joint names to follow; when the list is
+        exhausted, the parser follows the first child of each element down to a leaf.
+    last_link_vector: numpy.array
+        Deprecated, use tip_offset.
+    base_element_type: str
+        Deprecated. The type of the first element in ``base_elements``, "link" or "joint".
+
+    Returns
+    -------
+    list[ikpy.link.URDFLink]
+    """
+    base, tip, tip_offset, legacy = selection.resolve_selection(base, tip, tip_offset, base_elements, last_link_vector, base_element_type)
+    root = _parse_urdf(urdf_file)
+
+    if legacy is not None:
+        legacy_elements, legacy_type = legacy
+        if legacy_elements is None:
+            legacy_elements = ["base_link"]
+        joints = _legacy_urdf_chain(root, legacy_elements, legacy_type)
+    else:
+        joints = _resolve_urdf_chain(root, base, tip)
+
+    parameters = [_joint_to_link(joint, symbolic) for joint in joints]
+
+    # Add the tip offset
+    if tip_offset is not None:
         # The last link doesn't provide a rotation
         parameters.append(lib_link.URDFLink(
-            origin_translation=last_link_vector,
+            origin_translation=tip_offset,
             origin_orientation=[0, 0, 0],
             rotation=None,
             translation=None,
