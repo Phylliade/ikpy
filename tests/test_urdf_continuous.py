@@ -133,8 +133,8 @@ def test_continuous_chain_inverse_kinematics(tmp_path):
 
 
 def test_unknown_joint_type_still_raises(tmp_path):
-    """Joint types outside the URDF spec support list keep raising"""
-    content = CONTINUOUS_URDF.replace("continuous", "planar")
+    """Joint types outside the URDF spec keep raising (floating and planar are treated as fixed, like KDL)"""
+    content = CONTINUOUS_URDF.replace("continuous", "spherical")
     with pytest.raises(ValueError, match="Unknown joint type"):
         URDF.get_urdf_parameters(
             _write_urdf(tmp_path, content), base_elements=BASE_ELEMENTS)

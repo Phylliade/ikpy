@@ -16,6 +16,7 @@ import warnings
 # Ikpy imports
 from ikpy import link as lib_link
 from ikpy import logs
+from ikpy import selection
 from . import utils as mjcf_utils
 
 
@@ -211,7 +212,7 @@ def _parse_joint(joint_elem, compiler_settings, default_settings):
     return joint_info
 
 
-def _traverse_body_tree(root, body_elem, compiler_settings, chain_path, base_elements, current_depth=0):
+def _traverse_body_tree(root, body_elem, compiler_settings, chain_path, base_elements, current_depth=0, follow_first_child=True):
     """
     Recursively traverse the body tree and extract kinematic chain.
 
@@ -229,6 +230,9 @@ def _traverse_body_tree(root, body_elem, compiler_settings, chain_path, base_ele
         List of body names to follow, or None to follow first child
     current_depth: int
         Current recursion depth
+    follow_first_child: bool
+        Once the list of names is exhausted, whether to go on with the first child of each body down to a leaf
+        (the deprecated behaviour) or to stop
 
     Returns
     -------
@@ -329,18 +333,52 @@ def _traverse_body_tree(root, body_elem, compiler_settings, chain_path, base_ele
         # Follow the specified path
         for child in child_bodies:
             if child.get("name") == base_elements[0]:
-                _traverse_body_tree(root, child, compiler_settings, chain_path, base_elements, current_depth + 1)
+                _traverse_body_tree(root, child, compiler_settings, chain_path, base_elements, current_depth + 1, follow_first_child)
                 return True
         # If specified body not found, stop
         return True
-    else:
-        # Follow first child (default behavior)
+    elif follow_first_child:
         _traverse_body_tree(root, child_bodies[0], compiler_settings, chain_path, None, current_depth + 1)
 
     return True
 
 
-def get_mjcf_parameters(mjcf_file, base_elements=None, last_link_vector=None, symbolic=True):
+def _mjcf_tree(worldbody):
+    """Index the bodies of a MJCF file: name -> element, child -> parent name, parent -> child names"""
+    bodies = {}
+    parent_of = {}
+    children_of = {}
+    stack = [(body, None) for body in reversed(worldbody.findall("body"))]
+    while stack:
+        body, parent = stack.pop()
+        name = body.get("name")
+        if name is None:
+            raise ValueError("A body of the MJCF file has no name: name every body to select a chain")
+        if name in bodies:
+            raise ValueError("Two bodies of the MJCF file are named '{}'".format(name))
+        bodies[name] = body
+        children_of[name] = [child.get("name") for child in body.findall("body")]
+        if parent is not None:
+            parent_of[name] = parent
+        stack.extend((child, name) for child in reversed(body.findall("body")))
+    return bodies, parent_of, children_of
+
+
+def _resolve_mjcf_path(worldbody, base, tip):
+    """Return the body names from base to tip"""
+    bodies, parent_of, children_of = _mjcf_tree(worldbody)
+    if base is None:
+        base = selection.unique_root([body.get("name") for body in worldbody.findall("body")], "bodies")
+    elif base not in bodies:
+        raise ValueError("Body '{}' not found in the MJCF file. Bodies: {}".format(base, list(bodies)))
+    if tip is None:
+        tip = selection.unique_leaf(children_of, base, "bodies")
+    elif tip not in bodies:
+        raise ValueError("Body '{}' not found in the MJCF file. Bodies: {}".format(tip, list(bodies)))
+    return selection.path_between(parent_of, base, tip)
+
+
+def get_mjcf_parameters(mjcf_file, base=None, tip=None, tip_offset=None, symbolic=True, base_elements=None, last_link_vector=None):
     """
     Returns translated parameters from the given MJCF file.
     Parse the MJCF bodies and joints into IKPY links.
@@ -349,14 +387,22 @@ def get_mjcf_parameters(mjcf_file, base_elements=None, last_link_vector=None, sy
     ----------
     mjcf_file: str
         The path of the MJCF file
-    base_elements: list of strings
-        An ordered list of body names that defines the path to traverse in the MJCF tree.
-        When the list is exhausted or empty, the parser will automatically follow the first child.
-        If None, starts from worldbody and follows first children.
-    last_link_vector: numpy.array
-        Optional: The translation vector of the tip (end-effector offset)
+    base: str
+        The name of the body where the chain starts. Defaults to the only body under ``worldbody``; when there
+        are several, the error lists them.
+    tip: str
+        The name of the body where the chain ends; the path from base to tip is found automatically. Defaults
+        to the only leaf under base; when there are several, the error lists them.
+    tip_offset: numpy.array
+        Optional: a translation added at the end of the chain, in the frame of its last joint (the end-effector
+        offset)
     symbolic: bool
         Use symbolic matrix computations
+    base_elements: list of strings
+        Deprecated, use base and tip. An ordered list of body names to follow; when the list is exhausted, the
+        parser follows the first child of each body down to a leaf.
+    last_link_vector: numpy.array
+        Deprecated, use tip_offset.
 
     Returns
     -------
@@ -366,7 +412,7 @@ def get_mjcf_parameters(mjcf_file, base_elements=None, last_link_vector=None, sy
     Example
     -------
     >>> # Parse UR5e robot
-    >>> links = get_mjcf_parameters("ur5e.xml", base_elements=["base", "shoulder_link"])
+    >>> links = get_mjcf_parameters("ur5e.xml", base="base", tip="wrist_3_link")
     """
     tree = ET.parse(mjcf_file)
     root = tree.getroot()
@@ -384,32 +430,32 @@ def get_mjcf_parameters(mjcf_file, base_elements=None, last_link_vector=None, sy
     if worldbody is None:
         raise ValueError("No 'worldbody' element found in MJCF file")
 
-    # Prepare base_elements
-    if base_elements is not None:
-        base_elements = list(base_elements)
-
-    # Find starting point
+    base, tip, tip_offset, legacy = selection.resolve_selection(base, tip, tip_offset, base_elements, last_link_vector)
     chain_path = []
 
-    if base_elements is not None and len(base_elements) > 0:
-        # Find the first body that matches
-        start_body = None
-        for body in worldbody.iter("body"):
-            if body.get("name") == base_elements[0]:
-                start_body = body
-                break
-
-        if start_body is None:
-            raise ValueError(f"Starting body '{base_elements[0]}' not found in MJCF")
-
-        _traverse_body_tree(root, start_body, compiler_settings, chain_path, base_elements)
+    if legacy is not None:
+        # Deprecated: follow the given body names, then the first child of each body down to a leaf
+        base_elements = list(legacy[0]) if legacy[0] is not None else []
+        if len(base_elements) > 0:
+            start_body = None
+            for body in worldbody.iter("body"):
+                if body.get("name") == base_elements[0]:
+                    start_body = body
+                    break
+            if start_body is None:
+                raise ValueError(f"Starting body '{base_elements[0]}' not found in MJCF")
+            _traverse_body_tree(root, start_body, compiler_settings, chain_path, base_elements)
+        else:
+            first_body = worldbody.find("body")
+            if first_body is None:
+                raise ValueError("No body found in worldbody")
+            _traverse_body_tree(root, first_body, compiler_settings, chain_path, None)
     else:
-        # Start from first body in worldbody
-        first_body = worldbody.find("body")
-        if first_body is None:
+        if worldbody.find("body") is None:
             raise ValueError("No body found in worldbody")
-
-        _traverse_body_tree(root, first_body, compiler_settings, chain_path, None)
+        path = _resolve_mjcf_path(worldbody, base, tip)
+        bodies, _, _ = _mjcf_tree(worldbody)
+        _traverse_body_tree(root, bodies[path[0]], compiler_settings, chain_path, path, follow_first_child=False)
 
     # Convert chain_path to URDFLink objects
     parameters = []
@@ -425,10 +471,10 @@ def get_mjcf_parameters(mjcf_file, base_elements=None, last_link_vector=None, sy
             joint_type=link_info["type"]
         ))
 
-    # Add last_link_vector if provided
-    if last_link_vector is not None:
+    # Add the tip offset if provided
+    if tip_offset is not None:
         parameters.append(lib_link.URDFLink(
-            origin_translation=last_link_vector,
+            origin_translation=tip_offset,
             origin_orientation=[0, 0, 0],
             rotation=None,
             translation=None,

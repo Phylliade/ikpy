@@ -63,14 +63,49 @@ IKPy also reads **BVH** (Biovision Hierarchy) motion capture files: any path of 
 from ikpy.chain import Chain
 from ikpy.bvh import BVH
 
-# From the hips to the left hand; the joints in between are filled in automatically
-chain = Chain.from_bvh_file("walk.bvh", base_elements=["Hips", "LeftHand"], scale=0.01)
+# From the hips to the left hand; the path in between is found automatically
+chain = Chain.from_bvh_file("walk.bvh", base="Hips", tip="LeftHand", scale=0.01)
 
-trajectory, frame_time = BVH.get_bvh_motion("walk.bvh", base_elements=["Hips", "LeftHand"], scale=0.01)
+trajectory, frame_time = BVH.get_bvh_motion("walk.bvh", base="Hips", tip="LeftHand", scale=0.01)
 hand_frames = [chain.forward_kinematics(joints) for joints in trajectory]
 ```
 
 Each channel of a joint becomes one link (`Hips_Zrotation`, `Hips_Xrotation`...), so the chain follows the exact rotation order of the file. BVH files do not specify their unit: use `scale` to convert them to meters. `ikpy.bvh.BVH.get_joint_names` lists the joints of a file.
+
+## A better solution: multi-start
+
+The optimizer is local: it converges to the solution closest to its starting point, `initial_position`. When that lands in a poor local minimum, give several starting points instead of one, and the best solution is returned:
+
+```python
+joints = chain.inverse_kinematics(target_position, target_orientation, orientation_mode="all", initial_position=20)
+```
+
+`initial_position` stays a single configuration in the usual case. An int draws that many starting points anywhere in the joint limits. A dict combines given points and drawn ones: `{"points": [current_joints, home_joints], "n": 8, "seed": 0, "around": current_joints, "radius": 0.5}` starts from the two given configurations and 8 points drawn near the current one (`n` defaults to 0, so a dict with only `points` uses just those). An array of shape `(n_starts, n_links)` gives the starting points themselves.
+
+To get every distinct solution of a target rather than the best one (elbow up and elbow down, wrist flipped...), `chain._inverse_kinematics_solutions_frame(frame, initial_position=20, max_error=1e-3)` returns them sorted by error; it is kept out of the main API but documented for that use.
+
+## Moving along a trajectory
+
+A single IK call jumps to the solution closest to its starting point, which can be far from where the robot is. To move from one pose to another, interpolate the frames and solve them in sequence: each step starts from the previous solution, so the joint motion stays continuous:
+
+```python
+from ikpy.utils import geometry
+
+start = chain.forward_kinematics(current_joints)
+end = geometry.to_transformation_matrix(target_position, target_orientation)
+frames = geometry.interpolate_frames(start, end, n_steps=50)   # straight line, constant-speed rotation
+
+trajectory = chain.inverse_kinematics_trajectory_frame(frames, initial_position=current_joints, orientation_mode="all")
+for joints in trajectory:   # one row per frame
+    robot.move_to(joints)
+```
+
+`inverse_kinematics_trajectory` takes arrays of positions and orientations instead of frames. Any list of frames works, so waypoints computed by a path planner (to go around an obstacle, for example) are solved the same way. `regularization_parameter` pulls each step towards the previous one for smoother joint motion, at the price of some accuracy. An int or a dict as `initial_position` runs the multi-start on the first step, which picks the branch of solutions the trajectory then follows. A frame out of reach gets the closest configuration; check each step with the residual the solver minimizes:
+
+```python
+from ikpy.inverse_kinematics import target_error
+errors = [np.linalg.norm(target_error(chain, joints, frame, "all")) for joints, frame in zip(trajectory, frames)]
+```
 
 ## Orientation conversions
 
@@ -172,6 +207,20 @@ chain.inverse_kinematics(
 
 > **Note**: The first JAX call includes JIT compilation overhead (~1-5s). Subsequent calls are fast.
 
+## Selecting a chain
+
+A robot description is a tree. A chain is the path from a `base` element to a `tip` element, and that path is unique, so the two names are all it takes, in every format:
+
+```python
+chain = Chain.from_urdf_file("baxter.urdf", base="base", tip="left_gripper", tip_offset=[0, 0, 0.1])
+chain = Chain.from_mjcf_file("ur5e.xml", base="base", tip="wrist_3_link")
+chain = Chain.from_bvh_file("walk.bvh", base="Hips", tip="LeftHand")
+```
+
+`base` defaults to the root of the file and `tip` to the only leaf below `base`; when the tree branches, the error lists the leaves to choose from. In a URDF, `base` and `tip` can name a link or a joint; when a link and a joint share a name, the name means the link, and `{"name": "left_hand", "type": "joint"}` says otherwise. `tip_offset` adds a fixed translation at the end of the chain, in the frame of its last joint, typically the tool center point.
+
+The former `base_elements`, `base_element_type` and `last_link_vector` arguments still work with a `DeprecationWarning`, and will be removed in IKPy 5.0.
+
 ## MuJoCo (MJCF) Support
 
 In addition to URDF, IKPy can import kinematic chains directly from **MuJoCo MJCF** XML files:
@@ -179,7 +228,7 @@ In addition to URDF, IKPy can import kinematic chains directly from **MuJoCo MJC
 ```python
 from ikpy.chain import Chain
 
-chain = Chain.from_mjcf_file("ur5e.xml", base_elements=["base"])
+chain = Chain.from_mjcf_file("ur5e.xml", base="base", tip="wrist_3_link")
 ```
 
 The parser supports MuJoCo compiler settings, default classes (including `childclass` inheritance), and provides helpers to inspect models (`ikpy.mjcf.get_body_names`, `ikpy.mjcf.get_joint_names`).

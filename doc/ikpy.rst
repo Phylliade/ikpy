@@ -6,6 +6,7 @@
 
    chain
    link
+   selection
    inverse_kinematics
    jax_backend
    utils/geometry
