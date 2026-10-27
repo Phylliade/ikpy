@@ -104,7 +104,7 @@ def test_parse_hierarchy_only(tmp_path):
     skeleton = BVH.parse_bvh(str(bvh_file))
     assert skeleton.n_frames == 0
     assert skeleton.frame_time is None
-    my_chain = chain.Chain.from_bvh_file(str(bvh_file), symbolic=False)
+    my_chain = chain.Chain.from_bvh_file(str(bvh_file), tip="LeftForeArm", symbolic=False)
     assert len(my_chain.links) > 1
 
 
@@ -133,8 +133,8 @@ def test_malformed_files_raise(tmp_path, corruption, message):
 
 # Chain construction
 
-def test_default_chain_follows_first_children():
-    my_chain = chain.Chain.from_bvh_file(SIMPLE, symbolic=False)
+def test_links_of_a_chain():
+    my_chain = chain.Chain.from_bvh_file(SIMPLE, tip="LeftForeArm", symbolic=False)
     assert [link.name for link in my_chain.links] == [
         "Base link",
         "Hips_Xposition", "Hips_Yposition", "Hips_Zposition", "Hips_Zrotation", "Hips_Xrotation", "Hips_Yrotation",
@@ -160,49 +160,49 @@ def test_default_chain_follows_first_children():
     assert my_chain.links[4].bounds == (-np.inf, np.inf)
 
 
-def test_base_elements_fill_the_gaps_and_stop_at_the_last_name():
-    my_chain = chain.Chain.from_bvh_file(SIMPLE, base_elements=["Hips", "LeftLeg"], symbolic=False)
+def test_base_and_tip_select_the_path():
+    my_chain = chain.Chain.from_bvh_file(SIMPLE, base="Hips", tip="LeftLeg", symbolic=False)
     names = [link.name for link in my_chain.links]
     assert names[7:] == ["LeftUpLeg_Zrotation", "LeftUpLeg_Xrotation", "LeftUpLeg_Yrotation",
                          "LeftLeg_Zrotation", "LeftLeg_Xrotation", "LeftLeg_Yrotation", "LeftLeg_end_site"]
 
     # Stopping before a leaf: no end site link
-    my_chain = chain.Chain.from_bvh_file(SIMPLE, base_elements=["Hips", "Spine"], symbolic=False)
+    my_chain = chain.Chain.from_bvh_file(SIMPLE, base="Hips", tip="Spine", symbolic=False)
     assert [link.name for link in my_chain.links][-1] == "Spine_Yrotation"
 
-    # A single name starts there and follows the first children
-    my_chain = chain.Chain.from_bvh_file(SIMPLE, base_elements=["Spine"], symbolic=False)
+    # Without a tip, the leaf below the base must be unique
+    my_chain = chain.Chain.from_bvh_file(SIMPLE, base="LeftArm", symbolic=False)
     names = [link.name for link in my_chain.links]
-    assert names[1] == "Spine_Zrotation" and names[-1] == "LeftForeArm_end_site"
+    assert names[1] == "LeftArm_Xrotation" and names[-1] == "LeftForeArm_end_site"
+    with pytest.raises(ValueError, match="Several joints"):
+        chain.Chain.from_bvh_file(SIMPLE, base="Spine", symbolic=False)
 
-    # The full path is also accepted
-    full = chain.Chain.from_bvh_file(SIMPLE, base_elements=["Hips", "Spine", "LeftArm", "LeftForeArm"], symbolic=False)
-    short = chain.Chain.from_bvh_file(SIMPLE, base_elements=["Hips", "LeftForeArm"], symbolic=False)
-    assert [link.name for link in full.links] == [link.name for link in short.links]
+    # The chain can start at a joint itself
+    assert [link.name for link in chain.Chain.from_bvh_file(SIMPLE, base="Spine", tip="Spine", symbolic=False).links][1:] == ["Spine_Zrotation", "Spine_Xrotation", "Spine_Yrotation"]
 
 
-def test_bad_base_elements_raise():
+def test_bad_base_and_tip_raise():
     with pytest.raises(ValueError, match="not found"):
-        chain.Chain.from_bvh_file(SIMPLE, base_elements=["Pelvis"])
+        chain.Chain.from_bvh_file(SIMPLE, base="Pelvis")
+    with pytest.raises(ValueError, match="not found"):
+        chain.Chain.from_bvh_file(SIMPLE, base="Hips", tip="Pelvis")
     with pytest.raises(ValueError, match="not a descendant"):
-        chain.Chain.from_bvh_file(SIMPLE, base_elements=["Spine", "LeftLeg"])
-    with pytest.raises(ValueError, match="not a descendant"):
-        chain.Chain.from_bvh_file(SIMPLE, base_elements=["Spine", "Spine"])
+        chain.Chain.from_bvh_file(SIMPLE, base="Spine", tip="LeftLeg")
 
 
-def test_last_link_vector_overrides_the_end_site():
-    my_chain = chain.Chain.from_bvh_file(SIMPLE, base_elements=["Hips", "LeftForeArm"], last_link_vector=[0.1, 0.2, 0.3], symbolic=False)
+def test_tip_offset_overrides_the_end_site():
+    my_chain = chain.Chain.from_bvh_file(SIMPLE, base="Hips", tip="LeftForeArm", tip_offset=[0.1, 0.2, 0.3], symbolic=False)
     assert my_chain.links[-1].name == "last_joint"
     np.testing.assert_array_equal(my_chain.links[-1].origin_translation, [0.1, 0.2, 0.3])
 
 
 def test_scale():
-    my_chain = chain.Chain.from_bvh_file(SIMPLE, scale=0.01, symbolic=False)
+    my_chain = chain.Chain.from_bvh_file(SIMPLE, tip="LeftForeArm", scale=0.01, symbolic=False)
     np.testing.assert_allclose(my_chain.links[1].origin_translation, [0, 0.01, 0])
     np.testing.assert_allclose(my_chain.links[-1].origin_translation, [0.004, 0, 0])
-    unscaled = chain.Chain.from_bvh_file(SIMPLE, symbolic=False)
-    trajectory, _ = BVH.get_bvh_motion(SIMPLE, scale=0.01)
-    reference, _ = BVH.get_bvh_motion(SIMPLE)
+    unscaled = chain.Chain.from_bvh_file(SIMPLE, tip="LeftForeArm", symbolic=False)
+    trajectory, _ = BVH.get_bvh_motion(SIMPLE, tip="LeftForeArm", scale=0.01)
+    reference, _ = BVH.get_bvh_motion(SIMPLE, tip="LeftForeArm")
     np.testing.assert_allclose(my_chain.forward_kinematics(trajectory[1])[:3, 3], unscaled.forward_kinematics(reference[1])[:3, 3] * 0.01)
     # Angles are not scaled, displacements are
     np.testing.assert_allclose(trajectory[1, 4:], reference[1, 4:])
@@ -212,7 +212,7 @@ def test_scale():
 def test_rest_pose_is_the_zero_vector():
     """With all joint values at zero, the chain is in the rest pose given by the offsets"""
     skeleton = BVH.parse_bvh(SIMPLE)
-    my_chain = chain.Chain.from_bvh_file(SIMPLE, base_elements=["Hips", "LeftForeArm"], symbolic=False)
+    my_chain = chain.Chain.from_bvh_file(SIMPLE, base="Hips", tip="LeftForeArm", symbolic=False)
     tip = my_chain.forward_kinematics([0] * len(my_chain.links))[:3, 3]
     expected = sum((skeleton.find(name).offset for name in ["Hips", "Spine", "LeftArm", "LeftForeArm"]), np.zeros(3)) + skeleton.find("LeftForeArm").end_site
     np.testing.assert_allclose(tip, expected)
@@ -229,9 +229,8 @@ def test_motion_matches_reference_forward_kinematics(bvh_file, symbolic):
     leaves = [joint for joint in root.iter_joints() if joint.is_leaf]
     frames = range(skeleton.n_frames) if bvh_file == SIMPLE else [0, 3, 7]
     for leaf in leaves:
-        base_elements = [root.name, leaf.name]
-        my_chain = chain.Chain.from_bvh_file(bvh_file, base_elements=base_elements, symbolic=symbolic)
-        trajectory, frame_time = BVH.get_bvh_motion(bvh_file, base_elements=base_elements)
+        my_chain = chain.Chain.from_bvh_file(bvh_file, base=root.name, tip=leaf.name, symbolic=symbolic)
+        trajectory, frame_time = BVH.get_bvh_motion(bvh_file, base=root.name, tip=leaf.name)
         assert trajectory.shape == (skeleton.n_frames, len(my_chain.links))
         assert frame_time == skeleton.frame_time
         for frame_index in frames:
@@ -256,12 +255,11 @@ def test_position_channels_replace_the_offset(tmp_path):
     bvh_file = tmp_path / "spine_position.bvh"
     bvh_file.write_text("\n".join(lines) + "\n")
 
-    base_elements = ["Hips", "LeftForeArm"]
-    original = chain.Chain.from_bvh_file(SIMPLE, base_elements=base_elements, symbolic=False)
-    modified = chain.Chain.from_bvh_file(str(bvh_file), base_elements=base_elements, symbolic=False)
+    original = chain.Chain.from_bvh_file(SIMPLE, base="Hips", tip="LeftForeArm", symbolic=False)
+    modified = chain.Chain.from_bvh_file(str(bvh_file), base="Hips", tip="LeftForeArm", symbolic=False)
     assert "Spine_Yposition" in [link.name for link in modified.links]
-    original_motion, _ = BVH.get_bvh_motion(SIMPLE, base_elements=base_elements)
-    modified_motion, _ = BVH.get_bvh_motion(str(bvh_file), base_elements=base_elements)
+    original_motion, _ = BVH.get_bvh_motion(SIMPLE, base="Hips", tip="LeftForeArm")
+    modified_motion, _ = BVH.get_bvh_motion(str(bvh_file), base="Hips", tip="LeftForeArm")
     np.testing.assert_allclose(modified_motion[:, 7:10], 0)
     for frame_index in range(3):
         np.testing.assert_allclose(modified.forward_kinematics(modified_motion[frame_index]), original.forward_kinematics(original_motion[frame_index]), atol=1e-12)
@@ -269,12 +267,11 @@ def test_position_channels_replace_the_offset(tmp_path):
 
 def test_inverse_kinematics_on_a_capture():
     """IK on the left arm of the CMU skeleton, with the root locked: reaches the pose of a frame"""
-    base_elements = ["Hips", "LeftHand"]
-    my_chain = chain.Chain.from_bvh_file(CMU, base_elements=base_elements, symbolic=False, scale=0.0254)
-    trajectory, _ = BVH.get_bvh_motion(CMU, base_elements=base_elements, scale=0.0254)
+    my_chain = chain.Chain.from_bvh_file(CMU, base="Hips", tip="LeftHand", symbolic=False, scale=0.0254)
+    trajectory, _ = BVH.get_bvh_motion(CMU, base="Hips", tip="LeftHand", scale=0.0254)
     # Lock the root (position and orientation) and the tip
     mask = [not (link.name.startswith("Hips_") or link.joint_type == "fixed") for link in my_chain.links]
-    my_chain = chain.Chain.from_bvh_file(CMU, base_elements=base_elements, active_links_mask=mask, symbolic=False, scale=0.0254)
+    my_chain = chain.Chain.from_bvh_file(CMU, base="Hips", tip="LeftHand", active_links_mask=mask, symbolic=False, scale=0.0254)
 
     target = my_chain.forward_kinematics(trajectory[5])
     initial = trajectory[0]
