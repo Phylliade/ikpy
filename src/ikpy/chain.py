@@ -150,6 +150,33 @@ class Chain:
         else:
             return frame_matrix
 
+    @staticmethod
+    def _target_frame(target_position, target_orientation, orientation_mode):
+        """Build the 4x4 target frame of inverse_kinematics. Returns (frame, no_position)"""
+        frame_target = np.eye(4)
+
+        # Compute orientation
+        if orientation_mode is not None:
+            if orientation_mode == "X":
+                frame_target[:3, 0] = target_orientation
+            elif orientation_mode == "Y":
+                frame_target[:3, 1] = target_orientation
+            elif orientation_mode == "Z":
+                frame_target[:3, 2] = target_orientation
+            elif orientation_mode == "all":
+                frame_target[:3, :3] = target_orientation
+            else:
+                raise ValueError("Unknown orientation mode: {}".format(orientation_mode))
+
+        # Compute target
+        if target_position is None:
+            no_position = True
+        else:
+            no_position = False
+            frame_target[:3, 3] = target_position
+
+        return frame_target, no_position
+
     def inverse_kinematics(self, target_position=None, target_orientation=None, orientation_mode=None, backend: str = "numpy", **kwargs):
         """
 
@@ -176,29 +203,195 @@ class Chain:
         list:
             The list of the positions of each joint according to the target. Note : Inactive joints are in the list.
         """
-        frame_target = np.eye(4)
-
-        # Compute orientation
-        if orientation_mode is not None:
-            if orientation_mode == "X":
-                frame_target[:3, 0] = target_orientation
-            elif orientation_mode == "Y":
-                frame_target[:3, 1] = target_orientation
-            elif orientation_mode == "Z":
-                frame_target[:3, 2] = target_orientation
-            elif orientation_mode == "all":
-                frame_target[:3, :3] = target_orientation
-            else:
-                raise ValueError("Unknown orientation mode: {}".format(orientation_mode))
-
-        # Compute target
-        if target_position is None:
-            no_position = True
-        else:
-            no_position = False
-            frame_target[:3, 3] = target_position
-
+        frame_target, no_position = self._target_frame(target_position, target_orientation, orientation_mode)
         return self.inverse_kinematics_frame(target=frame_target, orientation_mode=orientation_mode, no_position=no_position, backend=backend, **kwargs)
+
+    def sample_initial_positions(self, n_samples, seed=None, around=None, radius=None):
+        """Draw starting points for the inverse kinematics, inside the joint limits
+
+        See :func:`ikpy.inverse_kinematics.sample_initial_positions`. The result can be given as the
+        `initial_position` of :meth:`inverse_kinematics`, which then keeps the best of the solutions reached
+        from every point::
+
+            starts = chain.sample_initial_positions(10, seed=0)                       # anywhere in the limits
+            starts = chain.sample_initial_positions(10, seed=0, around=q, radius=0.5)  # near a configuration
+        """
+        return ik.sample_initial_positions(self, n_samples, seed=seed, around=around, radius=radius)
+
+    def _resolve_initial_position(self, initial_position):
+        """Turn the initial_position argument of the inverse kinematics into starting points
+
+        Returns
+        -------
+        numpy.array
+            A single starting point, of shape (n_links,), or several, of shape (n_starts, n_links)
+        """
+        if initial_position is None:
+            return np.zeros(len(self.links))
+        if isinstance(initial_position, (int, np.integer)):
+            return self.sample_initial_positions(int(initial_position))
+        if isinstance(initial_position, dict):
+            spec = dict(initial_position)
+            unknown = set(spec) - {"points", "n", "seed", "around", "radius"}
+            if unknown:
+                raise ValueError("Unknown keys in initial_position: {}. Expected points, n, seed, around, radius".format(sorted(unknown)))
+            points = np.asarray(spec.pop("points", np.zeros((0, len(self.links)))), dtype=float)
+            if points.ndim != 2 or points.shape[1] != len(self.links):
+                raise ValueError("initial_position['points'] must be an array of shape (n_points, n_links), got {} for {} links".format(points.shape, len(self.links)))
+            n_samples = spec.pop("n", 0)
+            sampled = self.sample_initial_positions(n_samples, **spec) if n_samples > 0 else np.zeros((0, len(self.links)))
+            starts = np.concatenate([points, sampled])
+            if len(starts) == 0:
+                raise ValueError("initial_position gives no starting point: add n (points to draw) or points (given ones)")
+            return starts
+        starts = np.asarray(initial_position, dtype=float)
+        if starts.ndim == 1 and starts.shape[0] == len(self.links):
+            return starts
+        if starts.ndim == 2 and starts.shape[1] == len(self.links):
+            return starts
+        raise ValueError("initial_position must be a configuration of shape (n_links,), an int, a dict, or an array of starting points of shape (n_starts, n_links); got an array of shape {} for {} links".format(starts.shape, len(self.links)))
+
+    def _inverse_kinematics_solutions_frame(self, target, initial_position=10, distinct_tol=1e-2, max_error=None, backend: str = "numpy", **kwargs):
+        """Computes the distinct solutions of the inverse kinematics on a frame, reached from several starting points
+
+        The optimizer is local: it converges to the solution closest to its starting point. Running it from
+        several starting points spread inside the joint limits finds the other solutions of a target (elbow up
+        and elbow down, wrist flipped...), and the best one when a single start lands in a poor local minimum.
+
+        This is the engine of the multi-start mode of :meth:`inverse_kinematics_frame`, which returns the first
+        row of its result. It is kept out of the main API, but it is meant to be called when all the solutions
+        are wanted, to pick one on a criterion of your own (closest to the current configuration, elbow up...)::
+
+            frame = chain.forward_kinematics(joints)
+            solutions = chain._inverse_kinematics_solutions_frame(frame, initial_position=20, max_error=1e-3, orientation_mode="all")
+
+        Parameters
+        ----------
+        target: numpy.array
+            The 4x4 target frame
+        initial_position: numpy.array, int or dict
+            The starting points, in the forms accepted by :meth:`inverse_kinematics_frame`: a configuration
+            (a single start), an int, a dict, or an array of shape (n_starts, n_links). Defaults to 10 points
+            drawn anywhere in the joint limits
+        distinct_tol: float
+            Two solutions whose active joints differ by less than this (infinity norm) are the same solution
+        max_error: float
+            Optional : drop the solutions whose error against the target (the norm of the residual, in meters
+            for the position part) is above this value, typically the starting points that ended in a local
+            minimum away from the target. By default every distinct local minimum is returned, so an
+            unreachable target still gives its best approximations
+        backend: str
+            The computational backend to use: "numpy" (default) or "jax"
+        kwargs: See :meth:`inverse_kinematics_frame`
+
+        Returns
+        -------
+        numpy.array
+            The distinct solutions, of shape (n_solutions, n_links), sorted by increasing error against the
+            target. The first row is the best one.
+        """
+        target = np.array(target)
+        if target.shape != (4, 4):
+            raise ValueError("Your target must be a 4x4 transformation matrix")
+        starts = np.atleast_2d(self._resolve_initial_position(initial_position))
+        orientation_mode = kwargs.get("orientation_mode")
+        no_position = kwargs.get("no_position", False)
+
+        solutions = []
+        errors = []
+        for start in starts:
+            solution = self.inverse_kinematics_frame(target, initial_position=start, backend=backend, **kwargs)
+            solutions.append(np.array(solution, dtype=float))
+            errors.append(np.linalg.norm(ik.target_error(self, solution, target, orientation_mode, no_position)))
+
+        # Keep the distinct solutions, best first
+        distinct = []
+        for index in np.argsort(errors, kind="stable"):
+            if max_error is not None and errors[index] > max_error:
+                break
+            candidate = solutions[index]
+            if all(np.max(np.abs(self.active_from_full(candidate - kept))) > distinct_tol for kept in distinct):
+                distinct.append(candidate)
+        return np.array(distinct).reshape((len(distinct), len(self.links)))
+
+    def inverse_kinematics_trajectory(self, target_positions=None, target_orientations=None, orientation_mode=None, initial_position=None, backend: str = "numpy", **kwargs):
+        """Computes the inverse kinematics along a sequence of targets, each solution starting from the previous one
+
+        Same conventions as :meth:`inverse_kinematics`, with one target per step. See
+        :meth:`inverse_kinematics_trajectory_frame` for the behaviour and the returned value.
+
+        Parameters
+        ----------
+        target_positions: numpy.array
+            The target positions, of shape (n_steps, 3), or None to target orientations only
+        target_orientations: numpy.array
+            The target orientations, one per step: of shape (n_steps, 3) for the "X", "Y" and "Z" modes,
+            (n_steps, 3, 3) for the "all" mode, or None
+        orientation_mode: str
+            See :meth:`inverse_kinematics`
+        initial_position: numpy.array, int or dict
+            Optional : where the first step starts, as in :meth:`inverse_kinematics_frame`. Defaults to 0 for
+            each joint
+        backend: str
+            The computational backend to use: "numpy" (default) or "jax"
+        kwargs: See :meth:`inverse_kinematics_trajectory_frame`
+        """
+        if target_positions is None and target_orientations is None:
+            raise ValueError("Give target_positions, target_orientations or both")
+        n_steps = len(target_positions) if target_positions is not None else len(target_orientations)
+        if target_positions is not None and len(target_positions) != n_steps:
+            raise ValueError("target_positions and target_orientations must have the same length")
+        if target_orientations is not None and len(target_orientations) != n_steps:
+            raise ValueError("target_positions and target_orientations must have the same length")
+
+        frames = []
+        no_position = False
+        for step in range(n_steps):
+            position = None if target_positions is None else target_positions[step]
+            orientation = None if target_orientations is None else target_orientations[step]
+            frame, no_position = self._target_frame(position, orientation, orientation_mode)
+            frames.append(frame)
+        return self.inverse_kinematics_trajectory_frame(frames, initial_position=initial_position, orientation_mode=orientation_mode, no_position=no_position, backend=backend, **kwargs)
+
+    def inverse_kinematics_trajectory_frame(self, targets, initial_position=None, backend: str = "numpy", **kwargs):
+        """Computes the inverse kinematics along a sequence of target frames, each solution starting from the previous one
+
+        Solving each target from the solution of the previous one keeps the motion continuous: the optimizer is
+        local, so it returns the configuration closest to where the chain already is, instead of jumping to
+        another branch of solutions. To move between two frames, interpolate them first with
+        :func:`ikpy.utils.geometry.interpolate_frames`.
+
+        Parameters
+        ----------
+        targets: numpy.array
+            The target frames, of shape (n_steps, 4, 4)
+        initial_position: numpy.array, int or dict
+            Optional : where the first step starts, as in :meth:`inverse_kinematics_frame`. Defaults to 0 for
+            each joint. An int or a dict runs the multi-start on the first step, which picks the branch of
+            solutions the trajectory then follows
+        backend: str
+            The computational backend to use: "numpy" (default) or "jax"
+        kwargs: See :meth:`inverse_kinematics_frame`. `regularization_parameter` pulls every step towards the
+            previous solution, for smoother joint motion at the price of accuracy.
+
+        Returns
+        -------
+        numpy.array
+            The configurations, of shape (n_steps, n_links), one row per target. A target out of reach gets
+            the closest configuration, as :meth:`inverse_kinematics_frame` does; check it with
+            :meth:`forward_kinematics` if needed.
+        """
+        targets = np.asarray(targets, dtype=float)
+        if targets.ndim != 3 or targets.shape[1:] != (4, 4):
+            raise ValueError("targets must be an array of 4x4 transformation matrices, of shape (n_steps, 4, 4)")
+        if len(targets) == 0:
+            return np.zeros((0, len(self.links)))
+        trajectory = np.zeros((len(targets), len(self.links)))
+        previous = initial_position
+        for step, target in enumerate(targets):
+            previous = self.inverse_kinematics_frame(target, initial_position=previous, backend=backend, **kwargs)
+            trajectory[step] = previous
+        return trajectory
 
     def inverse_kinematics_frame(self, target, initial_position=None, backend: str = "numpy", **kwargs):
         """Computes the inverse kinematic on the specified target
@@ -207,8 +400,21 @@ class Chain:
         ----------
         target: numpy.array
             The frame target of the inverse kinematic, in meters. It must be 4x4 transformation matrix
-        initial_position: numpy.array
-            Optional : the initial position of each joint of the chain. Defaults to 0 for each joint
+        initial_position: numpy.array, int or dict
+            Where the optimizer starts. Defaults to 0 for each joint. The optimizer is local and converges to
+            the solution closest to its starting point, so this argument also drives the multi-start mode:
+
+            * a configuration, of shape (n_links,): a single start, the usual case;
+            * an int: that many starting points drawn anywhere in the joint limits, the best solution is
+              returned;
+            * a dict combining given points and drawn ones: ``points``, an array of starting points of shape
+              (n_points, n_links), plus the arguments of :meth:`sample_initial_positions` for ``n`` more
+              points, ``seed``, ``around`` and ``radius``. For example
+              ``{"points": [current_joints], "n": 9, "around": current_joints, "radius": 0.5}`` starts from the
+              current configuration and 9 points drawn near it. ``n`` defaults to 0;
+            * an array of shape (n_starts, n_links): the starting points themselves.
+
+            To get every solution rather than the best one, see :meth:`_inverse_kinematics_solutions_frame`.
         backend: str
             The computational backend to use: "numpy" (default) or "jax".
             The JAX backend uses scipy least_squares with analytical Jacobian via autodiff.
@@ -230,8 +436,11 @@ class Chain:
         if target.shape != (4, 4):
             raise ValueError("Your target must be a 4x4 transformation matrix")
 
-        if initial_position is None:
-            initial_position = [0] * len(self.links)
+        starts = self._resolve_initial_position(initial_position)
+        if starts.ndim == 2:
+            # Multi-start: the best of the solutions reached from every starting point
+            return self._inverse_kinematics_solutions_frame(target, starts, backend=backend, **kwargs)[0]
+        initial_position = starts
 
         # Use JAX backend if requested - delegate to jax_cache for pre-compiled functions
         if backend == "jax":
