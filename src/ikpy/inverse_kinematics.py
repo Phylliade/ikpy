@@ -78,6 +78,92 @@ def resolve_optimizer_options(optimizer, optimizer_budget=None, tol=None, optimi
     return options
 
 
+def target_error(chain, joints, target_frame, orientation_mode=None, no_position=False):
+    """Return the residual vector of a configuration against a target, as the optimizer sees it
+
+    Parameters
+    ----------
+    chain: ikpy.chain.Chain
+        The chain
+    joints: numpy.array
+        A configuration of the chain, one value per link
+    target_frame: numpy.array
+        The 4x4 target frame
+    orientation_mode: str
+        See :func:`inverse_kinematic_optimization`
+    no_position: bool
+        Do not account for the position
+
+    Returns
+    -------
+    numpy.array
+        The concatenation of the position error (3,) and the orientation error (3,) or (9,), those present
+    """
+    fk = chain.forward_kinematics(joints)
+    errors = []
+    if not no_position:
+        errors.append(fk[:3, 3] - target_frame[:3, 3])
+    if orientation_mode in ("X", "Y", "Z"):
+        column = "XYZ".index(orientation_mode)
+        errors.append(ORIENTATION_COEFF * (fk[:3, column] - target_frame[:3, column]))
+    elif orientation_mode == "all":
+        errors.append(ORIENTATION_COEFF * (fk[:3, :3] - target_frame[:3, :3]).ravel())
+    elif orientation_mode is not None:
+        raise ValueError("Unknown orientation mode: {}".format(orientation_mode))
+    if len(errors) == 0:
+        raise ValueError("Unable to compute an error against neither position or orientation")
+    return np.concatenate(errors)
+
+
+def sample_initial_positions(chain, n_samples, seed=None, around=None, radius=None, spread=np.pi):
+    """Draw starting points for the inverse kinematics, inside the joint limits
+
+    Parameters
+    ----------
+    chain: ikpy.chain.Chain
+        The chain
+    n_samples: int
+        The number of starting points
+    seed: int or numpy.random.Generator
+        Optional : the seed of the random draws, for reproducibility
+    around: numpy.array
+        Optional : a configuration, one value per link. Inactive links take its values (zero otherwise), and
+        with `radius` the active links are drawn around it
+    radius: float
+        Optional : with `around`, draw each active link within ``[around - radius, around + radius]``,
+        clipped to its bounds, instead of in its whole range
+    spread: float
+        For an active link without finite bounds and no `radius`, the values are drawn within
+        ``[center - spread, center + spread]`` where ``center`` is `around` or zero
+
+    Returns
+    -------
+    numpy.array
+        The starting points, of shape (n_samples, n_links), each one inside the bounds of the links
+    """
+    if n_samples < 1:
+        raise ValueError("n_samples must be at least 1, got {}".format(n_samples))
+    if radius is not None and around is None:
+        raise ValueError("radius needs a configuration to draw around")
+    rng = np.random.default_rng(seed)
+    center = np.zeros(len(chain.links)) if around is None else np.array(around, dtype=float)
+    samples = np.tile(center, (n_samples, 1))
+    for index, (active, link) in enumerate(zip(chain.active_links_mask, chain.links)):
+        if not active:
+            continue
+        lower, upper = link.bounds
+        if radius is not None:
+            lower = max(lower, center[index] - radius)
+            upper = min(upper, center[index] + radius)
+        else:
+            if not np.isfinite(lower):
+                lower = center[index] - spread
+            if not np.isfinite(upper):
+                upper = center[index] + spread
+        samples[:, index] = rng.uniform(lower, upper, n_samples)
+    return samples
+
+
 def strictly_inside_bounds(x0, bounds, margin=1e-3):
     """Return a starting point strictly inside the bounds, for the trust-region optimizers of SciPy
 

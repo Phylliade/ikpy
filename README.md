@@ -72,6 +72,41 @@ hand_frames = [chain.forward_kinematics(joints) for joints in trajectory]
 
 Each channel of a joint becomes one link (`Hips_Zrotation`, `Hips_Xrotation`...), so the chain follows the exact rotation order of the file. BVH files do not specify their unit: use `scale` to convert them to meters. `ikpy.bvh.BVH.get_joint_names` lists the joints of a file.
 
+## A better solution: multi-start
+
+The optimizer is local: it converges to the solution closest to its starting point, `initial_position`. When that lands in a poor local minimum, give several starting points instead of one, and the best solution is returned:
+
+```python
+joints = chain.inverse_kinematics(target_position, target_orientation, orientation_mode="all", initial_position=20)
+```
+
+`initial_position` stays a single configuration in the usual case. An int draws that many starting points anywhere in the joint limits. A dict combines given points and drawn ones: `{"points": [current_joints, home_joints], "n": 8, "seed": 0, "around": current_joints, "radius": 0.5}` starts from the two given configurations and 8 points drawn near the current one (`n` defaults to 0, so a dict with only `points` uses just those). An array of shape `(n_starts, n_links)` gives the starting points themselves.
+
+To get every distinct solution of a target rather than the best one (elbow up and elbow down, wrist flipped...), `chain._inverse_kinematics_solutions_frame(frame, initial_position=20, max_error=1e-3)` returns them sorted by error; it is kept out of the main API but documented for that use.
+
+## Moving along a trajectory
+
+A single IK call jumps to the solution closest to its starting point, which can be far from where the robot is. To move from one pose to another, interpolate the frames and solve them in sequence: each step starts from the previous solution, so the joint motion stays continuous:
+
+```python
+from ikpy.utils import geometry
+
+start = chain.forward_kinematics(current_joints)
+end = geometry.to_transformation_matrix(target_position, target_orientation)
+frames = geometry.interpolate_frames(start, end, n_steps=50)   # straight line, constant-speed rotation
+
+trajectory = chain.inverse_kinematics_trajectory_frame(frames, initial_position=current_joints, orientation_mode="all")
+for joints in trajectory:   # one row per frame
+    robot.move_to(joints)
+```
+
+`inverse_kinematics_trajectory` takes arrays of positions and orientations instead of frames. Any list of frames works, so waypoints computed by a path planner (to go around an obstacle, for example) are solved the same way. `regularization_parameter` pulls each step towards the previous one for smoother joint motion, at the price of some accuracy. An int or a dict as `initial_position` runs the multi-start on the first step, which picks the branch of solutions the trajectory then follows. A frame out of reach gets the closest configuration; check each step with the residual the solver minimizes:
+
+```python
+from ikpy.inverse_kinematics import target_error
+errors = [np.linalg.norm(target_error(chain, joints, frame, "all")) for joints, frame in zip(trajectory, frames)]
+```
+
 ## Orientation conversions
 
 IKPy works with homogeneous matrices. To exchange orientations with ROS, Unity or Blender, `ikpy.utils.geometry` converts the rotation part of a frame to and from quaternions, roll-pitch-yaw and arbitrary Euler sequences:

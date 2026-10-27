@@ -272,3 +272,40 @@ def quaternion_to_rotation_matrix(quaternion, scalar_first=False):
     if scalar_first:
         quaternion = np.roll(quaternion, -1)
     return Rotation.from_quat(quaternion).as_matrix()
+
+
+def interpolate_frames(start_frame, end_frame, n_steps):
+    """Return frames evenly spaced between two frames: the position moves on a straight line, the orientation
+    rotates at constant speed about a fixed axis (spherical linear interpolation).
+
+    Parameters
+    ----------
+    start_frame: numpy.array
+        The first 4x4 frame, included in the result
+    end_frame: numpy.array
+        The last 4x4 frame, included in the result
+    n_steps: int
+        The number of frames returned, at least 2
+
+    Returns
+    -------
+    numpy.array
+        The frames, of shape (n_steps, 4, 4)
+    """
+    from scipy.spatial.transform import Rotation, Slerp
+    if n_steps < 2:
+        raise ValueError("n_steps must be at least 2, got {}".format(n_steps))
+    start_frame = np.asarray(start_frame, dtype=float)
+    end_frame = np.asarray(end_frame, dtype=float)
+    if start_frame.shape != (4, 4) or end_frame.shape != (4, 4):
+        raise ValueError("The frames must be 4x4 transformation matrices")
+
+    fractions = np.linspace(0, 1, n_steps)
+    rotations = Rotation.from_matrix([start_frame[:3, :3], end_frame[:3, :3]])
+    orientations = Slerp([0, 1], rotations)(fractions).as_matrix()
+    positions = start_frame[:3, 3] + np.outer(fractions, end_frame[:3, 3] - start_frame[:3, 3])
+
+    frames = np.tile(np.eye(4), (n_steps, 1, 1))
+    frames[:, :3, :3] = orientations
+    frames[:, :3, 3] = positions
+    return frames
