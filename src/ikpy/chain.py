@@ -75,6 +75,61 @@ class Chain:
             if link.joint_type == "fixed" and link_active:
                 warnings.warn("Link {} (index: {}) is of type 'fixed' but set as active in the active_links_mask. In practice, this fixed link doesn't provide any transformation so is as it were inactive".format(link.name, link_index))
 
+        # Mimic joints are dependent: their value is derived from their
+        # master joint (see _resolve_mimic_dependencies), so they are
+        # never active, i.e. never optimization variables
+        self.mimic_dependencies = self._resolve_mimic_dependencies()
+        for (index, master_index, multiplier, offset) in self.mimic_dependencies:
+            if self.active_links_mask[index]:
+                warnings.warn("Link {} (index: {}) mimics link {} (index: {}): it is set as inactive, its value is derived from its master joint".format(self.links[index].name, index, self.links[master_index].name, master_index))
+                self.active_links_mask[index] = False
+
+    def _resolve_mimic_dependencies(self):
+        """Resolve the mimic relations of the chain's links
+
+        Returns
+        -------
+        list of (index, master_index, multiplier, offset)
+            The joint at `index` takes the value
+            `multiplier * joints[master_index] + offset`. The entries are
+            ordered so that a master always comes before the joints
+            mimicking it, which also handles a joint mimicking another
+            mimicking joint. A relation whose master joint is not part of
+            this chain cannot be derived: it is skipped with a warning,
+            and the joint keeps its own (inactive or active) value.
+        """
+        index_by_name = {}
+        for index, link in enumerate(self.links):
+            index_by_name.setdefault(link.name, index)
+
+        relations = {}
+        for index, link in enumerate(self.links):
+            master_name = getattr(link, "mimic_joint", None)
+            if master_name is None:
+                continue
+            if master_name == link.name:
+                raise ValueError("Joint {} mimics itself".format(link.name))
+            if master_name not in index_by_name:
+                warnings.warn("Joint {} mimics joint {}, which is not part of this chain: its value will not be derived from it".format(link.name, master_name))
+                continue
+            relations[index] = (index_by_name[master_name], link.mimic_multiplier, link.mimic_offset)
+
+        ordered = []
+        resolved = set()
+        pending = dict(relations)
+        while pending:
+            progressed = False
+            for index in list(pending):
+                master_index, multiplier, offset = pending[index]
+                if master_index not in relations or master_index in resolved:
+                    ordered.append((index, master_index, multiplier, offset))
+                    resolved.add(index)
+                    del pending[index]
+                    progressed = True
+            if not progressed:
+                raise ValueError("Circular mimic relation between joints: {}".format([self.links[index].name for index in pending]))
+        return ordered
+
     def __repr__(self):
         return "Kinematic chain name={} links={} active_links={}".format(self.name, [link.name for link in self.links], self.active_links_mask)
 
@@ -701,6 +756,9 @@ class Chain:
     def active_to_full(self, active_joints, initial_position):
         full_joints = np.array(initial_position, copy=True, dtype=np.float64)
         np.place(full_joints, self.active_links_mask, active_joints)
+        # Dependent (mimic) joints derive their value from their master
+        for (index, master_index, multiplier, offset) in self.mimic_dependencies:
+            full_joints[index] = multiplier * full_joints[master_index] + offset
         return full_joints
 
     def active_from_full(self, joints):

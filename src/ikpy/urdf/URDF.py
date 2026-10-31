@@ -380,6 +380,23 @@ def _joint_to_link(joint, symbolic):
         if "upper" in limit.attrib:
             bounds[1] = float(limit.attrib["upper"])
 
+    # A mimic element makes this joint's value a function of another
+    # joint's value: value = multiplier * value(master) + offset. The
+    # multiplier and offset attributes are optional in the specification
+    # and default to 1 and 0.
+    mimic = joint.find("mimic")
+    mimic_joint = None
+    mimic_multiplier = 1.0
+    mimic_offset = 0.0
+    if mimic is not None:
+        if "joint" not in mimic.attrib:
+            raise ValueError("Joint {} has a 'mimic' element without a 'joint' attribute".format(name))
+        mimic_joint = mimic.attrib["joint"]
+        if "multiplier" in mimic.attrib:
+            mimic_multiplier = float(mimic.attrib["multiplier"])
+        if "offset" in mimic.attrib:
+            mimic_offset = float(mimic.attrib["offset"])
+
     return lib_link.URDFLink(
         name=name,
         bounds=tuple(bounds),
@@ -388,7 +405,10 @@ def _joint_to_link(joint, symbolic):
         rotation=rotation,
         translation=translation,
         use_symbolic_matrix=symbolic,
-        joint_type=joint_type
+        joint_type=joint_type,
+        mimic_joint=mimic_joint,
+        mimic_multiplier=mimic_multiplier,
+        mimic_offset=mimic_offset
     )
 
 
