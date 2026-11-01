@@ -74,3 +74,96 @@ def test_panda_loads_with_mimic_and_safety_elements():
     np.testing.assert_allclose(arm.forward_kinematics(joints)[:3, 3], arm.forward_kinematics(joints)[:3, 3])
     with pytest.raises(ValueError, match="Several links"):
         chain.Chain.from_urdf_file(PANDA, symbolic=False)
+
+
+MIMIC_URDF = """<?xml version="1.0" ?>
+<robot name="mimic_robot">
+  <link name="base_link"/>
+  <link name="link1"/>
+  <link name="link2"/>
+  <link name="link3"/>
+  <joint name="joint1" type="revolute">
+    <parent link="base_link"/>
+    <child link="link1"/>
+    <origin xyz="0 0 0.5" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+  <joint name="joint2" type="revolute">
+    <parent link="link1"/>
+    <child link="link2"/>
+    <origin xyz="0 0 0.5" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <mimic joint="joint1" multiplier="2" offset="0.1"/>
+  </joint>
+  <joint name="joint3" type="revolute">
+    <parent link="link2"/>
+    <child link="link3"/>
+    <origin xyz="0 0 0.5" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <mimic joint="joint2" multiplier="-1" offset="0.05"/>
+  </joint>
+</robot>
+"""
+
+
+def _mimic_chain(tmp_path):
+    with pytest.warns(UserWarning, match="mimics link"):
+        return chain.Chain.from_urdf_file(_write(tmp_path, MIMIC_URDF, "mimic.urdf"), symbolic=False)
+
+
+def test_mimic_attributes_are_parsed(tmp_path):
+    my_chain = _mimic_chain(tmp_path)
+    assert my_chain.links[1].mimic_joint is None
+    assert my_chain.links[2].mimic_joint == "joint1"
+    assert my_chain.links[2].mimic_multiplier == 2.0
+    assert my_chain.links[2].mimic_offset == 0.1
+    # A joint can mimic another mimicking joint
+    assert my_chain.links[3].mimic_joint == "joint2"
+    assert my_chain.links[3].mimic_multiplier == -1.0
+    assert my_chain.links[3].mimic_offset == 0.05
+
+
+def test_mimic_joints_are_not_active(tmp_path):
+    my_chain = _mimic_chain(tmp_path)
+    # Only the origin and joint1 are active: joint2 and joint3 are derived
+    assert list(my_chain.active_links_mask) == [True, True, False, False]
+    assert [dep[0] for dep in my_chain.mimic_dependencies] == [2, 3]
+
+
+def test_mimic_values_are_derived_in_active_to_full(tmp_path):
+    my_chain = _mimic_chain(tmp_path)
+    full = my_chain.active_to_full([0, 0.3], [0, 0, 0, 0])
+    # joint2 = 2 * 0.3 + 0.1, joint3 = -joint2 + 0.05
+    np.testing.assert_allclose(full, [0, 0.3, 0.7, -0.65])
+    # The end-effector pose is the one of the derived configuration
+    plain = chain.Chain.from_urdf_file(_write(tmp_path, MIMIC_URDF.replace("<mimic joint=\"joint1\" multiplier=\"2\" offset=\"0.1\"/>", "").replace("<mimic joint=\"joint2\" multiplier=\"-1\" offset=\"0.05\"/>", ""), "plain.urdf"), symbolic=False)
+    np.testing.assert_allclose(my_chain.forward_kinematics(full), plain.forward_kinematics([0, 0.3, 0.7, -0.65]))
+
+
+def test_mimic_inverse_kinematics(tmp_path):
+    my_chain = _mimic_chain(tmp_path)
+    target = my_chain.forward_kinematics(my_chain.active_to_full([0, 0.3], [0, 0, 0, 0]))
+    solution = my_chain.inverse_kinematics(target_position=target[:3, 3], initial_position=[0, 0, 0, 0])
+    np.testing.assert_allclose(my_chain.forward_kinematics(solution)[:3, 3], target[:3, 3], atol=1e-4)
+    # The solution derives the mimicking joints instead of moving them freely
+    np.testing.assert_allclose(solution[2], 2 * solution[1] + 0.1, atol=1e-6)
+    np.testing.assert_allclose(solution[3], -solution[2] + 0.05, atol=1e-6)
+
+
+def test_panda_mimic_joint_is_parsed():
+    parameters = chain.URDF.get_urdf_parameters(PANDA, base="panda_hand", tip="panda_rightfinger", symbolic=False)
+    finger2 = parameters[-1]
+    assert finger2.name == "panda_finger_joint2"
+    assert finger2.mimic_joint == "panda_finger_joint1"
+    # No multiplier or offset in the file: the URDF defaults apply
+    assert finger2.mimic_multiplier == 1.0
+    assert finger2.mimic_offset == 0.0
+
+
+def test_mimic_master_outside_the_chain_warns_and_keeps_the_joint():
+    # The Panda fingers are siblings: a chain to one finger does not
+    # contain the master of its mimic joint, so nothing can be derived
+    with pytest.warns(UserWarning, match="not part of this chain"):
+        finger = chain.Chain.from_urdf_file(PANDA, base="panda_hand", tip="panda_rightfinger", symbolic=False)
+    assert finger.mimic_dependencies == []
+    assert finger.links[-1].joint_type == "prismatic"
