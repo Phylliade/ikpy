@@ -42,6 +42,10 @@ class Link:
         self.has_rotation = False
         self.has_translation = False
         self.joint_type = None
+        # Mimic relation (URDF "mimic" element): only URDFLink fills these
+        self.mimic_joint = None
+        self.mimic_multiplier = 1.0
+        self.mimic_offset = 0.0
 
     def __repr__(self):
         return "Link name={} bounds={}".format(self.name, self.bounds)
@@ -95,6 +99,14 @@ class URDFLink(Link):
         whether the transformation matrix is stored as a Numpy array or as a Sympy symbolic matrix.
     joint_type: str
         The URDF "type" attribute of the joint. Only support for revolute, continuous and prismatic joint for the moment
+    mimic_joint: str
+        Optional: the name of the joint this joint mimics (the URDF "mimic" element). The value of a
+        mimicking joint is derived from its master joint: ``value = mimic_multiplier * value(master) + mimic_offset``.
+        Defaults to None (not a mimicking joint).
+    mimic_multiplier: float
+        The multiplier of the mimic relation. Defaults to 1.
+    mimic_offset: float
+        The offset of the mimic relation. Defaults to 0.
 
     Returns
     -------
@@ -116,7 +128,10 @@ class URDFLink(Link):
                  bounds=None,
                  angle_representation="rpy",
                  use_symbolic_matrix=True,
-                 joint_type: str = "revolute"
+                 joint_type: str = "revolute",
+                 mimic_joint: Optional[str] = None,
+                 mimic_multiplier: float = 1.0,
+                 mimic_offset: float = 0.0
                  ):
         Link.__init__(self, name=name, bounds=bounds, length=np.linalg.norm(origin_translation))
         self.use_symbolic_matrix = use_symbolic_matrix
@@ -151,6 +166,9 @@ class URDFLink(Link):
         else:
             raise ValueError("Unknown joint type: {}".format(joint_type))
         self.joint_type = joint_type
+        self.mimic_joint = mimic_joint
+        self.mimic_multiplier = float(mimic_multiplier)
+        self.mimic_offset = float(mimic_offset)
 
         if use_symbolic_matrix:
             # Angle symbolique qui paramètre la rotation du joint en cours

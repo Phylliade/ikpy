@@ -89,6 +89,11 @@ def extract_chain_parameters(chain):
         else:
             raise ValueError(f"Unknown link type: {link.__class__.__name__}")
 
+    # Mimic relations, in dependency order (a master always comes before
+    # the joints mimicking it): the joint at dep_indices[i] takes the value
+    # dep_multipliers[i] * joints[dep_masters[i]] + dep_offsets[i]
+    mimic_dependencies = chain.mimic_dependencies
+
     return {
         'origin_translations': jnp.array(origin_translations),
         'origin_orientations': jnp.array(origin_orientations),
@@ -96,8 +101,42 @@ def extract_chain_parameters(chain):
         'translation_axes': jnp.array(translation_axes),
         'joint_types': jnp.array(joint_types, dtype=jnp.int32),
         'dh_params': jnp.array(dh_params),
-        'n_links': n_links
+        'n_links': n_links,
+        'dep_indices': jnp.array([dep[0] for dep in mimic_dependencies], dtype=jnp.int32),
+        'dep_masters': jnp.array([dep[1] for dep in mimic_dependencies], dtype=jnp.int32),
+        'dep_multipliers': jnp.array([dep[2] for dep in mimic_dependencies]),
+        'dep_offsets': jnp.array([dep[3] for dep in mimic_dependencies])
     }
+
+
+def apply_mimic_relations(joints, chain_params):
+    """
+    Derive the values of the dependent (mimic) joints from their masters.
+
+    Parameters
+    ----------
+    joints: jnp.ndarray
+        Joint parameters (n_links,)
+    chain_params: dict
+        Chain parameters extracted by extract_chain_parameters
+
+    Returns
+    -------
+    jnp.ndarray
+        The joint parameters, with every mimicking joint set to
+        multiplier * joints[master] + offset
+    """
+    if chain_params['dep_indices'].shape[0] == 0:
+        # No mimicking joint: indexing the empty relation arrays would
+        # fail while tracing, so skip the derivation entirely
+        return joints
+
+    def body_fn(i, joints):
+        index = chain_params['dep_indices'][i]
+        master = chain_params['dep_masters'][i]
+        return joints.at[index].set(chain_params['dep_multipliers'][i] * joints[master] + chain_params['dep_offsets'][i])
+
+    return jax.lax.fori_loop(0, chain_params['dep_indices'].shape[0], body_fn, joints)
 
 
 def compute_single_link_matrix(origin_translation, origin_orientation, rotation_axis,
@@ -175,6 +214,7 @@ def forward_kinematics_jax(joints, chain_params):
     jnp.ndarray (4, 4)
         The end-effector transformation matrix
     """
+    joints = apply_mimic_relations(joints, chain_params)
     frame_matrix = jnp.eye(4)
 
     def body_fn(i, frame_matrix):
@@ -209,6 +249,8 @@ def forward_kinematics_full_jax(joints, chain_params):
     jnp.ndarray (n_links, 4, 4)
         Transformation matrices for all links
     """
+    joints = apply_mimic_relations(joints, chain_params)
+
     def scan_fn(frame_matrix, link_idx):
         link_matrix = compute_single_link_matrix(
             chain_params['origin_translations'][link_idx],
@@ -415,7 +457,8 @@ class JaxKinematicsCache:
     def active_to_full(self, active_joints, initial_position):
         """Convert active joints to full joint array"""
         initial_position = jnp.array(initial_position, dtype=self._dtype)
-        return initial_position.at[self.active_indices].set(active_joints)
+        full_joints = initial_position.at[self.active_indices].set(active_joints)
+        return apply_mimic_relations(full_joints, self.chain_params)
 
     def active_from_full(self, joints):
         """Extract active joints from full joint array"""
