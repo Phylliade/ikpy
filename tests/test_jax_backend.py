@@ -618,7 +618,7 @@ MIMIC_URDF = """<?xml version="1.0" ?>
   <joint name="joint2" type="revolute">
     <parent link="link1"/>
     <child link="link2"/>
-    <origin xyz="0 0 0.5" rpy="0 0 0"/>
+    <origin xyz="0.5 0 0" rpy="0 0 0"/>
     <axis xyz="0 0 1"/>
     <mimic joint="joint1" multiplier="2" offset="0.1"/>
   </joint>
@@ -633,17 +633,17 @@ class TestMimicJoints:
     def mimic_chain(self, tmp_path):
         path = tmp_path / "mimic.urdf"
         path.write_text(MIMIC_URDF)
-        with pytest.warns(UserWarning, match="mimics link"):
-            return chain.Chain.from_urdf_file(str(path), symbolic=False)
+        return chain.Chain.from_urdf_file(str(path), symbolic=False)
 
     def test_jax_fk_derives_the_mimic_joint(self, mimic_chain):
-        # The value stored for the mimicking joint (here: 99) is ignored:
-        # it is derived as 2 * 0.3 + 0.1 = 0.7 in both backends
-        fk_numpy = mimic_chain.forward_kinematics([0, 0.3, 0.7], backend="numpy")
+        # The value stored for the mimicking joint (here: 99) is ignored by both backends:
+        # it is derived as 2 * 0.3 + 0.1 = 0.7
+        fk_numpy = mimic_chain.forward_kinematics([0, 0.3, 99.0], backend="numpy")
         fk_jax = mimic_chain.forward_kinematics([0, 0.3, 99.0], backend="jax")
         np.testing.assert_allclose(fk_jax, fk_numpy, rtol=1e-5, atol=1e-5)
+        np.testing.assert_allclose(fk_jax, mimic_chain.forward_kinematics([0, 0.3, 0.7], backend="numpy"), rtol=1e-5, atol=1e-5)
         frames_jax = mimic_chain.forward_kinematics([0, 0.3, 99.0], full_kinematics=True, backend="jax")
-        frames_numpy = mimic_chain.forward_kinematics([0, 0.3, 0.7], full_kinematics=True, backend="numpy")
+        frames_numpy = mimic_chain.forward_kinematics([0, 0.3, 99.0], full_kinematics=True, backend="numpy")
         for frame_jax, frame_numpy in zip(frames_jax, frames_numpy):
             np.testing.assert_allclose(frame_jax, frame_numpy, rtol=1e-5, atol=1e-5)
 
@@ -651,6 +651,12 @@ class TestMimicJoints:
         cache = mimic_chain.jax_cache
         full = np.asarray(cache.active_to_full([0, 0.3], [0, 0, 0]))
         np.testing.assert_allclose(full, [0, 0.3, 0.7], atol=1e-6)
+
+    def test_jax_ik_satisfies_the_mimic_relation(self, mimic_chain):
+        target = mimic_chain.forward_kinematics(mimic_chain.active_to_full([0, 0.3], [0, 0, 0]))
+        solution = mimic_chain.inverse_kinematics(target_position=target[:3, 3], initial_position=[0, 0, 0], backend="jax")
+        np.testing.assert_allclose(mimic_chain.forward_kinematics(solution)[:3, 3], target[:3, 3], atol=1e-4)
+        np.testing.assert_allclose(solution[2], 2 * solution[1] + 0.1, atol=1e-5)
 
 
 if __name__ == "__main__":

@@ -92,7 +92,7 @@ def extract_chain_parameters(chain):
     # Mimic relations, in dependency order (a master always comes before
     # the joints mimicking it): the joint at dep_indices[i] takes the value
     # dep_multipliers[i] * joints[dep_masters[i]] + dep_offsets[i]
-    mimic_dependencies = getattr(chain, "mimic_dependencies", [])
+    mimic_dependencies = chain.mimic_dependencies
 
     return {
         'origin_translations': jnp.array(origin_translations),

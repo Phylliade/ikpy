@@ -15,6 +15,7 @@ from .mjcf import MJCF
 from .bvh import BVH
 from . import inverse_kinematics as ik
 from . import link as link_lib
+from . import logs
 
 # Check for JAX availability
 try:
@@ -75,42 +76,51 @@ class Chain:
             if link.joint_type == "fixed" and link_active:
                 warnings.warn("Link {} (index: {}) is of type 'fixed' but set as active in the active_links_mask. In practice, this fixed link doesn't provide any transformation so is as it were inactive".format(link.name, link_index))
 
-        # Mimic joints are dependent: their value is derived from their
-        # master joint (see _resolve_mimic_dependencies), so they are
-        # never active, i.e. never optimization variables
-        self.mimic_dependencies = self._resolve_mimic_dependencies()
-        for (index, master_index, multiplier, offset) in self.mimic_dependencies:
+        # Mimic joints are dependent: a mimicking joint is not a degree of freedom of the robot, its value is
+        # derived from its master joint (see _resolve_mimic_dependencies). So it is never active, i.e. never an
+        # optimization variable, whether its master is in the chain or not. With the default mask this is
+        # silent; it is only worth a warning when the user explicitly asked for the joint to be active.
+        self.mimic_dependencies, orphan_mimics = self._resolve_mimic_dependencies()
+        for index in [dependency[0] for dependency in self.mimic_dependencies] + orphan_mimics:
             if self.active_links_mask[index]:
-                warnings.warn("Link {} (index: {}) mimics link {} (index: {}): it is set as inactive, its value is derived from its master joint".format(self.links[index].name, index, self.links[master_index].name, master_index))
+                if active_links_mask is not None:
+                    warnings.warn("Link {} (index: {}) mimics joint {} but is set as active in the active_links_mask: a mimicking joint is never active, its value is derived from its master joint. Overriding and setting to False".format(self.links[index].name, index, self.links[index].mimic_joint))
                 self.active_links_mask[index] = False
+        self._tighten_mimic_master_bounds()
 
     def _resolve_mimic_dependencies(self):
         """Resolve the mimic relations of the chain's links
 
         Returns
         -------
-        list of (index, master_index, multiplier, offset)
+        dependencies: list of (index, master_index, multiplier, offset)
             The joint at `index` takes the value
             `multiplier * joints[master_index] + offset`. The entries are
             ordered so that a master always comes before the joints
             mimicking it, which also handles a joint mimicking another
-            mimicking joint. A relation whose master joint is not part of
-            this chain cannot be derived: it is skipped with a warning,
-            and the joint keeps its own (inactive or active) value.
+            mimicking joint.
+        orphans: list of int
+            The indices of the mimicking joints whose master is not part of
+            this chain (the fingers of a gripper are typically siblings, so
+            a chain to one finger never contains the other). Their value
+            cannot be derived: it is the one given in the joints vector,
+            like for any inactive link. A warning says so.
         """
         index_by_name = {}
         for index, link in enumerate(self.links):
             index_by_name.setdefault(link.name, index)
 
         relations = {}
+        orphans = []
         for index, link in enumerate(self.links):
-            master_name = getattr(link, "mimic_joint", None)
+            master_name = link.mimic_joint
             if master_name is None:
                 continue
             if master_name == link.name:
                 raise ValueError("Joint {} mimics itself".format(link.name))
             if master_name not in index_by_name:
-                warnings.warn("Joint {} mimics joint {}, which is not part of this chain: its value will not be derived from it".format(link.name, master_name))
+                warnings.warn("Joint {} mimics joint {}, which is not part of this chain: its value cannot be derived, it is kept inactive and takes the value given in the joints vector".format(link.name, master_name))
+                orphans.append(index)
                 continue
             relations[index] = (index_by_name[master_name], link.mimic_multiplier, link.mimic_offset)
 
@@ -128,7 +138,39 @@ class Chain:
                     progressed = True
             if not progressed:
                 raise ValueError("Circular mimic relation between joints: {}".format([self.links[index].name for index in pending]))
-        return ordered
+        return ordered, orphans
+
+    def _tighten_mimic_master_bounds(self):
+        """Narrow the bounds of each master joint so that the joints mimicking it stay within their own limits
+
+        The optimizer only sees the master, so the limits of a mimicking joint would otherwise be ignored:
+        with ``value = multiplier * master + offset`` they translate into ``master`` within
+        ``[(lower - offset) / multiplier, (upper - offset) / multiplier]`` (swapped for a negative multiplier).
+        The dependencies are walked from the last to the first, so that the limits of a joint mimicking
+        another mimicking joint reach the root master.
+        """
+        for (index, master_index, multiplier, offset) in reversed(self.mimic_dependencies):
+            if multiplier == 0:
+                # The mimicking joint is constant, it says nothing about its master
+                continue
+            lower, upper = self.links[index].bounds
+            lower, upper = (lower - offset) / multiplier, (upper - offset) / multiplier
+            if multiplier < 0:
+                lower, upper = upper, lower
+            master = self.links[master_index]
+            new_bounds = (max(master.bounds[0], lower), min(master.bounds[1], upper))
+            if new_bounds[0] > new_bounds[1]:
+                warnings.warn("The limits of joint {} and of joint {}, which mimics it, cannot both be satisfied: the limits of {} are ignored".format(master.name, self.links[index].name, self.links[index].name))
+                continue
+            if new_bounds != tuple(master.bounds):
+                logs.logger.info("Bounds of joint {} narrowed to {} by the limits of joint {}, which mimics it".format(master.name, new_bounds, self.links[index].name))
+                master.bounds = new_bounds
+
+    def _derive_mimic_joints(self, joints):
+        """Set each mimicking joint to ``multiplier * master + offset``, in place, and return the joints"""
+        for (index, master_index, multiplier, offset) in self.mimic_dependencies:
+            joints[index] = multiplier * joints[master_index] + offset
+        return joints
 
     def __repr__(self):
         return "Kinematic chain name={} links={} active_links={}".format(self.name, [link.name for link in self.links], self.active_links_mask)
@@ -165,7 +207,9 @@ class Chain:
         Parameters
         ----------
         joints: list
-            The list of the positions of each joint. Note : Inactive joints must be in the list.
+            The list of the positions of each joint. Note : Inactive joints must be in the list. The value
+            given for a joint mimicking another joint of the chain is ignored: it is derived from its master,
+            see :attr:`mimic_dependencies`.
         full_kinematics: bool
             Return the transformation matrices of each joint
         backend: str
@@ -185,6 +229,9 @@ class Chain:
             return self.jax_cache.forward_kinematics(joints, full_kinematics=full_kinematics)
 
         # Default numpy implementation
+        if self.mimic_dependencies:
+            # The dependent (mimic) joints take the value derived from their master, whatever was given for them
+            joints = self._derive_mimic_joints(list(joints))
         frame_matrix = np.eye(4)
 
         if full_kinematics:
@@ -756,10 +803,9 @@ class Chain:
     def active_to_full(self, active_joints, initial_position):
         full_joints = np.array(initial_position, copy=True, dtype=np.float64)
         np.place(full_joints, self.active_links_mask, active_joints)
-        # Dependent (mimic) joints derive their value from their master
-        for (index, master_index, multiplier, offset) in self.mimic_dependencies:
-            full_joints[index] = multiplier * full_joints[master_index] + offset
-        return full_joints
+        # The forward kinematics derives the dependent (mimic) joints by itself; doing it here too makes the
+        # returned configuration readable as it is, with the right value in every slot
+        return self._derive_mimic_joints(full_joints)
 
     def active_from_full(self, joints):
         return np.compress(self.active_links_mask, joints, axis=0)
