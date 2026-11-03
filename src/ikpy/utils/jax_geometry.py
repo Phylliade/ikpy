@@ -118,7 +118,7 @@ def homogeneous_to_cartesian(homogeneous_matrix):
 @jit
 def from_transformation_matrix(transformation_matrix):
     """Convert a transformation matrix to a tuple (translation_vector, rotation_matrix)"""
-    return transformation_matrix[:, -1], transformation_matrix[:3, :3]
+    return transformation_matrix[:3, -1], transformation_matrix[:3, :3]
 
 
 @jit
