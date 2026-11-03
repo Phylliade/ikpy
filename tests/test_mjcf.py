@@ -148,6 +148,72 @@ class TestMJCFParser:
         for joint in expected_joints:
             assert joint in joint_names, f"Joint {joint} not found"
 
+    def test_ur5e_nested_default_classes(self, ur5e_mjcf):
+        """Joints inherit axis and range through nested default classes, as in MuJoCo Menagerie's UR5e."""
+        links = {link.name: link for link in MJCF.get_mjcf_parameters(ur5e_mjcf, base="base", tip="wrist_3_link")}
+        z, y = [0, 0, 1], [0, 1, 0]
+        expected = {
+            "shoulder_pan_joint": (z, 6.28319),
+            "shoulder_lift_joint": (y, 6.28319),
+            "elbow_joint": (y, 3.1415),
+            "wrist_1_joint": (y, 6.28319),
+            "wrist_2_joint": (z, 6.28319),
+            "wrist_3_joint": (y, 6.28319),
+        }
+        for name, (axis, limit) in expected.items():
+            np.testing.assert_array_equal(links[name].rotation, axis, err_msg=name)
+            assert links[name].bounds == (-limit, limit), name
+
+    def test_default_classes(self, tmp_path):
+        """main class, inherited childclass, degree ranges from a class, limited flags, undefined classes."""
+        mjcf_file = tmp_path / "default_classes.xml"
+        mjcf_file.write_text("""
+<mujoco model="default_classes">
+  <default>
+    <joint axis="1 0 0" range="-90 90"/>
+    <default class="arm">
+      <joint axis="0 1 0"/>
+      <default class="slider">
+        <joint type="slide" range="-0.5 0.5"/>
+      </default>
+      <default class="free_spin">
+        <joint limited="false"/>
+      </default>
+    </default>
+  </default>
+  <worldbody>
+    <body name="base">
+      <joint name="main_joint"/>
+      <body name="b1" childclass="arm">
+        <body name="b2">
+          <joint name="inherited_childclass" limited="auto"/>
+          <body name="b3">
+            <joint name="slide" class="slider"/>
+            <body name="b4">
+              <joint name="spin" class="free_spin"/>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+</mujoco>
+""")
+        links = {link.name: link for link in MJCF.get_mjcf_parameters(mjcf_file, base="b2", tip="b4")}
+        np.testing.assert_array_equal(links["inherited_childclass"].rotation, [0, 1, 0])
+        np.testing.assert_allclose(links["inherited_childclass"].bounds, (-np.pi / 2, np.pi / 2))
+        assert links["slide"].joint_type == "prismatic"
+        np.testing.assert_array_equal(links["slide"].translation, [0, 1, 0])
+        assert links["slide"].bounds == (-0.5, 0.5)
+        assert links["spin"].bounds == (-np.inf, np.inf)
+
+        links = {link.name: link for link in MJCF.get_mjcf_parameters(mjcf_file, base="base", tip="b1")}
+        np.testing.assert_array_equal(links["main_joint"].rotation, [1, 0, 0])
+
+        mjcf_file.write_text(mjcf_file.read_text().replace('class="slider"/>', 'class="missing"/>'))
+        with pytest.raises(ValueError, match="missing"):
+            MJCF.get_mjcf_parameters(mjcf_file, base="b2", tip="b4")
+
     def test_prismatic_joint(self, prismatic_mjcf):
         """Test parsing prismatic joints."""
         links = MJCF.get_mjcf_parameters(prismatic_mjcf, base_elements=["base"])
@@ -226,6 +292,42 @@ class TestMJCFChain:
         joints = [0] * len(my_chain.links)
         fk = my_chain.forward_kinematics(joints)
         assert fk.shape == (4, 4)
+
+    def test_omitted_joint_axis_uses_mjcf_default(self, tmp_path):
+        """Joints without an axis rotate around MJCF's default Z axis."""
+        mjcf_file = tmp_path / "default_joint_axis.xml"
+        mjcf_file.write_text("""
+<mujoco model="default_joint_axis">
+  <default class="joint_defaults">
+    <joint/>
+  </default>
+  <worldbody>
+    <body name="base">
+      <body name="upper" pos="0 0 0.5">
+        <joint name="shoulder"/>
+        <body name="lower" pos="0.5 0 0">
+          <joint name="elbow" class="joint_defaults"/>
+          <body name="tip" pos="0.5 0 0"/>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+</mujoco>
+""")
+        my_chain = chain.Chain.from_mjcf_file(
+            mjcf_file,
+            base="base",
+            tip="tip",
+            symbolic=False,
+        )
+
+        frame = my_chain.forward_kinematics([0, 0, 0.7, -0.4, 0])
+        expected_position = [
+            0.5 * np.cos(0.7) + 0.5 * np.cos(0.3),
+            0.5 * np.sin(0.7) + 0.5 * np.sin(0.3),
+            0.5,
+        ]
+        np.testing.assert_allclose(frame[:3, 3], expected_position, atol=1e-12)
 
     def test_chain_from_mjcf_ur5e(self, ur5e_mjcf):
         """Test creating a chain from UR5e MJCF."""

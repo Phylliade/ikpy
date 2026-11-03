@@ -49,66 +49,66 @@ def _get_compiler_settings(root):
     return settings
 
 
-def _get_default_class(root, class_name):
+def _get_joint_defaults(root):
     """
-    Get the default settings for a given class.
+    Resolve the joint defaults of every default class, following MJCF's inheritance rules.
+
+    The top-level ``<default>`` element is the ``main`` class. Each nested ``<default class="...">`` inherits the
+    joint attributes of its parent class and overrides only the ones its own ``<joint>`` element sets.
 
     Parameters
     ----------
     root: xml.etree.ElementTree.Element
         The root element of the MJCF XML
-    class_name: str
-        The name of the default class to find
 
     Returns
     -------
     dict
-        Default settings for joints in this class
+        Class name -> joint attributes (raw XML strings) resolved for this class
     """
-    defaults = {
-        "axis": [0, 1, 0],  # Default axis in MJCF
-        "range": [-np.inf, np.inf]
-    }
+    classes = {"main": {}}
 
-    default_section = root.find("default")
-    if default_section is None:
-        return defaults
+    def visit(default_elem, inherited, is_top_level):
+        attributes = dict(inherited)
+        joint_elem = default_elem.find("joint")
+        if joint_elem is not None:
+            attributes.update({key: value for key, value in joint_elem.attrib.items() if key not in ("name", "class")})
+        class_name = default_elem.get("class")
+        if is_top_level:
+            classes["main"] = attributes
+        if class_name is not None:
+            classes[class_name] = attributes
+        for child in default_elem.findall("default"):
+            visit(child, attributes, False)
 
-    # Search for the class recursively
-    def find_class(element, target_class):
-        if element.tag == "default":
-            element_class = element.get("class", "main" if element.getparent() is None else None)
-            if element_class == target_class:
-                # Get joint defaults
-                joint_elem = element.find("joint")
-                if joint_elem is not None:
-                    if "axis" in joint_elem.attrib:
-                        defaults["axis"] = [float(x) for x in joint_elem.attrib["axis"].split()]
-                    if "range" in joint_elem.attrib:
-                        defaults["range"] = [float(x) for x in joint_elem.attrib["range"].split()]
-                return defaults
+    for default_elem in root.findall("default"):
+        visit(default_elem, {}, True)
 
-            # Search children
-            for child in element:
-                if child.tag == "default":
-                    result = find_class(child, target_class)
-                    if result:
-                        return result
-        return None
+    return classes
 
-    # Try to find the class
-    for default_elem in default_section.iter("default"):
-        default_class = default_elem.get("class")
-        if default_class == class_name:
-            joint_elem = default_elem.find("joint")
-            if joint_elem is not None:
-                if "axis" in joint_elem.attrib:
-                    defaults["axis"] = [float(x) for x in joint_elem.attrib["axis"].split()]
-                if "range" in joint_elem.attrib:
-                    defaults["range"] = [float(x) for x in joint_elem.attrib["range"].split()]
-            break
 
-    return defaults
+def _get_body_classes(worldbody):
+    """
+    Return the class applied by default to the joints of each body, following ``childclass`` down the body tree.
+
+    Parameters
+    ----------
+    worldbody: xml.etree.ElementTree.Element
+        The worldbody element of the MJCF XML
+
+    Returns
+    -------
+    dict
+        Body element -> class name
+    """
+    body_classes = {}
+    stack = [(body, "main") for body in worldbody.findall("body")]
+    while stack:
+        body, inherited_class = stack.pop()
+        body_class = body.get("childclass", inherited_class)
+        body_classes[body] = body_class
+        stack.extend((child, body_class) for child in body.findall("body"))
+    return body_classes
 
 
 def _parse_body_transform(body_elem, compiler_settings):
@@ -174,52 +174,55 @@ def _parse_joint(joint_elem, compiler_settings, default_settings):
     compiler_settings: dict
         Compiler settings
     default_settings: dict
-        Default settings for this joint's class
+        Joint attributes (raw XML strings) of this joint's default class
 
     Returns
     -------
     dict
         Joint parameters
     """
+    attributes = dict(default_settings)
+    attributes.update(joint_elem.attrib)
+
     joint_info = {
-        "name": joint_elem.get("name", "unnamed_joint"),
-        "type": joint_elem.get("type", "hinge"),  # Default is hinge (revolute)
-        "axis": default_settings["axis"].copy(),
-        "range": default_settings["range"].copy(),
+        "name": attributes.get("name", "unnamed_joint"),
+        "type": attributes.get("type", "hinge"),  # Default is hinge (revolute)
+        "axis": [0.0, 0.0, 1.0],  # Default axis in MJCF
+        "range": [-np.inf, np.inf],
         "pos": [0, 0, 0]
     }
 
     # Parse joint-specific position (offset within the body)
-    if "pos" in joint_elem.attrib:
-        joint_info["pos"] = [float(x) for x in joint_elem.attrib["pos"].split()]
+    if "pos" in attributes:
+        joint_info["pos"] = [float(x) for x in attributes["pos"].split()]
 
     # Parse axis
-    if "axis" in joint_elem.attrib:
-        joint_info["axis"] = [float(x) for x in joint_elem.attrib["axis"].split()]
+    if "axis" in attributes:
+        joint_info["axis"] = [float(x) for x in attributes["axis"].split()]
 
     # Parse range (limits)
-    if "range" in joint_elem.attrib:
-        range_vals = [float(x) for x in joint_elem.attrib["range"].split()]
+    if "range" in attributes:
+        range_vals = [float(x) for x in attributes["range"].split()]
         if compiler_settings["angle"] == "degree" and joint_info["type"] == "hinge":
             range_vals = [np.radians(r) for r in range_vals]
         joint_info["range"] = range_vals
 
-    # Check limited attribute
-    if "limited" in joint_elem.attrib:
-        if joint_elem.attrib["limited"].lower() not in ["true", "1"]:
-            joint_info["range"] = [-np.inf, np.inf]
+    # Check limited attribute ("auto", the default, means limited when a range is given)
+    if attributes.get("limited", "auto").lower() in ["false", "0"]:
+        joint_info["range"] = [-np.inf, np.inf]
 
     return joint_info
 
 
-def _traverse_body_tree(root, body_elem, compiler_settings, chain_path, base_elements, current_depth=0, follow_first_child=True):
+def _traverse_body_tree(defaults, body_elem, compiler_settings, chain_path, base_elements, current_depth=0, follow_first_child=True):
     """
     Recursively traverse the body tree and extract kinematic chain.
 
     Parameters
     ----------
-    root: xml.etree.ElementTree.Element
-        Root element for accessing defaults
+    defaults: dict
+        ``"joints"``: joint attributes of each default class (see ``_get_joint_defaults``),
+        ``"bodies"``: class applied by default in each body (see ``_get_body_classes``)
     body_elem: xml.etree.ElementTree.Element
         Current body element
     compiler_settings: dict
@@ -248,8 +251,8 @@ def _traverse_body_tree(root, body_elem, compiler_settings, chain_path, base_ele
             return False
         base_elements = base_elements[1:]
 
-    # Get childclass for this body
-    childclass = body_elem.get("childclass")
+    # Class applied to the joints of this body that don't name one (childclass, inherited down the body tree)
+    childclass = defaults["bodies"][body_elem]
 
     # Parse body transform
     body_pos, body_orientation = _parse_body_transform(body_elem, compiler_settings)
@@ -272,10 +275,9 @@ def _traverse_body_tree(root, body_elem, compiler_settings, chain_path, base_ele
         for i, joint_elem in enumerate(joints):
             # Get default class for this joint
             joint_class = joint_elem.get("class", childclass)
-            default_settings = _get_default_class(root, joint_class) if joint_class else {
-                "axis": [0, 1, 0],
-                "range": [-np.inf, np.inf]
-            }
+            if joint_class not in defaults["joints"]:
+                raise ValueError(f"Joint '{joint_elem.get('name')}' uses the undefined default class '{joint_class}'")
+            default_settings = defaults["joints"][joint_class]
 
             joint_info = _parse_joint(joint_elem, compiler_settings, default_settings)
 
@@ -333,12 +335,12 @@ def _traverse_body_tree(root, body_elem, compiler_settings, chain_path, base_ele
         # Follow the specified path
         for child in child_bodies:
             if child.get("name") == base_elements[0]:
-                _traverse_body_tree(root, child, compiler_settings, chain_path, base_elements, current_depth + 1, follow_first_child)
+                _traverse_body_tree(defaults, child, compiler_settings, chain_path, base_elements, current_depth + 1, follow_first_child)
                 return True
         # If specified body not found, stop
         return True
     elif follow_first_child:
-        _traverse_body_tree(root, child_bodies[0], compiler_settings, chain_path, None, current_depth + 1)
+        _traverse_body_tree(defaults, child_bodies[0], compiler_settings, chain_path, None, current_depth + 1)
 
     return True
 
@@ -430,6 +432,8 @@ def get_mjcf_parameters(mjcf_file, base=None, tip=None, tip_offset=None, symboli
     if worldbody is None:
         raise ValueError("No 'worldbody' element found in MJCF file")
 
+    defaults = {"joints": _get_joint_defaults(root), "bodies": _get_body_classes(worldbody)}
+
     base, tip, tip_offset, legacy = selection.resolve_selection(base, tip, tip_offset, base_elements, last_link_vector)
     chain_path = []
 
@@ -444,18 +448,18 @@ def get_mjcf_parameters(mjcf_file, base=None, tip=None, tip_offset=None, symboli
                     break
             if start_body is None:
                 raise ValueError(f"Starting body '{base_elements[0]}' not found in MJCF")
-            _traverse_body_tree(root, start_body, compiler_settings, chain_path, base_elements)
+            _traverse_body_tree(defaults, start_body, compiler_settings, chain_path, base_elements)
         else:
             first_body = worldbody.find("body")
             if first_body is None:
                 raise ValueError("No body found in worldbody")
-            _traverse_body_tree(root, first_body, compiler_settings, chain_path, None)
+            _traverse_body_tree(defaults, first_body, compiler_settings, chain_path, None)
     else:
         if worldbody.find("body") is None:
             raise ValueError("No body found in worldbody")
         path = _resolve_mjcf_path(worldbody, base, tip)
         bodies, _, _ = _mjcf_tree(worldbody)
-        _traverse_body_tree(root, bodies[path[0]], compiler_settings, chain_path, path, follow_first_child=False)
+        _traverse_body_tree(defaults, bodies[path[0]], compiler_settings, chain_path, path, follow_first_child=False)
 
     # Convert chain_path to URDFLink objects
     parameters = []
