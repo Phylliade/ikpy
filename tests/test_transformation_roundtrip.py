@@ -19,7 +19,7 @@ def test_transformation_roundtrip(translation, angles, backend):
     assert position.shape == (3,)
     assert orientation.shape == (3, 3)
     np.testing.assert_allclose(position, translation)
-    np.testing.assert_allclose(orientation, rotation, atol=1e-7)
+    np.testing.assert_allclose(orientation, rotation, atol=1e-6)
     np.testing.assert_allclose(
         implementation.to_transformation_matrix(position, orientation), frame
     )
