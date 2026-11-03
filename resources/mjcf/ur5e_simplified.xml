@@ -10,13 +10,11 @@
     <default class="ur5e">
       <joint axis="0 1 0" range="-6.28319 6.28319"/>
       <default class="size3">
-        <joint axis="0 1 0"/>
         <default class="size3_limited">
-          <joint axis="0 1 0" range="-3.1415 3.1415"/>
+          <joint range="-3.1415 3.1415"/>
         </default>
       </default>
       <default class="size1">
-        <joint axis="0 1 0"/>
       </default>
     </default>
   </default>
