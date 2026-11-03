@@ -227,6 +227,42 @@ class TestMJCFChain:
         fk = my_chain.forward_kinematics(joints)
         assert fk.shape == (4, 4)
 
+    def test_omitted_joint_axis_uses_mjcf_default(self, tmp_path):
+        """Joints without an axis rotate around MJCF's default Z axis."""
+        mjcf_file = tmp_path / "default_joint_axis.xml"
+        mjcf_file.write_text("""
+<mujoco model="default_joint_axis">
+  <default class="joint_defaults">
+    <joint/>
+  </default>
+  <worldbody>
+    <body name="base">
+      <body name="upper" pos="0 0 0.5">
+        <joint name="shoulder"/>
+        <body name="lower" pos="0.5 0 0">
+          <joint name="elbow" class="joint_defaults"/>
+          <body name="tip" pos="0.5 0 0"/>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+</mujoco>
+""")
+        my_chain = chain.Chain.from_mjcf_file(
+            mjcf_file,
+            base="base",
+            tip="tip",
+            symbolic=False,
+        )
+
+        frame = my_chain.forward_kinematics([0, 0, 0.7, -0.4, 0])
+        expected_position = [
+            0.5 * np.cos(0.7) + 0.5 * np.cos(0.3),
+            0.5 * np.sin(0.7) + 0.5 * np.sin(0.3),
+            0.5,
+        ]
+        np.testing.assert_allclose(frame[:3, 3], expected_position, atol=1e-12)
+
     def test_chain_from_mjcf_ur5e(self, ur5e_mjcf):
         """Test creating a chain from UR5e MJCF."""
         my_chain = chain.Chain.from_mjcf_file(

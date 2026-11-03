@@ -66,7 +66,7 @@ def _get_default_class(root, class_name):
         Default settings for joints in this class
     """
     defaults = {
-        "axis": [0, 1, 0],  # Default axis in MJCF
+        "axis": [0, 0, 1],  # Default axis in MJCF
         "range": [-np.inf, np.inf]
     }
 
@@ -273,7 +273,7 @@ def _traverse_body_tree(root, body_elem, compiler_settings, chain_path, base_ele
             # Get default class for this joint
             joint_class = joint_elem.get("class", childclass)
             default_settings = _get_default_class(root, joint_class) if joint_class else {
-                "axis": [0, 1, 0],
+                "axis": [0, 0, 1],
                 "range": [-np.inf, np.inf]
             }
 
