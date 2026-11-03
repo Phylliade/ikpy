@@ -103,7 +103,7 @@ def homogeneous_translation_matrix(trans_x, trans_y, trans_z):
 
 def from_transformation_matrix(transformation_matrix):
     """Convert a transformation matrix to a tuple (translation_vector, rotation_matrix)"""
-    return transformation_matrix[:, -1], transformation_matrix[:-1, :-1]
+    return transformation_matrix[:-1, -1], transformation_matrix[:-1, :-1]
 
 
 def to_transformation_matrix(translation, orientation_matrix=np.zeros((3, 3))):
