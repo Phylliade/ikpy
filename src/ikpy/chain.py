@@ -943,4 +943,4 @@ class Chain:
     @classmethod
     def concat(cls, chain1, chain2):
         """Concatenate two chains"""
-        return cls(links=chain1.links + chain2.links, active_links_mask=chain1.active_links_mask + chain2.active_links_mask)
+        return cls(links=chain1.links + chain2.links, active_links_mask=np.concatenate((chain1.active_links_mask, chain2.active_links_mask)))
