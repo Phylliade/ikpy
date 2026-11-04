@@ -106,7 +106,7 @@ def from_transformation_matrix(transformation_matrix):
     return transformation_matrix[:-1, -1], transformation_matrix[:-1, :-1]
 
 
-def to_transformation_matrix(translation, orientation_matrix=np.zeros((3, 3))):
+def to_transformation_matrix(translation, orientation_matrix=None):
     """Convert a tuple (translation_vector, orientation_matrix) to a transformation matrix
 
     Parameters
@@ -115,10 +115,12 @@ def to_transformation_matrix(translation, orientation_matrix=np.zeros((3, 3))):
         The translation of your frame presented as a 3D vector.
     orientation_matrix: numpy.array
         Optional : The orientation of your frame, presented as a 3x3 matrix.
+        Defaults to the identity rotation.
     """
     matrix = np.eye(4)
 
-    matrix[:-1, :-1] = orientation_matrix
+    if orientation_matrix is not None:
+        matrix[:-1, :-1] = orientation_matrix
     matrix[:-1, -1] = translation
     return matrix
 
