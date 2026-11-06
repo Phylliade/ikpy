@@ -134,7 +134,8 @@ def sample_initial_positions(chain, n_samples, seed=None, around=None, radius=No
         clipped to its bounds, instead of in its whole range
     spread: float
         For an active link without finite bounds and no `radius`, the values are drawn within
-        ``[center - spread, center + spread]`` where ``center`` is `around` or zero
+        ``[center - spread, center + spread]`` where ``center`` is `around` or zero,
+        clipped to any finite joint limit before replacing an infinite bound
 
     Returns
     -------
@@ -156,10 +157,11 @@ def sample_initial_positions(chain, n_samples, seed=None, around=None, radius=No
             lower = max(lower, center[index] - radius)
             upper = min(upper, center[index] + radius)
         else:
+            sampling_center = np.clip(center[index], lower, upper)
             if not np.isfinite(lower):
-                lower = center[index] - spread
+                lower = sampling_center - spread
             if not np.isfinite(upper):
-                upper = center[index] + spread
+                upper = sampling_center + spread
         samples[:, index] = rng.uniform(lower, upper, n_samples)
     return samples
 
