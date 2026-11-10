@@ -44,7 +44,7 @@ baxter_left_arm_chain = chain.Chain.from_urdf_file(
     "./baxter.urdf",
     base_elements=baxter_left_arm_elements,
     last_link_vector=[0, 0.18, 0],
-    active_links_mask=3 * [False] + 7 * [True] + 4 * [False],
+    active_links_mask=3 * [0] + 7 * [True] + 4 * [0],
     symbolic=False,
     name="baxter_left_arm")
 baxter_left_arm_chain.to_json_file(force=True)
@@ -57,7 +57,7 @@ baxter_right_arm_chain = chain.Chain.from_urdf_file(
     "./baxter.urdf",
     base_elements=baxter_right_arm_elements,
     last_link_vector=[0, 0.18, 0],
-    active_links_mask=3 * [False] + 7 * [True] + 4 * [False],
+    active_links_mask=3 * [0] + 7 * [True] + 4 * [0],
     symbolic=False,
     name="baxter_right_arm")
 baxter_right_arm_chain.to_json_file(force=True)
@@ -80,7 +80,7 @@ baxter_head_chain = chain.Chain.from_urdf_file(
     last_link_vector=[0, 0.18, 0],
     symbolic=False,
     name="baxter_head",
-    active_links_mask=[False, False, True, False, False, False]
+    active_links_mask=[0, 0, True, 0, 0, 0]
 )
 baxter_head_chain.to_json_file(force=True)
 
@@ -98,5 +98,5 @@ baxter_pedestal_chain = chain.Chain.from_urdf_file(
     last_link_vector=[0, 0.18, 0],
     symbolic=False,
     name="baxter_pedestal",
-    active_links_mask=[False, False, False, True])
+    active_links_mask=[0, 0, 0, True])
 baxter_pedestal_chain.to_json_file(force=True)

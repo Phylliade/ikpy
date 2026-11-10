@@ -14,13 +14,13 @@
   ],
   "urdf_file": "pepper.urdf",
   "active_links_mask": [
-    false,
-    false,
+    0,
+    0,
     true,
     true,
     true,
-    false,
-    false
+    0,
+    0
   ],
   "last_link_vector": [
     0,

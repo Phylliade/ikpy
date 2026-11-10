@@ -6,9 +6,9 @@
   ],
   "urdf_file": "prismatic_robot.URDF",
   "active_links_mask": [
-    false,
+    0,
     true,
-    false
+    0
   ],
   "last_link_vector": [
     0,

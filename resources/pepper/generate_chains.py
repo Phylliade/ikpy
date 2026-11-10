@@ -32,7 +32,7 @@ pepper_left_arm_chain = chain.Chain.from_urdf_file(
     "./pepper.urdf",
     base_elements=pepper_left_arm_elements,
     last_link_vector=[0, 0.0, 0],
-    active_links_mask = 2*[False] + 4 * [True] + 3 * [False],
+    active_links_mask = 2*[0] + 4 * [True] + 3 * [0],
     symbolic=False,
     name="pepper_left_arm")
 pepper_left_arm_chain.to_json_file(force=True)
@@ -45,7 +45,7 @@ pepper_right_arm_chain = chain.Chain.from_urdf_file(
     "./pepper.urdf",
     base_elements=pepper_right_arm_elements,
     last_link_vector=[0, 0.0, 0],
-    active_links_mask = 2*[False] + 4 * [True] + 3 * [False],
+    active_links_mask = 2*[0] + 4 * [True] + 3 * [0],
     symbolic=False,
     name="pepper_right_arm")
 pepper_right_arm_chain.to_json_file(force=True)
@@ -68,7 +68,7 @@ pepper_head_chain = chain.Chain.from_urdf_file(
     last_link_vector=[0, 0.0, 0],
     symbolic=False,
     name="pepper_head",
-    active_links_mask=[False, True, True, False, False, False, False]
+    active_links_mask=[0, True, True, 0, 0, 0, 0]
 )
 pepper_head_chain.to_json_file(force=True)
 
@@ -92,5 +92,5 @@ pepper_pedestal_chain = chain.Chain.from_urdf_file(
     last_link_vector=[0, 0.0, 0],
     symbolic=False,
     name="pepper_legs",
-    active_links_mask=[False, False, True, True, True, False, False])
+    active_links_mask=[0, 0, True, True, True, 0, 0])
 print(pepper_pedestal_chain.to_json_file(force=True))

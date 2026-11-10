@@ -36,7 +36,8 @@ def test_default_mask_is_silent_and_keeps_last_link_active():
         warnings.simplefilter("always")
         chain = Chain(make_links())
     assert last_link_warnings(caught) == []
-    np.testing.assert_array_equal(chain.active_links_mask, [True, True, True])
+    # The origin is a fixed link, held at 0 by default
+    np.testing.assert_array_equal(chain.active_links_mask, [False, True, True])
 
 
 def test_inactive_last_link_is_silent():

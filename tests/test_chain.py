@@ -63,7 +63,9 @@ def test_ik_optimization(torso_right_arm):
     """Tests the IK optimization-based method"""
     # Objectives
     target = [0.1, -0.2, 0.1]
-    joints = [1] * len(torso_right_arm.links)
+    # The torso is held at 1, the arm starts at 1 too, but for its second joint
+    torso_right_arm = chain.Chain(torso_right_arm.links, active_links_mask=[1, 1, 1, 1, True, True, True, True, True])
+    joints = [False] * 4 + [1] * (len(torso_right_arm.links) - 4)
     joints[-4] = 0
     frame_target = np.eye(4)
     frame_target[:3, 3] = target

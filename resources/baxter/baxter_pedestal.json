@@ -8,10 +8,10 @@
   ],
   "urdf_file": "baxter.urdf",
   "active_links_mask": [
-    false,
-    false,
-    false,
-    false
+    0,
+    0,
+    0,
+    0
   ],
   "last_link_vector": [
     0,

@@ -649,11 +649,11 @@ class TestMimicJoints:
 
     def test_jax_cache_active_to_full_derives_the_mimic_joint(self, mimic_chain):
         cache = mimic_chain.jax_cache
-        full = np.asarray(cache.active_to_full([0, 0.3], [0, 0, 0]))
+        full = np.asarray(cache.active_to_full([0.3], [0, 0, 0]))
         np.testing.assert_allclose(full, [0, 0.3, 0.7], atol=1e-6)
 
     def test_jax_ik_satisfies_the_mimic_relation(self, mimic_chain):
-        target = mimic_chain.forward_kinematics(mimic_chain.active_to_full([0, 0.3], [0, 0, 0]))
+        target = mimic_chain.forward_kinematics(mimic_chain.active_to_full([0.3], [0, 0, 0]))
         solution = mimic_chain.inverse_kinematics(target_position=target[:3, 3], initial_position=[0, 0, 0], backend="jax")
         np.testing.assert_allclose(mimic_chain.forward_kinematics(solution)[:3, 3], target[:3, 3], atol=1e-4)
         np.testing.assert_allclose(solution[2], 2 * solution[1] + 0.1, atol=1e-5)

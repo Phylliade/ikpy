@@ -80,7 +80,27 @@ The optimizer is local: it converges to the solution closest to its starting poi
 joints = chain.inverse_kinematics(target_position, target_orientation, orientation_mode="all", initial_position=20)
 ```
 
-`initial_position` stays a single configuration in the usual case. An int draws that many starting points anywhere in the joint limits. A dict combines given points and drawn ones: `{"points": [current_joints, home_joints], "n": 8, "seed": 0, "around": current_joints, "radius": 0.5}` starts from the two given configurations and 8 points drawn near the current one (`n` defaults to 0, so a dict with only `points` uses just those). An array of shape `(n_starts, n_links)` gives the starting points themselves.
+`initial_position` stays a single configuration in the usual case. An int draws that many starting points anywhere in the joint limits. A dict combines given points and drawn ones: `{"points": [current_joints, home_joints], "n": 8, "seed": 0}` starts from the two given configurations and 8 drawn points (`n` defaults to 0, so a dict with only `points` uses just those). A list of configurations, of shape `(n_starts, n_links)`, gives the starting points themselves.
+
+## Active and held links
+
+The `active_links_mask` of a chain tells, for each link, whether the inverse kinematics moves it (`True`) or holds it at a value (a number). A configuration given as `initial_position` mirrors it: a starting value for each active link, `False` for each held link, which takes the value of the mask:
+
+```python
+chain = Chain.from_urdf_file("robot.urdf", active_links_mask=[0, 0.3, True, True, True, 0])
+joints = chain.inverse_kinematics(target_position, initial_position=[False, False, 0.1, 0.5, -0.2, False])
+```
+
+A number given for a held link is replaced by the value of the mask, with a warning. `False` in the `active_links_mask`, an inactive link reading its value from the starting point, is deprecated.
+
+Without an `active_links_mask`, every link is active except the fixed ones, held at 0. An active prismatic link must have bounds: one without, such as the position channels of a BVH skeleton, is held at 0 by default, and is an error if set to `True`. `chain.links_mask` gives the mask of a chain, to edit and give back:
+
+```python
+chain = Chain.from_bvh_file("capture.bvh", base="Hips", tip="LeftHand")
+mask = chain.links_mask  # the position of the hips is held
+mask[4] = 0              # hold one more link
+chain = Chain.from_bvh_file("capture.bvh", base="Hips", tip="LeftHand", active_links_mask=mask)
+```
 
 To get every distinct solution of a target rather than the best one (elbow up and elbow down, wrist flipped...), `chain._inverse_kinematics_solutions_frame(frame, initial_position=20, max_error=1e-3)` returns them sorted by error; it is kept out of the main API but documented for that use.
 

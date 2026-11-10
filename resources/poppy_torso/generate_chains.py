@@ -11,7 +11,7 @@ def get_torso_right_arm():
         ],
         last_link_vector=[0, 0.18, 0],
         active_links_mask=[
-            False, False, False, False, True, True, True, True, True
+            0, 0, 0, 0, True, True, True, True, True
         ],
         name="poppy_torso_right_arm"
     )
@@ -27,7 +27,7 @@ def get_torso_left_arm():
         ],
         last_link_vector=[0, 0.18, 0],
         active_links_mask=[
-            False, False, False, False, True, True, True, True, True
+            0, 0, 0, 0, True, True, True, True, True
         ],
         name="poppy_torso_left_arm"
     )

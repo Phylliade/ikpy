@@ -115,8 +115,13 @@ def target_error(chain, joints, target_frame, orientation_mode=None, no_position
     return np.concatenate(errors)
 
 
-def sample_initial_positions(chain, n_samples, seed=None, around=None, radius=None, spread=np.pi):
+def sample_initial_positions(chain, n_samples, seed=None, around=None, radius=None, spread=None):
     """Draw starting points for the inverse kinematics, inside the joint limits
+
+    Each active link is drawn uniformly within its bounds. A revolute link without a bound on one side or both
+    is drawn within a full turn, which covers every orientation: ``[-pi, pi]``, or from its finite bound. An
+    active prismatic link always has finite bounds, see :class:`ikpy.chain.Chain`. The held links take the value
+    given in the active_links_mask, the other inactive links 0.
 
     Parameters
     ----------
@@ -127,14 +132,14 @@ def sample_initial_positions(chain, n_samples, seed=None, around=None, radius=No
     seed: int or numpy.random.Generator
         Optional : the seed of the random draws, for reproducibility
     around: numpy.array
-        Optional : a configuration, one value per link. Inactive links take its values (zero otherwise), and
-        with `radius` the active links are drawn around it
+        Deprecated : a configuration whose values the inactive links take. Give the value of the held links in
+        the active_links_mask instead. With `radius`, the active links are drawn within
+        ``[around - radius, around + radius]``, clipped to their bounds
     radius: float
-        Optional : with `around`, draw each active link within ``[around - radius, around + radius]``,
-        clipped to its bounds, instead of in its whole range
+        Deprecated : see `around`
     spread: float
-        For an active link without finite bounds and no `radius`, the values are drawn within
-        ``[center - spread, center + spread]`` where ``center`` is `around` or zero
+        Deprecated : with `around` or `radius`, the half-width of the range of a link without a bound, ``pi`` by
+        default
 
     Returns
     -------
@@ -145,22 +150,44 @@ def sample_initial_positions(chain, n_samples, seed=None, around=None, radius=No
         raise ValueError("n_samples must be at least 1, got {}".format(n_samples))
     if radius is not None and around is None:
         raise ValueError("radius needs a configuration to draw around")
+    legacy = around is not None or radius is not None or spread is not None
+    if legacy:
+        warnings.warn("around, radius and spread are deprecated: give the values of the held links in the active_links_mask, and the starting points to keep in initial_position", FutureWarning, stacklevel=3)
+        if spread is None:
+            spread = np.pi
     rng = np.random.default_rng(seed)
     center = np.zeros(len(chain.links)) if around is None else np.array(around, dtype=float)
+    held = ~np.isnan(chain.fixed_values)
+    center[held] = chain.fixed_values[held]
     samples = np.tile(center, (n_samples, 1))
+    unbounded_prismatic = []
     for index, (active, link) in enumerate(zip(chain.active_links_mask, chain.links)):
         if not active:
             continue
         lower, upper = link.bounds
-        if radius is not None:
-            lower = max(lower, center[index] - radius)
-            upper = min(upper, center[index] + radius)
-        else:
+        if legacy:
+            sampling_center = np.clip(center[index], lower, upper)
+            if radius is not None:
+                lower = max(lower, sampling_center - radius)
+                upper = min(upper, sampling_center + radius)
             if not np.isfinite(lower):
-                lower = center[index] - spread
+                lower = sampling_center - spread
             if not np.isfinite(upper):
-                upper = center[index] + spread
+                upper = sampling_center + spread
+        elif np.isfinite(lower) and np.isfinite(upper):
+            pass
+        else:
+            if link.joint_type == "prismatic":
+                unbounded_prismatic.append(link.name)
+            if np.isfinite(lower):
+                upper = lower + 2 * np.pi
+            elif np.isfinite(upper):
+                lower = upper - 2 * np.pi
+            else:
+                lower, upper = -np.pi, np.pi
         samples[:, index] = rng.uniform(lower, upper, n_samples)
+    if unbounded_prismatic:
+        raise ValueError("The active prismatic links {} have no bound on one side or both, so no range to draw starting points from: give them bounds, hold them in the active_links_mask, or give the starting points".format(unbounded_prismatic))
     return samples
 
 
