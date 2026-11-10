@@ -19,7 +19,7 @@ robotis_op3_left_arm_chain = chain.Chain.from_urdf_file(
     "urdf/robotis_op3.urdf",
     base_elements=robotis_op3_left_arm_elements,
     last_link_vector=[0, 0.10, 0],
-    active_links_mask=[False] + 3 * [True] + [False],
+    active_links_mask=[0] + 3 * [True] + [0],
     symbolic=False,
     name="robotis_op3_left_arm")
 
@@ -43,7 +43,7 @@ robotis_op3_right_arm_chain = chain.Chain.from_urdf_file(
     "urdf/robotis_op3.urdf",
     base_elements=robotis_op3_right_arm_elements,
     last_link_vector=[0, -0.10, 0],
-    active_links_mask=[False] + 3 * [True] + [False],
+    active_links_mask=[0] + 3 * [True] + [0],
     symbolic=False,
     name="robotis_op3_right_arm"
 )
@@ -74,7 +74,7 @@ robotis_op3_left_leg_chain = chain.Chain.from_urdf_file(
     "urdf/robotis_op3.urdf",
     base_elements=robotis_op3_left_leg_elements,
     last_link_vector=[0, 0, -0],
-    active_links_mask=[False] + 6 * [True] + [False],
+    active_links_mask=[0] + 6 * [True] + [0],
     symbolic=False,
     name="robotis_op3_left_leg"
 )
@@ -105,7 +105,7 @@ robotis_op3_right_leg_chain = chain.Chain.from_urdf_file(
     "urdf/robotis_op3.urdf",
     base_elements=robotis_op3_right_leg_elements,
     last_link_vector=[0, 0, 0],
-    active_links_mask=[False] + 6 * [True] + [False],
+    active_links_mask=[0] + 6 * [True] + [0],
     symbolic=False,
     name="robotis_op3_right_leg"
 )

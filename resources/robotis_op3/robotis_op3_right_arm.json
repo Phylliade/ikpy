@@ -10,11 +10,11 @@
   ],
   "urdf_file": "robotis_op3.urdf",
   "active_links_mask": [
-    false,
+    0,
     true,
     true,
     true,
-    false
+    0
   ],
   "last_link_vector": [
     0,

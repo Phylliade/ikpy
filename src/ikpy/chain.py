@@ -25,6 +25,63 @@ except ImportError:
     JAX_AVAILABLE = False
 
 
+def _is_bool(value):
+    return isinstance(value, (bool, np.bool_))
+
+
+def _parse_links_mask(active_links_mask, links):
+    """Split an active_links_mask into the active links and the values of the held ones
+
+    Returns
+    -------
+    numpy.array, numpy.array
+        The boolean mask of the active links, and the value of every held link (NaN for the other links)
+    """
+    active = np.zeros(len(links), dtype=bool)
+    fixed_values = np.full(len(links), np.nan)
+    legacy = []
+    for index, value in enumerate(active_links_mask):
+        if _is_bool(value):
+            if value:
+                active[index] = True
+            else:
+                legacy.append(index)
+        elif isinstance(value, (int, float, np.integer, np.floating)) and np.isfinite(value):
+            fixed_values[index] = float(value)
+        else:
+            raise ValueError("The active_links_mask takes True for an active link or a number for a held one, got {!r} for link {} (index: {})".format(value, links[index].name, index))
+    if not active.any() and not np.isnan(fixed_values).all():
+        raise ValueError("The active_links_mask {} has no active link: an active link is True, a number holds the link at that value (1 is not True)".format(list(active_links_mask)))
+    if legacy:
+        warnings.warn("False in the active_links_mask is deprecated (links {}): give the value at which to hold the link instead, e.g. 0. With False, the value is read from the starting point of the inverse kinematics".format([links[index].name for index in legacy]), FutureWarning, stacklevel=3)
+    for index in np.flatnonzero(~np.isnan(fixed_values)):
+        lower, upper = links[index].bounds
+        if not lower <= fixed_values[index] <= upper:
+            warnings.warn("Link {} (index: {}) is held at {}, outside of its bounds {}".format(links[index].name, index, fixed_values[index], links[index].bounds))
+    return active, fixed_values
+
+
+def _is_unbounded_prismatic(link):
+    return link.joint_type == "prismatic" and not np.all(np.isfinite(link.bounds))
+
+
+def _default_links_mask(links):
+    """The active_links_mask of a chain created without one: every link active, except the fixed links, held at 0,
+    and the prismatic links without a bound, held at 0 clipped to their bounds
+
+    Returns
+    -------
+    numpy.array, numpy.array
+        The boolean mask of the active links, and the value of every held link (NaN for the other links)
+    """
+    held = np.array([link.joint_type == "fixed" or _is_unbounded_prismatic(link) for link in links], dtype=bool)
+    unbounded = [link.name for link in links if _is_unbounded_prismatic(link)]
+    if unbounded:
+        warnings.warn("The prismatic links {} have no bound on one side or both, so they are held at 0, clipped to their bounds: give them bounds to move them".format(unbounded), stacklevel=4)
+    values = [float(np.clip(0.0, *link.bounds)) if _is_unbounded_prismatic(link) else 0.0 for link in links]
+    return ~held, np.where(held, values, np.nan)
+
+
 class Chain:
     """The base Chain class
 
@@ -33,7 +90,13 @@ class Chain:
     links: list[ikpy.link.Link]
         List of the links of the chain
     active_links_mask: list
-        A list of boolean indicating that whether or not the corresponding link is active
+        One element per link: ``True`` for an active link, moved by the inverse kinematics, or a number for an
+        inactive link, held at that value. An active prismatic link must have finite bounds. Defaults to every
+        link active, except the fixed links and the prismatic links without a bound, held at 0 (clipped to their
+        bounds); the resulting
+        mask is :attr:`links_mask`, which can be edited and given back For example ``[0, 0.3, True, True, True, 0]`` moves the links 2 to 4
+        and holds the second one at 0.3. Defaults to every link active. ``False`` (an inactive link whose value is
+        read from the starting point) is deprecated: give the value instead
     name: str
         The name of the Chain
     urdf_metadata
@@ -61,10 +124,9 @@ class Chain:
         if active_links_mask is not None:
             if len(active_links_mask) != len(self.links):
                 raise ValueError("Your active links mask length of {} is different from the number of your links, which is {}".format(len(active_links_mask), len(self.links)))
-            self.active_links_mask = np.array(active_links_mask)
-
+            self.active_links_mask, self.fixed_values = _parse_links_mask(active_links_mask, self.links)
         else:
-            self.active_links_mask = np.array([True] * len(links))
+            self.active_links_mask, self.fixed_values = _default_links_mask(self.links)
 
         # The last link is usually the end effector, which is not meant to be an optimization variable. Only warn,
         # without overriding: it can also be a genuine joint, e.g. in a chain without a tip link. As for mimic
@@ -87,7 +149,17 @@ class Chain:
                 if active_links_mask is not None:
                     warnings.warn("Link {} (index: {}) mimics joint {} but is set as active in the active_links_mask: a mimicking joint is never active, its value is derived from its master joint. Overriding and setting to False".format(self.links[index].name, index, self.links[index].mimic_joint))
                 self.active_links_mask[index] = False
+            elif not np.isnan(self.fixed_values[index]):
+                warnings.warn("Link {} (index: {}) mimics joint {} but is held at {} in the active_links_mask: a mimicking joint takes the value derived from its master joint. Ignoring the given value".format(self.links[index].name, index, self.links[index].mimic_joint, self.fixed_values[index]))
+                self.fixed_values[index] = np.nan
         self._tighten_mimic_master_bounds()
+
+        # A prismatic link without a bound is either the position of the robot in the world (e.g. the root of a
+        # BVH skeleton) or a missing limit: it is not meant to be moved by the inverse kinematics, and leaves no
+        # range to draw starting points from. Checked after the bounds of the mimic masters are tightened.
+        unbounded = [link.name for link, active in zip(self.links, self.active_links_mask) if active and _is_unbounded_prismatic(link)]
+        if unbounded:
+            raise ValueError("The prismatic links {} are active without a bound on one side or both: give them bounds, or hold them in the active_links_mask with a number, e.g. 0".format(unbounded))
 
     def _resolve_mimic_dependencies(self):
         """Resolve the mimic relations of the chain's links
@@ -316,10 +388,75 @@ class Chain:
         `initial_position` of :meth:`inverse_kinematics`, which then keeps the best of the solutions reached
         from every point::
 
-            starts = chain.sample_initial_positions(10, seed=0)                       # anywhere in the limits
-            starts = chain.sample_initial_positions(10, seed=0, around=q, radius=0.5)  # near a configuration
+            starts = chain.sample_initial_positions(10, seed=0)
+
+        `around` and `radius` are deprecated: give the values of the held links in the active_links_mask, and
+        the starting points to keep as `initial_position` (a list of configurations, or a dict with ``points``)
         """
         return ik.sample_initial_positions(self, n_samples, seed=seed, around=around, radius=radius)
+
+    @property
+    def links_mask(self):
+        """The active_links_mask of the chain, as given to the constructor: True for an active link, the value of
+        a held link, or False for the deprecated inactive links that read their value from the starting point.
+
+        To change it, edit it and create the chain again with it::
+
+            mask = chain.links_mask
+            mask[4] = 0
+            chain = Chain.from_urdf_file(urdf_file, active_links_mask=mask)
+        """
+        return [True if active else (False if np.isnan(value) else float(value))
+                for active, value in zip(self.active_links_mask, self.fixed_values)]
+
+    def _parse_starts(self, starts, name="initial_position"):
+        """Read one configuration or several, mirroring the active_links_mask
+
+        An active link takes a number, its starting value. A held link takes False, its value then comes from
+        the active_links_mask; a number is accepted too, with a warning, but the value of the mask is used.
+
+        Returns
+        -------
+        numpy.array
+            The configurations, of shape (n_links,) or (n_starts, n_links), with the values of the held links
+        """
+        n_links = len(self.links)
+        if isinstance(starts, np.ndarray) and starts.dtype.kind in "fiu":
+            values = starts.astype(float)
+            given_false = np.zeros(values.shape, dtype=bool)
+        else:
+            # Through object, not to lose False among numbers: np.array([False, 0.1]) is [0., 0.1]
+            raw = np.asarray(starts, dtype=object)
+            if raw.ndim not in (1, 2) or raw.shape[-1] != n_links:
+                values = raw
+            else:
+                if any(_is_bool(value) and value for value in raw.flat):
+                    raise ValueError("{} takes a number for an active link and False for a held one, not True".format(name))
+                given_false = np.vectorize(_is_bool, otypes=[bool])(raw)
+                try:
+                    values = np.where(given_false, 0.0, raw).astype(float)
+                except (TypeError, ValueError):
+                    raise ValueError("{} must contain numbers, or False for the held links, got {!r}".format(name, starts))
+        if values.ndim not in (1, 2) or values.shape[-1] != n_links:
+            raise ValueError("{} must be a configuration of shape (n_links,), an int, a dict, or an array of starting points of shape (n_starts, n_links); got an array of shape {} for {} links".format(name, np.shape(values), n_links))
+        false_on_active = given_false[..., self.active_links_mask]
+        if false_on_active.any():
+            names = [link.name for link, active in zip(self.links, self.active_links_mask) if active]
+            raise ValueError("{} gives False for the active links {}: they need a starting value".format(name, sorted({names[index] for index in np.argwhere(false_on_active)[:, -1]})))
+        held = ~np.isnan(self.fixed_values)
+        if held.any():
+            given_number = ~given_false[..., held]
+            if given_number.any():
+                held_names = [link.name for link, is_held in zip(self.links, held) if is_held]
+                warnings.warn("{} gives numbers for the held links {}: they take the values of the active_links_mask, give False for them".format(name, sorted({held_names[index] for index in np.argwhere(given_number)[:, -1]})), stacklevel=4)
+            values[..., held] = self.fixed_values[held]
+        return values
+
+    def _as_mirror(self, configurations):
+        """Configurations with False for the held links, to be given back as initial_position without warning"""
+        mirror = np.array(configurations, dtype=object)
+        mirror[..., ~np.isnan(self.fixed_values)] = False
+        return mirror
 
     def _resolve_initial_position(self, initial_position):
         """Turn the initial_position argument of the inverse kinematics into starting points
@@ -330,29 +467,29 @@ class Chain:
             A single starting point, of shape (n_links,), or several, of shape (n_starts, n_links)
         """
         if initial_position is None:
-            return np.zeros(len(self.links))
-        if isinstance(initial_position, (int, np.integer)):
+            held = ~np.isnan(self.fixed_values)
+            return np.where(held, np.nan_to_num(self.fixed_values), 0.0)
+        if isinstance(initial_position, (int, np.integer)) and not _is_bool(initial_position):
             return self.sample_initial_positions(int(initial_position))
         if isinstance(initial_position, dict):
             spec = dict(initial_position)
             unknown = set(spec) - {"points", "n", "seed", "around", "radius"}
             if unknown:
-                raise ValueError("Unknown keys in initial_position: {}. Expected points, n, seed, around, radius".format(sorted(unknown)))
-            points = np.asarray(spec.pop("points", np.zeros((0, len(self.links)))), dtype=float)
-            if points.ndim != 2 or points.shape[1] != len(self.links):
-                raise ValueError("initial_position['points'] must be an array of shape (n_points, n_links), got {} for {} links".format(points.shape, len(self.links)))
+                raise ValueError("Unknown keys in initial_position: {}. Expected points, n, seed".format(sorted(unknown)))
+            points = spec.pop("points", None)
+            if points is None or len(points) == 0:
+                points = np.zeros((0, len(self.links)))
+            else:
+                points = self._parse_starts(points, name="initial_position['points']")
+                if points.ndim != 2:
+                    raise ValueError("initial_position['points'] must be an array of shape (n_points, n_links), got {} for {} links".format(points.shape, len(self.links)))
             n_samples = spec.pop("n", 0)
             sampled = self.sample_initial_positions(n_samples, **spec) if n_samples > 0 else np.zeros((0, len(self.links)))
             starts = np.concatenate([points, sampled])
             if len(starts) == 0:
                 raise ValueError("initial_position gives no starting point: add n (points to draw) or points (given ones)")
             return starts
-        starts = np.asarray(initial_position, dtype=float)
-        if starts.ndim == 1 and starts.shape[0] == len(self.links):
-            return starts
-        if starts.ndim == 2 and starts.shape[1] == len(self.links):
-            return starts
-        raise ValueError("initial_position must be a configuration of shape (n_links,), an int, a dict, or an array of starting points of shape (n_starts, n_links); got an array of shape {} for {} links".format(starts.shape, len(self.links)))
+        return self._parse_starts(initial_position)
 
     def _inverse_kinematics_solutions_frame(self, target, initial_position=10, distinct_tol=1e-2, max_error=None, backend: str = "numpy", **kwargs):
         """Computes the distinct solutions of the inverse kinematics on a frame, reached from several starting points
@@ -403,7 +540,7 @@ class Chain:
         solutions = []
         errors = []
         for start in starts:
-            solution = self.inverse_kinematics_frame(target, initial_position=start, backend=backend, **kwargs)
+            solution = self.inverse_kinematics_frame(target, initial_position=self._as_mirror(start), backend=backend, **kwargs)
             solutions.append(np.array(solution, dtype=float))
             errors.append(np.linalg.norm(ik.target_error(self, solution, target, orientation_mode, no_position)))
 
@@ -492,8 +629,8 @@ class Chain:
         trajectory = np.zeros((len(targets), len(self.links)))
         previous = initial_position
         for step, target in enumerate(targets):
-            previous = self.inverse_kinematics_frame(target, initial_position=previous, backend=backend, **kwargs)
-            trajectory[step] = previous
+            trajectory[step] = self.inverse_kinematics_frame(target, initial_position=previous, backend=backend, **kwargs)
+            previous = self._as_mirror(trajectory[step])
         return trajectory
 
     def inverse_kinematics_frame(self, target, initial_position=None, backend: str = "numpy", **kwargs):
@@ -507,15 +644,16 @@ class Chain:
             Where the optimizer starts. Defaults to 0 for each joint. The optimizer is local and converges to
             the solution closest to its starting point, so this argument also drives the multi-start mode:
 
-            * a configuration, of shape (n_links,): a single start, the usual case;
+            * a configuration, of shape (n_links,): a single start, the usual case. It mirrors the
+              active_links_mask: a number for each active link, False for each held link, which takes the
+              value of the mask (a number is accepted, with a warning, but the mask's value is used);
             * an int: that many starting points drawn anywhere in the joint limits, the best solution is
               returned;
-            * a dict combining given points and drawn ones: ``points``, an array of starting points of shape
-              (n_points, n_links), plus the arguments of :meth:`sample_initial_positions` for ``n`` more
-              points, ``seed``, ``around`` and ``radius``. For example
-              ``{"points": [current_joints], "n": 9, "around": current_joints, "radius": 0.5}`` starts from the
-              current configuration and 9 points drawn near it. ``n`` defaults to 0;
-            * an array of shape (n_starts, n_links): the starting points themselves.
+            * a dict combining given points and drawn ones: ``points``, a list of configurations, plus ``n``
+              points drawn by :meth:`sample_initial_positions` with ``seed``. For example
+              ``{"points": [current_joints], "n": 9, "seed": 0}`` starts from the current configuration and 9
+              drawn points. ``n`` defaults to 0;
+            * a list of configurations, of shape (n_starts, n_links): the starting points themselves.
 
             To get every solution rather than the best one, see :meth:`_inverse_kinematics_solutions_frame`.
         backend: str
@@ -542,7 +680,7 @@ class Chain:
         starts = self._resolve_initial_position(initial_position)
         if starts.ndim == 2:
             # Multi-start: the best of the solutions reached from every starting point
-            return self._inverse_kinematics_solutions_frame(target, starts, backend=backend, **kwargs)[0]
+            return self._inverse_kinematics_solutions_frame(target, self._as_mirror(starts), backend=backend, **kwargs)[0]
         initial_position = starts
 
         # Use JAX backend if requested - delegate to jax_cache for pre-compiled functions
@@ -693,7 +831,7 @@ class Chain:
             chain_dict = {
                 "elements": metadata["base_elements"],
                 "urdf_file": os.path.basename(metadata["urdf_file"]),
-                "active_links_mask": [bool(x) for x in self.active_links_mask],
+                "active_links_mask": self.links_mask,
                 "last_link_vector": metadata["last_link_vector"],
                 "name": self.name,
                 "version": "v1"
@@ -705,7 +843,7 @@ class Chain:
                 "tip": metadata.get("tip"),
                 "tip_offset": None if tip_offset is None else [float(x) for x in tip_offset],
                 "urdf_file": os.path.basename(metadata["urdf_file"]),
-                "active_links_mask": [bool(x) for x in self.active_links_mask],
+                "active_links_mask": self.links_mask,
                 "name": self.name,
                 "version": "v2"
             }
@@ -944,4 +1082,4 @@ class Chain:
     @classmethod
     def concat(cls, chain1, chain2):
         """Concatenate two chains"""
-        return cls(links=chain1.links + chain2.links, active_links_mask=np.concatenate((chain1.active_links_mask, chain2.active_links_mask)))
+        return cls(links=chain1.links + chain2.links, active_links_mask=chain1.links_mask + chain2.links_mask)

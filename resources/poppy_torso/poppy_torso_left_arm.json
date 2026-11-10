@@ -11,15 +11,15 @@
   ],
   "urdf_file": "poppy_torso.URDF",
   "active_links_mask": [
-    false,
-    false,
-    false,
-    false,
+    0,
+    0,
+    0,
+    0,
     true,
     true,
     true,
     true,
-    false
+    0
   ],
   "last_link_vector": [
     0,

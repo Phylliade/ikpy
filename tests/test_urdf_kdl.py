@@ -131,8 +131,8 @@ def test_mimic_joints_are_not_active(tmp_path):
     with warnings.catch_warnings():
         warnings.filterwarnings("error", message=".*mimic.*")
         my_chain = _mimic_chain(tmp_path)
-    # Only the origin and joint1 are active: joint2 and joint3 are derived
-    assert list(my_chain.active_links_mask) == [True, True, False, False]
+    # Only joint1 is active: the origin is a fixed link, held at 0 by default, and joint2 and joint3 are derived
+    assert list(my_chain.active_links_mask) == [False, True, False, False]
     assert [dep[0] for dep in my_chain.mimic_dependencies] == [2, 3]
     # Asking explicitly for a mimicking joint to be active is overridden, with a warning
     with pytest.warns(UserWarning, match="mimics joint joint1 but is set as active"):
@@ -155,7 +155,7 @@ def test_mimic_values_are_derived_in_forward_kinematics(tmp_path):
 
 def test_mimic_values_are_derived_in_active_to_full(tmp_path):
     my_chain = _mimic_chain(tmp_path)
-    full = my_chain.active_to_full([0, 0.3], [0, 0, 0, 0])
+    full = my_chain.active_to_full([0.3], [0, 0, 0, 0])
     # joint2 = 2 * 0.3 + 0.1, joint3 = -joint2 + 0.05
     np.testing.assert_allclose(full, [0, 0.3, 0.7, -0.65])
     # The end-effector pose is the one of the derived configuration
@@ -200,7 +200,7 @@ def test_pepper_phalanges_mimic_a_master_outside_the_chain():
     with pytest.warns(UserWarning, match="RFinger1[123] mimics joint RHand, which is not part of this chain"):
         finger = chain.Chain.from_urdf_file(PEPPER, base="r_wrist", tip="RFinger13_link", symbolic=False)
     assert [link.name for link in finger.links][1:] == ["RFinger11", "RFinger12", "RFinger13"]
-    assert list(finger.active_links_mask) == [True, False, False, False]
+    assert list(finger.active_links_mask) == [False, False, False, False]
     assert finger.mimic_dependencies == []
     # The chain still works with the values given for the phalanges, here 0.87 times a hand opening of 0.5
     closed, bent = finger.forward_kinematics([0, 0, 0, 0]), finger.forward_kinematics([0] + [0.872665 * 0.5] * 3)
